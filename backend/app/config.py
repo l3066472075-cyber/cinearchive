@@ -26,11 +26,8 @@ class Settings:
     app_name: str = "CineArchive · 影视教育资源库"
     version: str = "0.1.0"
 
-    # 数据库文件路径（默认放在 backend/data/ 下）
-    database_url: str = _env(
-        "CINELIB_DATABASE_URL",
-        f"sqlite:///{BACKEND_DIR / 'data' / 'cinelib.db'}",
-    )
+    # 数据库文件路径（默认放在 backend/data/ 下；环境变量为空时回退 SQLite）
+    database_url: str = _env("CINELIB_DATABASE_URL") or f"sqlite:///{BACKEND_DIR / 'data' / 'cinelib.db'}"
 
     # —— 可插拔 AI 层 ——
     # 只要设置 LLM_API_KEY + LLM_BASE_URL，就会走真实大模型；否则使用离线回退。
