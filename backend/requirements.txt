@@ -1,0 +1,21 @@
+fastapi>=0.110,<1.0
+uvicorn>=0.29,<1.0
+sqlalchemy>=2.0,<3.0
+pydantic>=2.6,<3.0
+httpx>=0.27,<1.0
+python-dotenv>=1.0,<2.0
+
+# —— AI 编排与模型接入（LangChain / LangGraph）——
+langgraph>=0.2,<1.0
+langchain-core>=0.3,<1.0
+langchain-openai>=0.2,<1.0
+
+# —— 鉴权（微信静默登录 + JWT）——
+PyJWT>=2.8,<3.0
+
+# —— 云托管部署（MySQL 持久化）——
+pymysql>=1.1,<2.0
+cryptography>=42,<45
+
+# —— 免费内测部署（Postgres：Neon / Supabase / Render）——
+psycopg2-binary>=2.9,<3.0

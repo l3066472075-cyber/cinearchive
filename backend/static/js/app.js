@@ -1,0 +1,822 @@
+/* 影境档案 · 前端交互 */
+(() => {
+  "use strict";
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  const API = "/api/v1";
+  let lastSearchLogId = null;
+
+  // 海报渐变色板（暖调电影质感）
+  const PALETTE = [
+    ["#3a2c1d", "#6b4a2a"],
+    ["#1f2a33", "#3d5a6b"],
+    ["#2e1f2a", "#5d3a52"],
+    ["#16261f", "#2f4f3c"],
+    ["#3a2416", "#7a4a1f"],
+    ["#20232e", "#4a4f6b"],
+    ["#2c1f18", "#59422f"],
+    ["#1c2a2e", "#3f5a58"],
+  ];
+  const gradientFor = (title) => {
+    let h = 0;
+    for (const c of title || "") h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    const [a, b] = PALETTE[h % PALETTE.length];
+    return `linear-gradient(158deg, ${a} 0%, ${b} 100%)`;
+  };
+
+  const esc = (s) =>
+    String(s ?? "").replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+    );
+
+  const posterHTML = (movie, glyphSize = 78) => `
+    <div class="poster" style="background:${gradientFor(movie.title)}">
+      <span class="poster__glyph" style="font-size:${glyphSize}px">${esc(movie.title.charAt(0))}</span>
+      <span class="poster__title">${esc(movie.title)}</span>
+    </div>`;
+
+  const TOKEN_KEY = "cinelib_token";
+  const getToken = () => localStorage.getItem(TOKEN_KEY);
+  const setToken = (t) => localStorage.setItem(TOKEN_KEY, t);
+
+  async function api(path, opts = {}) {
+    const headers = { "Content-Type": "application/json" };
+    const token = getToken();
+    if (token) headers["Authorization"] = "Bearer " + token;
+    const res = await fetch(API + path, {
+      headers,
+      ...opts,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `请求失败 (${res.status})`);
+    }
+    return res.json();
+  }
+
+  const rateLine = (m) => `
+    <span class="rating"><span class="rating__src">${esc(m.rating_domestic_source)}</span>
+      <span class="rating__val">${m.rating_domestic || "—"}</span></span>
+    <span class="meta-dot">·</span>
+    <span class="rating"><span class="rating__src">${esc(m.rating_international_source)}</span>
+      <span class="rating__val">${m.rating_international || "—"}</span></span>`;
+
+  // ============ 推荐 ============
+  const form = $("#recommend-form");
+  const input = $("#query-input");
+  const resultsSection = $("#results");
+
+  async function runRecommend(query) {
+    const submit = $(".ask-box__submit");
+    submit.classList.add("is-loading");
+    submit.querySelector("span").textContent = "正在寻找…";
+    try {
+      const data = await api("/recommend", {
+        method: "POST",
+        body: { query, limit: 6, with_explanation: true },
+      });
+      lastSearchLogId = data.search_log_id;
+      renderRecommend(data);
+    } catch (e) {
+      alert("推荐失败：" + e.message);
+    } finally {
+      submit.classList.remove("is-loading");
+      submit.querySelector("span").textContent = "为我推荐";
+    }
+  }
+
+  function renderRecommend(data) {
+    resultsSection.hidden = false;
+    $("#echo-query").textContent = data.query;
+
+    const intentWrap = $("#intent-tags");
+    intentWrap.innerHTML = data.intent_labels.length
+      ? data.intent_labels
+          .map((t) => `<span class="chip chip--gold">${esc(t)}</span>`)
+          .join("")
+      : `<span class="chip chip--muted">未识别到明确情绪</span>`;
+
+    const note = $("#results-note");
+    note.textContent = data.note || "";
+
+    const grid = $("#results-grid");
+    const max = Math.max(...data.items.map((i) => i.score), 0.0001);
+    grid.innerHTML = data.items
+      .map((item) => cardHTML(item, max))
+      .join("");
+
+    bindCards(grid);
+    resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    observeReveal(grid);
+  }
+
+  function cardHTML(item, maxScore) {
+    const m = item.movie;
+    const rel = Math.max(55, Math.round((item.score / maxScore) * 100));
+    const hitTags = (m.tags || [])
+      .filter((t) => item.matched_tags.includes(t.name))
+      .slice(0, 3);
+    const tagHTML = hitTags
+      .map((t) => `<span class="tag-pill tag-pill--hit">${esc(t.name)}</span>`)
+      .join("");
+    return `
+      <article class="movie-pill reveal" data-id="${m.id}">
+        <div class="movie-pill__poster" style="background:${gradientFor(m.title)}">${esc(m.title.charAt(0))}</div>
+        <div class="movie-pill__main">
+          <h3 class="movie-pill__title">${esc(m.title)}</h3>
+          <p class="movie-pill__meta">${m.year} · ${esc(m.director)} · ${m.rating_domestic} 分</p>
+        </div>
+        <div class="movie-pill__tags">${tagHTML}</div>
+        <span class="movie-pill__score">${rel}%</span>
+      </article>`;
+  }
+
+  function bindCards(root) {
+    $$(".movie-pill", root).forEach((card) => {
+      card.addEventListener("click", () => openMovieById(Number(card.dataset.id)));
+    });
+  }
+
+  async function sendFeedback(payload) {
+    try {
+      await api("/feedback", { method: "POST", body: { search_log_id: lastSearchLogId, ...payload } });
+    } catch (e) {
+      console.warn("反馈失败", e);
+    }
+  }
+
+  // ============ 标签选项 ============
+  const TAG_CATEGORY_LABELS = {
+    emotion: "此刻的心情",
+    situation: "正处的境遇",
+    audience: "我是谁",
+    value: "我渴望",
+    theme: "想看的主题",
+  };
+
+  async function loadTagOptions() {
+    const themes = await api("/themes");
+    const wrap = $("#tag-groups");
+    const order = ["emotion", "situation", "audience", "value", "theme"];
+    wrap.innerHTML = order
+      .filter((cat) => (themes[cat] || []).length)
+      .map(
+        (cat) => `
+        <div class="tag-group">
+          <p class="tag-group__label">${TAG_CATEGORY_LABELS[cat] || cat}</p>
+          <div class="tag-group__chips">
+            ${themes[cat].map((t) => `<button class="chip chip--tag" data-tag="${esc(t.name)}">${esc(t.name)}</button>`).join("")}
+          </div>
+        </div>`
+      )
+      .join("");
+  }
+
+  // ============ 详情弹层 ============
+  const modal = $("#movie-modal");
+  const modalBody = $("#modal-body");
+
+  async function openMovieById(id) {
+    const full = await api(`/movies/${id}`);
+    openMovie(full);
+  }
+
+  function openMovie(m) {
+    const tags = (m.tags || []).map((t) => `<span class="chip chip--muted">${esc(t.name)}</span>`).join("");
+    const da = m.deep_analysis || {};
+    const warnings = (m.trigger_warnings || []).length
+      ? `<div class="warning">${(m.trigger_warnings || []).map(esc).join("<br>")}</div>`
+      : "";
+    const questions = (m.discussion_questions || []).length
+      ? `<ul>${(m.discussion_questions || []).map((q) => `<li>${esc(q)}</li>`).join("")}</ul>`
+      : "";
+
+    modalBody.innerHTML = `
+      <div class="detail-hero">
+        ${posterHTML(m, 96)}
+        <div>
+          <h3 class="detail-title">${esc(m.title)}</h3>
+          <p class="detail-en">${esc(m.title_en)}</p>
+        </div>
+        <div class="detail-meta">
+          <span>${m.year}</span><span class="meta-dot">·</span>
+          <span>${esc(m.director)} 执导</span><span class="meta-dot">·</span>
+          <span>${esc(m.country)}</span><span class="meta-dot">·</span>
+          <span>${m.duration_min} 分钟</span>
+        </div>
+      </div>
+
+      <p class="detail-synopsis">${esc(m.synopsis)}</p>
+
+      <div class="detail-section">
+        <h4>主创 · 评分</h4>
+        <div class="detail-meta" style="margin:0 0 6px">${rateLine(m)}</div>
+        <p>主演：${esc((m.cast || []).join("、"))}</p>
+        <p>类型：${esc((m.genres || []).join(" · "))}</p>
+      </div>
+
+      <div class="detail-section">
+        <h4>深度解读</h4>
+        <div class="analysis-grid">
+          <div class="analysis-box"><h5>主题</h5><p>${esc(da.theme || "—")}</p></div>
+          <div class="analysis-box"><h5>艺术价值</h5><p>${esc(da.art_value || "—")}</p></div>
+          <div class="analysis-box"><h5>教育价值</h5><p>${esc(da.edu_value || "—")}</p></div>
+          <div class="analysis-box"><h5>治疗价值</h5><p>${esc(da.therapy_value || "—")}</p></div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>这部影片如何支持你</h4>
+        <div class="tag-row">${(m.support_types || []).map((s) => `<span class="tag-pill">${esc(s)}</span>`).join("")}</div>
+        <p><strong style="color:var(--ink)">适合人群：</strong>${esc((m.support_audiences || []).join("、"))}</p>
+        <p>${esc(m.therapy_notes || "")}</p>
+      </div>
+
+      ${questions ? `<div class="detail-section"><h4>观影后的讨论问题</h4>${questions}</div>` : ""}
+      ${warnings ? `<div class="detail-section"><h4>观看提醒</h4>${warnings}</div>` : ""}
+
+      <div class="detail-section">
+        <h4>相关标签</h4>
+        <div class="tag-row">${tags || '<span style="color:var(--ink-3);font-size:13px">暂无标签</span>'}</div>
+      </div>
+
+      <div class="detail-section" style="border-top:1px solid var(--hairline-soft);padding-top:22px">
+        <h4>这部片子，帮到你了吗？</h4>
+        <div class="card-actions" style="margin-top:10px">
+          <button class="mini-btn" data-act="helpful">👍 帮到我了</button>
+          <button class="mini-btn" data-act="not-helpful">👎 没帮到</button>
+        </div>
+        <div class="ask-box" style="margin:16px 0 0;max-width:none;padding:6px 6px 6px 18px">
+          <input class="ask-box__input" id="tag-suggest" style="font-size:14px" placeholder="建议一个标签，比如：婆媳矛盾" />
+          <button class="ask-box__submit" id="tag-submit" style="padding:10px 20px;font-size:14px">提交标签</button>
+        </div>
+        <p id="feedback-hint" style="font-size:12.5px;color:var(--ink-3);margin:8px 2px 0"></p>
+      </div>
+
+      <div class="detail-section" style="border-top:1px solid var(--hairline-soft);padding-top:22px">
+        <h4>「观电影法」笔记</h4>
+        <div class="note-role" id="note-role" style="display:flex;gap:8px;margin-bottom:14px">
+          <button class="mini-btn is-on" data-nrole="viewer">寻影者 · 观影笔记</button>
+          <button class="mini-btn" data-nrole="facilitator">影领家 · 复盘笔记</button>
+        </div>
+        <div id="note-fields"></div>
+        <div class="wizard__nav" style="margin-top:14px;justify-content:flex-start">
+          <button class="ask-box__submit" id="note-submit"><span>提交笔记 · 获得专属回应</span></button>
+        </div>
+        <div id="note-result" class="interpretation" style="margin-top:14px;display:none"></div>
+      </div>
+
+      <div class="detail-section" style="border-top:1px solid var(--hairline-soft);padding-top:22px">
+        <h4>分享 · 观影感悟卡</h4>
+        <input id="share-note" placeholder="写一句你的感悟（可留空）" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
+        <button class="ask-box__submit" id="share-gen"><span>生成卡片 · 长按保存</span></button>
+        <div id="share-result" style="margin-top:14px"></div>
+      </div>`;
+
+    $$("[data-act]", modalBody).forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const helpful = btn.dataset.act === "helpful";
+        await sendFeedback({ movie_id: m.id, helpful });
+        btn.classList.add("is-on");
+        btn.textContent = helpful ? "✓ 已记录" : "✓ 已记录";
+        $("#feedback-hint").textContent = "感谢反馈，已记录，将帮助档案馆更懂你。";
+      })
+    );
+    $("#tag-submit").addEventListener("click", async () => {
+      const val = $("#tag-suggest").value.trim();
+      if (!val) return;
+      const res = await api("/feedback", {
+        method: "POST",
+        body: { movie_id: m.id, suggested_tag: val },
+      });
+      $("#feedback-hint").textContent = res.message;
+      $("#tag-suggest").value = "";
+    });
+
+    // —— 「观电影法」笔记 ——
+    const NOTE_FIELDS = {
+      viewer: [
+        { key: "内心触动的片段", ph: "哪个画面、哪段情节，最触动你？" },
+        { key: "喜欢的台词", ph: "有没有哪句台词，你想记下来？" },
+        { key: "电影带来的思考", ph: "这部电影让你想到了什么？内心的想法？" },
+      ],
+      facilitator: [
+        { key: "是否达成预期", ph: "对照开场前设的目标，整场观影会完成得如何？" },
+        { key: "带领收获", ph: "这次带领，你有哪些成长或新发现？" },
+        { key: "体验环节", ph: "从破冰→观影→引导→结尾，用了哪些技能或道具？哪个效果好？" },
+        { key: "PPT精彩处", ph: "带领PPT最打动人的部分是什么？" },
+        { key: "是否愿意分享PPT", ph: "愿意分享给他人吗（他人喜欢可打赏）？", select: ["愿意分享（可被打赏）", "暂不分享"] },
+      ],
+    };
+    let noteRole = "viewer";
+    function renderNoteFields() {
+      const wrap = $("#note-fields");
+      wrap.innerHTML = NOTE_FIELDS[noteRole]
+        .map((f) => {
+          if (f.select) {
+            return `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
+              <select class="note-input" data-key="${esc(f.key)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)">
+                ${f.select.map((o) => `<option>${esc(o)}</option>`).join("")}
+              </select></div>`;
+          }
+          return `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
+            <textarea class="note-input" data-key="${esc(f.key)}" rows="2" placeholder="${esc(f.ph)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:14px;resize:vertical"></textarea></div>`;
+        })
+        .join("");
+    }
+    $$("#note-role button", modalBody).forEach((b) =>
+      b.addEventListener("click", () => {
+        noteRole = b.dataset.nrole;
+        $$("#note-role button", modalBody).forEach((x) => x.classList.toggle("is-on", x === b));
+        renderNoteFields();
+      })
+    );
+    renderNoteFields();
+    $("#note-submit").addEventListener("click", async () => {
+      const content = {};
+      $$(".note-input", modalBody).forEach((el) => {
+        content[el.dataset.key] = el.value.trim();
+      });
+      const filled = Object.values(content).filter(Boolean).length;
+      if (!filled) {
+        $("#note-result").style.display = "block";
+        $("#note-result").textContent = "先写下一点感受，再提交吧。";
+        return;
+      }
+      const btn = $("#note-submit");
+      btn.classList.add("is-loading");
+      btn.querySelector("span").textContent = "正在回应…";
+      try {
+        const res = await api("/notes", {
+          method: "POST",
+          body: { role: noteRole, movie_id: m.id, content },
+        });
+        $("#note-result").style.display = "block";
+        $("#note-result").textContent = res.llm_response;
+      } catch (e) {
+        $("#note-result").style.display = "block";
+        $("#note-result").textContent = "提交失败：" + e.message;
+      } finally {
+        btn.classList.remove("is-loading");
+        btn.querySelector("span").textContent = "提交笔记 · 获得专属回应";
+      }
+    });
+
+    // —— 分享卡片 ——
+    const BOOK_QUOTES = ["生命是条长河，最终渡你的还是自己"];
+    $("#share-gen").addEventListener("click", () => {
+      const note = $("#share-note").value.trim();
+      const quote = BOOK_QUOTES[Math.floor(Math.random() * BOOK_QUOTES.length)];
+      const da = m.deep_analysis || {};
+      $("#share-result").innerHTML = `
+        <div class="share-card" style="background:${gradientFor(m.title)}">
+          <span class="share-card__brand">影境档案 · 观电影法</span>
+          <h3 class="share-card__movie">《${esc(m.title)}》</h3>
+          <p class="share-card__quote">「${esc(quote)}」</p>
+          ${note ? `<p class="share-card__note">—— ${esc(note)}</p>` : ""}
+          <span class="share-card__theme">${esc(da.theme || "借电影，观自己")}</span>
+        </div>`;
+    });
+
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    document.body.style.overflow = "";
+  }
+  modal.addEventListener("click", (e) => {
+    if (e.target.closest("[data-close]")) closeModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.hidden) closeModal();
+  });
+
+  // ============ 我的观心（成长中心） ============
+  const growthModal = $("#growth-modal");
+  async function openGrowth() {
+    try {
+      const p = await api("/me/progress");
+      const lights = Array.from({ length: 21 }, (_, i) =>
+        `<span class="light-dot ${i < p.checkin_days ? "is-lit" : ""}">${i < p.checkin_days ? "🕯" : "·"}</span>`
+      ).join("");
+      const badges = p.badges
+        .map((b) =>
+          `<div class="badge ${b.earned ? "is-earned" : ""}"><span class="badge__icon">${b.earned ? "✦" : "·"}</span><span class="badge__name">${esc(b.name)}</span><span class="badge__desc">${esc(b.desc)}</span></div>`
+        )
+        .join("");
+      $("#growth-body").innerHTML = `
+        <div class="growth-hero">
+          <p class="section-kicker">我的观心</p>
+          <h3 class="growth-level">${esc(p.level_name)}</h3>
+          <p class="growth-level-desc">${esc(p.level_desc)}</p>
+          <div class="growth-bar"><span style="width:${p.progress_pct}%"></span></div>
+          <p class="growth-next">下一段位：${esc(p.next_level_name)}</p>
+        </div>
+        <div class="growth-stats">
+          <div><strong>${p.checkin_days}</strong><span>点亮心灯</span></div>
+          <div><strong>${p.note_count}</strong><span>观影笔记</span></div>
+          <div><strong>${p.search_count}</strong><span>寻影次数</span></div>
+          <div><strong>${p.checkin_streak}</strong><span>连续天数</span></div>
+        </div>
+        <div class="growth-section">
+          <h4>21天观电影法打卡践行</h4>
+          <div class="lights">${lights}</div>
+          <button class="ask-box__submit" id="checkin-btn"><span>点亮今天 🕯</span></button>
+          <p id="checkin-msg" style="color:var(--gold-soft);font-size:13px;margin-top:8px"></p>
+        </div>
+        <div class="growth-section">
+          <h4>我的印记</h4>
+          <div class="badges">${badges}</div>
+        </div>
+        <div class="growth-section">
+          <h4>城市坐标 · 寻找同城影友</h4>
+          <div style="display:flex;gap:8px">
+            <input id="city-input" value="${esc(p.city)}" placeholder="填写城市，寻找同城影友" style="flex:1;border:1px solid var(--hairline-soft);border-radius:999px;padding:10px 16px;background:var(--surface);color:var(--ink)" />
+            <button class="mini-btn" id="city-save">保存</button>
+          </div>
+        </div>
+        <div class="growth-section" id="match-section">
+          <h4>同频影友</h4>
+          <p style="font-size:13px;color:var(--ink-3)">加载中…</p>
+        </div>
+        <div class="growth-section" id="monthly-section">
+          <h4>观心月历</h4>
+          <p style="font-size:13px;color:var(--ink-3)">加载中…</p>
+        </div>`;
+      growthModal.hidden = false;
+      document.body.style.overflow = "hidden";
+
+      $("#checkin-btn").addEventListener("click", async () => {
+        const r = await api("/checkin", { method: "POST", body: {} });
+        $("#checkin-msg").textContent = r.message;
+        setTimeout(openGrowth, 400);
+      });
+      $("#city-save").addEventListener("click", async () => {
+        const city = $("#city-input").value.trim();
+        if (city) {
+          await api("/me/city", { method: "PATCH", body: { city } });
+          $("#checkin-msg").textContent = "城市已更新：定位到「" + city + "」的同频影友";
+          setTimeout(openGrowth, 400);
+        }
+      });
+
+      // 同频影友
+      try {
+        const m = await api("/match");
+        let html = "";
+        if (m.city) {
+          html += `<p style="font-size:13px;color:var(--ink-2);margin:0 0 8px">📍 在「${esc(m.city)}」，有 ${m.same_city_count} 位同城影友。</p>`;
+        } else {
+          html += `<p style="font-size:13px;color:var(--ink-3);margin:0 0 8px">填上城市，就能找到同城影友。</p>`;
+        }
+        if (m.resonance && m.resonance.length) {
+          html += `<div class="tag-row" style="margin-bottom:0">${m.resonance.map((r) => `<span class="tag-pill">「${esc(r.tag)}」· ${r.count} 位同频</span>`).join("")}</div>`;
+        } else if (m.my_tags && m.my_tags.length) {
+          html += `<p style="font-size:13px;color:var(--ink-3);margin:0">你最近在找：${m.my_tags.map((t) => `「${esc(t)}」`).join("、")}，暂时还没有同频影友，成为第一个吧。</p>`;
+        } else {
+          html += `<p style="font-size:13px;color:var(--ink-3);margin:0">去寻一次影，系统就能帮你找到心境相近的人。</p>`;
+        }
+        $("#match-section").innerHTML = `<h4>同频影友</h4>${html}`;
+      } catch (e) {
+        $("#match-section").innerHTML = `<h4>同频影友</h4><p style="font-size:13px;color:var(--ink-3)">暂时无法加载</p>`;
+      }
+
+      // 观心月历
+      try {
+        const mo = await api("/me/monthly");
+        $("#monthly-section").innerHTML = `
+          <h4>观心月历 · ${esc(mo.month)}</h4>
+          <div style="text-align:center;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--hairline-soft)">
+            <div style="font-family:var(--font-serif);font-size:40px;color:var(--gold-soft)">${esc(mo.keyword)}</div>
+            <p style="margin:6px 0 0;font-size:13px;color:var(--ink-2)">本月观心字</p>
+            <p style="margin:10px 0 0;font-size:12.5px;color:var(--ink-3)">观影 ${mo.search_month} · 打卡 ${mo.checkin_month} 天 · 笔记 ${mo.note_month} 篇 · 段位「${esc(mo.level_name)}」</p>
+            <p style="margin:12px 0 0;font-size:13px;color:var(--ink-2);font-style:italic">「${esc(mo.quote)}」</p>
+          </div>`;
+      } catch (e) {
+        $("#monthly-section").innerHTML = `<h4>观心月历</h4><p style="font-size:13px;color:var(--ink-3)">暂时无法加载</p>`;
+      }
+    } catch (e) {
+      $("#growth-body").innerHTML = `<p style="color:var(--ink-2)">加载观心数据失败：${esc(e.message)}</p>`;
+      growthModal.hidden = false;
+      document.body.style.overflow = "hidden";
+    }
+  }
+  $("#growth-btn").addEventListener("click", openGrowth);
+  growthModal.addEventListener("click", (e) => {
+    if (e.target.closest("[data-close]")) {
+      growthModal.hidden = true;
+      document.body.style.overflow = "";
+    }
+  });
+
+  // ============ 共修场 · 影领家带领 ============
+  async function loadSessions() {
+    try {
+      const list = await api("/sessions");
+      renderSessions(list);
+    } catch (e) {
+      console.warn("加载共修场失败", e);
+    }
+  }
+
+  function renderSessions(list) {
+    const wrap = $("#sessions-list");
+    if (!wrap) return;
+    if (!list.length) {
+      wrap.innerHTML = `<p class="rank-list__empty">还没有共修场，成为第一个开场的影领家吧。</p>`;
+      return;
+    }
+    wrap.innerHTML = list
+      .map(
+        (s) => `
+        <article class="session-card">
+          <div class="session-card__main">
+            <h3 class="session-card__title">${esc(s.theme || s.movie_title)}</h3>
+            <p class="session-card__meta">🎬 ${esc(s.movie_title)} · ${s.mode === "sync" ? "同步" : "异步"} · ${esc(s.start_at || "时间待定")}</p>
+            <p class="session-card__desc">${esc(s.description || "")}</p>
+            <p class="session-card__meta">📍 ${esc(s.facilitator_city || "城市未填")} · 已入座 ${s.signup_count} 人</p>
+          </div>
+          <button class="mini-btn ${s.joined ? "is-on" : ""}" data-join="${s.id}">${s.joined ? "已入座 · 离开" : "入座"}</button>
+        </article>`
+      )
+      .join("");
+    $$("[data-join]", wrap).forEach((b) =>
+      b.addEventListener("click", async () => {
+        const id = Number(b.dataset.join);
+        const isJoined = b.classList.contains("is-on");
+        try {
+          await api(`/sessions/${id}/${isJoined ? "leave" : "join"}`, { method: "POST", body: {} });
+          loadSessions();
+        } catch (e) {
+          alert("操作失败：" + e.message);
+        }
+      })
+    );
+  }
+
+  $("#open-session-btn").addEventListener("click", async () => {
+    const wrap = $("#sessions-list");
+    let movies = [];
+    try { movies = await api("/movies?limit=100"); } catch (e) {}
+    wrap.innerHTML = `
+      <div class="session-form">
+        <h4 style="margin:0 0 12px;font-family:var(--font-serif);color:var(--gold)">开一场共修</h4>
+        <label style="font-size:13px;color:var(--ink-2)">选一部影片</label>
+        <select id="sf-movie" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)">${movies.map((m) => `<option value="${m.id}">${esc(m.title)}（${m.year}）</option>`).join("")}</select>
+        <label style="font-size:13px;color:var(--ink-2)">场次主题</label>
+        <input id="sf-theme" placeholder="如：照见 · 心灵的岔路口" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
+        <label style="font-size:13px;color:var(--ink-2)">时间（同步场）</label>
+        <input id="sf-time" placeholder="如：每周六晚 8 点" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
+        <label style="font-size:13px;color:var(--ink-2)">引导语 / 说明</label>
+        <textarea id="sf-desc" rows="2" placeholder="这场共修，你想带大家聊什么？" style="width:100%;margin:6px 0 14px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink);resize:vertical"></textarea>
+        <div style="display:flex;gap:8px">
+          <button class="ask-box__submit" id="sf-submit"><span>发布场次</span></button>
+          <button class="mini-btn" id="sf-cancel">取消</button>
+        </div>
+      </div>`;
+    $("#sf-submit").addEventListener("click", async () => {
+      const theme = $("#sf-theme").value.trim();
+      const body = {
+        movie_id: Number($("#sf-movie").value),
+        theme: theme || ($("#sf-movie option:checked").text.split("（")[0] + " · 共修"),
+        description: $("#sf-desc").value.trim(),
+        start_at: $("#sf-time").value.trim(),
+        mode: "sync",
+      };
+      try {
+        await api("/sessions", { method: "POST", body });
+        loadSessions();
+      } catch (e) {
+        alert("发布失败：" + e.message);
+      }
+    });
+    $("#sf-cancel").addEventListener("click", loadSessions);
+  });
+
+  // ============ 入场动画 ============
+  const io = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((en) => {
+        if (en.isIntersecting) {
+          en.target.classList.add("is-visible");
+          io.unobserve(en.target);
+        }
+      }),
+    { threshold: 0.12 }
+  );
+  function observeReveal(root) {
+    $$(".reveal:not(.is-visible)", root).forEach((el) => io.observe(el));
+  }
+
+  // ============ 事件绑定 ============
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (q) runRecommend(q);
+  });
+  $$(".chip[data-query]").forEach((c) =>
+    c.addEventListener("click", () => {
+      input.value = c.dataset.query;
+      runRecommend(c.dataset.query);
+    })
+  );
+  document.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip--tag");
+    if (!chip) return;
+    const tag = chip.dataset.tag;
+    input.value = tag;
+    runRecommend(tag);
+  });
+
+  // ============ 公众号 H5 静默登录 ============
+  function handleMpLogin() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    if (token) {
+      setToken(token);
+      params.delete("token");
+      const qs = params.toString();
+      history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+      return;
+    }
+    const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+    if (isWeChat && !getToken()) {
+      const back = encodeURIComponent(location.href);
+      location.replace(`/api/v1/auth/mp/authorize?redirect_uri=${back}&scope=snsapi_base`);
+    }
+  }
+
+  // 浏览器访客自动登录（开发模式）：给每位访客一个稳定身份，让「观心」等功能可用
+  async function ensureGuestLogin() {
+    if (getToken()) return;
+    try {
+      let code = localStorage.getItem("cine_guest_code");
+      if (!code) {
+        code = "guest-" + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem("cine_guest_code", code);
+      }
+      const data = await api("/auth/wx-login", {
+        method: "POST",
+        body: { code },
+      });
+      setToken(data.token);
+    } catch (e) {
+      console.warn("访客登录失败", e);
+    }
+  }
+
+  // ============ 双角色 · 5问引导 ============
+  const GUIDE_CONFIG = {
+    viewer: [
+      { key: "emotion", q: "此刻的你，心情如何？" },
+      { key: "situation", q: "你正处在什么样的境遇里？" },
+      { key: "value", q: "你渴望从电影里获得什么？" },
+      { key: "audience", q: "你现在的角色是？" },
+      { key: "theme", q: "你想看什么主题？" },
+    ],
+    facilitator: [
+      { key: "emotion", q: "服务对象的需求是什么？" },
+      { key: "situation", q: "服务对象想达成的目标是什么？" },
+      { key: "value", q: "这次活动你的想法是什么？" },
+      { key: "audience", q: "服务对象是谁？" },
+      { key: "theme", q: "想带大家走哪个主题方向？" },
+    ],
+  };
+
+  let guideRole = null;
+  let guideStep = 0;
+  let guideAnswers = {};
+  let guideThemes = {};
+
+  async function loadGuideThemes() {
+    guideThemes = await api("/themes");
+  }
+
+  function startGuide(role) {
+    guideRole = role;
+    guideStep = 0;
+    guideAnswers = {};
+    $("#role-select").hidden = true;
+    $("#wizard").hidden = false;
+    renderGuideStep();
+  }
+
+  function renderGuideStep() {
+    const steps = GUIDE_CONFIG[guideRole];
+    const step = steps[guideStep];
+    $("#wizard-step").textContent = `第 ${guideStep + 1} / ${steps.length} 问`;
+    $("#wizard-progress").style.width = `${((guideStep + 1) / steps.length) * 100}%`;
+    $("#wizard-question").textContent = step.q;
+    const tags = guideThemes[step.key] || [];
+    $("#wizard-chips").innerHTML = tags
+      .map((t) => {
+        const sel = guideAnswers[step.key] === t.name;
+        return `<button class="chip chip--tag ${sel ? "is-selected" : ""}" data-tag="${esc(t.name)}">${esc(t.name)}</button>`;
+      })
+      .join("");
+    $$("#wizard-chips .chip--tag").forEach((c) =>
+      c.addEventListener("click", () => {
+        guideAnswers[step.key] = c.dataset.tag;
+        renderGuideStep();
+      })
+    );
+    $("#wizard-back").hidden = guideStep === 0;
+    const btn = $("#wizard-next");
+    btn.querySelector("span").textContent =
+      guideStep === steps.length - 1 ? "生成推荐" : "下一步 →";
+  }
+
+  async function submitGuide() {
+    const submit = $("#wizard-next");
+    submit.classList.add("is-loading");
+    try {
+      const data = await api("/recommend/guided", {
+        method: "POST",
+        body: { role: guideRole, answers: guideAnswers },
+      });
+      lastSearchLogId = data.search_log_id;
+      renderGuidedResults(data);
+    } catch (e) {
+      alert("推荐失败：" + e.message);
+    } finally {
+      submit.classList.remove("is-loading");
+    }
+  }
+
+  function renderGuidedResults(data) {
+    resultsSection.hidden = false;
+    $("#echo-query").textContent =
+      data.role === "facilitator" ? "影领家 · 五问选片" : "寻影者 · 五问选片";
+    $("#intent-tags").innerHTML = (data.intent_labels || [])
+      .map((t) => `<span class="chip chip--gold">${esc(t)}</span>`)
+      .join("");
+    $("#results-note").textContent = "";
+    const grid = $("#results-grid");
+    const max = Math.max(...data.items.map((i) => i.score), 0.0001);
+    const interp = data.interpretation
+      ? `<div class="interpretation">${esc(data.interpretation)}</div>`
+      : "";
+    grid.innerHTML = interp + data.items.map((item) => cardHTML(item, max)).join("");
+    bindCards(grid);
+    resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    observeReveal(grid);
+  }
+
+  $$(".role-card").forEach((c) =>
+    c.addEventListener("click", () => startGuide(c.dataset.role))
+  );
+  $("#wizard-next").addEventListener("click", () => {
+    const steps = GUIDE_CONFIG[guideRole];
+    if (guideStep < steps.length - 1) {
+      guideStep++;
+      renderGuideStep();
+    } else {
+      submitGuide();
+    }
+  });
+  $("#wizard-back").addEventListener("click", () => {
+    if (guideStep > 0) {
+      guideStep--;
+      renderGuideStep();
+    }
+  });
+
+  // ============ 品牌切换（禅说电影 / 影领圈） ============
+  const BRANDS = {
+    chanshuo: { name: "禅说电影", tagline: "以影入道 · 借影观心" },
+    yingling: { name: "影领圈", tagline: "让电影领你同行" },
+  };
+  function applyBrand(key) {
+    const b = BRANDS[key] || BRANDS.chanshuo;
+    document.body.dataset.brand = key;
+    $("#brand-name").textContent = b.name;
+    $("#brand-tagline").textContent = b.tagline;
+    $$(".brand-switch button").forEach((x) =>
+      x.classList.toggle("is-active", x.dataset.brand === key)
+    );
+    try { localStorage.setItem("cine_brand", key); } catch (e) {}
+  }
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".brand-switch button");
+    if (btn) applyBrand(btn.dataset.brand);
+  });
+
+  // ============ 初始化 ============
+  (async function init() {
+    handleMpLogin();
+    applyBrand((() => { try { return localStorage.getItem("cine_brand"); } catch (e) { return null; } })() || "chanshuo");
+    observeReveal(document);
+    try {
+      await Promise.all([loadTagOptions(), loadGuideThemes()]);
+    } catch (e) {
+      console.warn("初始化失败", e);
+    }
+    ensureGuestLogin();
+    loadSessions();
+  })();
+})();

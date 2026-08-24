@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>影境档案 · 好电影的深度档案馆</title>
+  <meta name="description" content="从多部经典电影中，为您挑选适合当下心境的影片——影视教育 × 艺术治疗。" />
+  <meta name="theme-color" content="#100e0c" />
+  <!-- 分享卡片（Open Graph / 微信 / 微博） -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="影境档案 · 好电影的深度档案馆" />
+  <meta property="og:description" content="从多部经典电影中，为您挑选适合当下心境的影片。" />
+  <meta property="og:image" content="/static/share.png" />
+  <meta property="og:site_name" content="影境档案 CineArchive" />
+  <meta itemprop="name" content="影境档案 · 好电影的深度档案馆" />
+  <meta itemprop="description" content="从多部经典电影中，为您挑选适合当下心境的影片。" />
+  <meta itemprop="image" content="/static/share.png" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <!-- 顶栏 -->
+  <header class="site-header">
+    <a class="brand" href="#top">
+      <span class="brand__mark" id="brand-name">禅说电影</span>
+      <span class="brand__cn">影境档案</span>
+    </a>
+    <span class="brand__tagline" id="brand-tagline">以影入道 · 借影观心</span>
+    <div class="brand-switch" id="brand-switch">
+      <button data-brand="chanshuo" class="is-active">禅说电影</button>
+      <button data-brand="yingling">影领圈</button>
+    </div>
+    <button class="api-link" id="growth-btn" style="background:none;border:none;cursor:pointer">🪔 我的观心</button>
+    <a class="api-link" href="/docs" target="_blank" rel="noopener">API ↗</a>
+  </header>
+
+  <main id="top">
+    <!-- ============ Hero / 推荐 ============ -->
+    <section class="hero" id="recommend">
+      <div class="hero__inner">
+        <p class="hero__eyebrow">影视教育 × 艺术治疗</p>
+        <h1 class="hero__title">
+          让一部好电影，<br />
+          <em>接住此刻的你</em>
+        </h1>
+        <p class="hero__sub">
+          从多部经典电影中，<br class="hide-mobile" />
+          为您挑选适合当下心境的影片。
+        </p>
+        <p class="hero__ai-note">✦ 即将接入大模型 · AI 智能选片与深度解读</p>
+
+        <form class="ask-box" id="recommend-form" autocomplete="off">
+          <span class="ask-box__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.35-4.35"></path>
+            </svg>
+          </span>
+          <input
+            id="query-input"
+            class="ask-box__input"
+            type="text"
+            placeholder="说说你此刻的心情…"
+            aria-label="描述你现在的心情或处境"
+          />
+          <button class="ask-box__submit" type="submit">
+            <span>为我推荐</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M5 12h14M13 6l6 6-6 6"></path>
+            </svg>
+          </button>
+        </form>
+
+        <div class="hero__examples">
+          <span class="hero__examples-label">试着说说：</span>
+          <button class="chip chip--ghost" data-query="我很焦虑，工作让我很累">我很焦虑，工作让我很累</button>
+          <button class="chip chip--ghost" data-query="刚失去亲人，很难过">刚失去亲人，很难过</button>
+          <button class="chip chip--ghost" data-query="孩子学习压力大，我也很无力">孩子学习压力大，我也很无力</button>
+          <button class="chip chip--ghost" data-query="刚看完一部片，特别兴奋">刚看完一部片，特别兴奋</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 双角色 · 5问引导 ============ -->
+    <section class="guide-section" id="guide">
+      <div class="container">
+        <div class="role-select" id="role-select">
+          <p class="section-kicker">Choose your role</p>
+          <h2 class="tags-section__title">你以什么身份，走进这座档案馆？</h2>
+          <div class="role-cards">
+            <button class="role-card" data-role="viewer">
+              <span class="role-card__icon">🎬</span>
+              <span class="role-card__name">寻影者</span>
+              <span class="role-card__desc">为自己，寻一部懂你的电影</span>
+            </button>
+            <button class="role-card" data-role="facilitator">
+              <span class="role-card__icon">🧭</span>
+              <span class="role-card__name">影领家</span>
+              <span class="role-card__desc">为他人选片、带观影</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="wizard" id="wizard" hidden>
+          <div class="wizard__progress"><span id="wizard-progress"></span></div>
+          <p class="wizard__step" id="wizard-step">第 1 / 5 问</p>
+          <h2 class="wizard__question" id="wizard-question"></h2>
+          <div class="wizard__chips" id="wizard-chips"></div>
+          <div class="wizard__nav">
+            <button class="mini-btn" id="wizard-back" hidden>← 上一步</button>
+            <button class="ask-box__submit" id="wizard-next"><span>下一步 →</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 标签选项 ============ -->
+    <section class="tags-section" id="tags">
+      <div class="container">
+        <header class="tags-section__head">
+          <p class="section-kicker">Pick a mood</p>
+          <h2 class="tags-section__title">或，选择一个贴近你的标签</h2>
+        </header>
+        <div class="tag-groups" id="tag-groups"></div>
+      </div>
+    </section>
+
+    <!-- ============ 推荐结果 ============ -->
+    <section class="results" id="results" hidden>
+      <div class="container">
+        <header class="results__head">
+          <div>
+            <p class="section-kicker">为你挑选</p>
+            <h2 class="results__query">“<span id="echo-query"></span>”</h2>
+          </div>
+          <div class="results__intent" id="intent-tags"></div>
+        </header>
+        <div class="results__note" id="results-note"></div>
+        <div class="results__grid" id="results-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ 全国观影联动（活动编辑区） ============ -->
+    <section class="activity-section" id="activity">
+      <div class="container">
+        <header class="tags-section__head">
+          <p class="section-kicker">Now Showing</p>
+          <h2 class="tags-section__title">全国观影联动</h2>
+        </header>
+        <!-- ⬇️⬇️ 活动编辑区开始：在这里增改活动卡片 ⬇️⬇️ -->
+        <div class="activity-list" id="activity-list">
+          <article class="activity-card">
+            <span class="activity-card__badge">进行中</span>
+            <h3 class="activity-card__title">本周联动观影 · 主题征集中</h3>
+            <p class="activity-card__desc">时间、形式、参与方式、往期回顾等，在此处编辑。</p>
+          </article>
+        </div>
+        <!-- ⬆️⬆️ 活动编辑区结束 ⬆️⬆️ -->
+      </div>
+    </section>
+
+    <!-- ============ 共修场 · 影领家带领 ============ -->
+    <section class="sessions-section" id="sessions">
+      <div class="container">
+        <header class="section-head">
+          <div>
+            <p class="section-kicker">Group Viewing</p>
+            <h2 class="section-title">共修场</h2>
+          </div>
+          <button class="ask-box__submit" id="open-session-btn"><span>＋ 我要开场</span></button>
+        </header>
+        <p class="section-desc">影领家开场，寻影者入座，围绕「观电影法」的问题一起看、一起聊。</p>
+        <div class="sessions-list" id="sessions-list"></div>
+      </div>
+    </section>
+
+    <!-- ============ 延伸阅读 · 工具包 ============ -->
+    <section class="extra-section" id="extra">
+      <div class="container">
+        <header class="tags-section__head">
+          <p class="section-kicker">Go Deeper</p>
+          <h2 class="tags-section__title">延伸阅读 · 工具包</h2>
+        </header>
+        <!-- ⬇️ 链接占位区：把 href="#" 换成真实文章/视频/工具包链接 ⬇️ -->
+        <div class="extra-list">
+          <a class="extra-card" href="#">📖 相关文章 · 标题待填</a>
+          <a class="extra-card" href="#">🎬 相关视频 · 标题待填</a>
+          <a class="extra-card" href="#">🧰 观影工具包 · 标题待填</a>
+        </div>
+        <!-- ⬆️ 链接占位区结束 ⬆️ -->
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div>
+        <span class="brand__mark">CineArchive</span>
+        <span class="brand__cn">影境档案</span>
+      </div>
+      <p>影视教育 · 艺术治疗 · 一座会生长的好电影档案馆</p>
+      <p class="site-footer__fine">每一次搜索与反馈，都会让这座档案馆更懂人心</p>
+    </div>
+  </footer>
+
+  <!-- 影片详情弹层 -->
+  <div class="modal" id="movie-modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true">
+      <button class="modal__close" data-close aria-label="关闭">✕</button>
+      <div class="modal__body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 我的观心（成长中心）弹层 -->
+  <div class="modal" id="growth-modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true">
+      <button class="modal__close" data-close aria-label="关闭">✕</button>
+      <div class="modal__body" id="growth-body"></div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>影境档案 · 好电影的深度档案馆</title>
+<meta name="description" content="从多部经典电影中，为您挑选适合当下心境的影片——影视教育 × 艺术治疗。" />
+<meta name="theme-color" content="#100e0c" />
+<style>
+:root{--bg:#100e0c;--surface:#1a1612;--surface-2:#211c15;--hairline:rgba(214,177,110,.16);--hairline-soft:rgba(214,177,110,.09);--ink:#ece3d3;--ink-2:#b9ad99;--ink-3:#82776a;--gold:#c9a15c;--gold-rgb:201,161,92;--gold-soft:#e5c98f;--gold-deep:#9a793e;--danger:#c96a5c;--font-serif:"Songti SC","STSong","SimSun",serif;--font-sans:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;--ease:cubic-bezier(.22,1,.36,1)}
+body[data-brand="yingling"]{--gold:#7b9bd6;--gold-soft:#a9c3ee;--gold-deep:#5a78b0;--gold-rgb:123,155,214;--hairline:rgba(150,180,225,.16);--hairline-soft:rgba(150,180,225,.09)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);background:radial-gradient(1400px 800px at 50% -12%,#1d1812 0%,var(--bg) 58%);color:var(--ink);font-family:var(--font-sans);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.container{width:min(680px,calc(100% - 36px));margin-inline:auto}
+.site-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;padding:16px 18px;background:rgba(16,14,12,.92);border-bottom:1px solid var(--hairline-soft)}
+.brand{display:flex;align-items:baseline;gap:10px;text-decoration:none;color:var(--ink)}
+.brand__mark{font-family:Georgia,serif;font-size:19px;font-weight:600;letter-spacing:.12em;color:var(--gold-soft)}
+.brand__cn{font-family:var(--font-serif);font-size:14px;letter-spacing:.28em;color:var(--ink-2)}
+.brand__tagline{margin-left:auto;font-size:11.5px;letter-spacing:.04em;color:var(--ink-3)}
+.brand-switch{display:flex;gap:3px;flex-shrink:0;background:var(--surface);border:1px solid var(--hairline-soft);border-radius:999px;padding:3px}
+.brand-switch button{border:none;background:transparent;color:var(--ink-3);font-size:11.5px;padding:4px 11px;border-radius:999px;cursor:pointer;transition:all .2s}
+.brand-switch button.is-active{background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#1c1408}
+.hero{padding:clamp(48px,9vh,88px) 18px 30px;text-align:center}
+.hero__eyebrow{margin:0 0 20px;font-size:12.5px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase}
+.hero__title{margin:0;font-family:var(--font-serif);font-weight:700;font-size:clamp(34px,7vw,52px);line-height:1.25;letter-spacing:.02em}
+.hero__title em{font-style:normal;background:linear-gradient(120deg,var(--gold-soft),var(--gold) 55%,var(--gold-deep));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__sub{margin:20px auto 0;font-size:15.5px;font-weight:300;color:var(--ink-2)}
+.hero__ai-note{margin:14px 0 0;font-size:12.5px;letter-spacing:.05em;color:var(--gold-soft)}
+.ask-box{display:flex;align-items:center;gap:8px;max-width:620px;margin:30px auto 0;padding:7px 7px 7px 20px;background:var(--surface);border:1px solid var(--hairline);border-radius:999px;transition:border-color .3s var(--ease),box-shadow .3s var(--ease)}
+.ask-box:focus-within{border-color:var(--gold-deep);box-shadow:0 0 0 4px rgba(var(--gold-rgb),.22)}
+.ask-box__icon{color:var(--gold);display:inline-flex;flex-shrink:0}
+.ask-box__input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--ink);font-family:var(--font-sans);font-size:15.5px;padding:11px 0}
+.ask-box__input::placeholder{color:var(--ink-3)}
+.ask-box__submit{display:inline-flex;align-items:center;gap:8px;flex-shrink:0;padding:11px 20px;border:none;border-radius:999px;background:linear-gradient(135deg,var(--gold-soft),var(--gold) 60%,var(--gold-deep));color:#1c1408;font-size:14.5px;font-weight:500;letter-spacing:.04em;cursor:pointer}
+.hero__examples{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-top:20px}
+.hero__examples-label{font-size:12.5px;color:var(--ink-3)}
+.chip{display:inline-flex;align-items:center;padding:6px 13px;border-radius:999px;font-size:12.5px;line-height:1.4;cursor:pointer;transition:all .25s var(--ease)}
+.chip--ghost{background:transparent;border:1px solid var(--hairline);color:var(--ink-2)}
+.chip--ghost:hover{border-color:var(--gold-deep);color:var(--gold-soft)}
+.chip--gold{background:rgba(var(--gold-rgb),.16);border:1px solid rgba(var(--gold-rgb),.38);color:var(--gold-soft)}
+.chip--tag{background:var(--surface);border:1px solid var(--hairline-soft);color:var(--ink-2)}
+.chip--tag:hover{border-color:var(--gold-deep);color:var(--gold-soft);transform:translateY(-1px)}
+.chip--muted{background:var(--surface-2);border:1px solid var(--hairline-soft);color:var(--ink-2)}
+.section-kicker{margin:0 0 8px;font-family:Georgia,serif;font-size:13px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase}
+.tags-section{padding:10px 0 40px}
+.tags-section__head{text-align:center;margin-bottom:26px}
+.tags-section__title{margin:0;font-family:var(--font-serif);font-weight:600;font-size:clamp(19px,4vw,24px);letter-spacing:.03em}
+.tag-groups{display:flex;flex-direction:column;gap:20px}
+.tag-group__label{display:flex;align-items:center;gap:10px;margin:0 0 11px;font-family:Georgia,serif;font-size:12.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+.tag-group__label::after{content:"";flex:1;height:1px;background:var(--hairline-soft)}
+.tag-group__chips{display:flex;flex-wrap:wrap;gap:7px}
+.results{padding:16px 0 40px}
+.results__head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:8px}
+.results__query{margin:0;font-family:var(--font-serif);font-weight:600;font-size:21px;color:var(--ink)}
+.results__query span{color:var(--gold-soft)}
+.results__intent{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.results__note{margin:0 0 18px;font-size:12.5px;color:var(--ink-3)}
+.results__grid{display:flex;flex-direction:column;gap:9px}
+.movie-pill{display:flex;align-items:center;gap:13px;padding:9px 14px 9px 11px;background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--hairline-soft);border-radius:16px;cursor:pointer;transition:transform .3s var(--ease),border-color .3s var(--ease)}
+.movie-pill:hover{transform:translateY(-2px);border-color:rgba(var(--gold-rgb),.45)}
+.movie-pill__poster{flex-shrink:0;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-weight:700;font-size:19px;color:rgba(255,255,255,.92)}
+.movie-pill__main{flex:1;min-width:0}
+.movie-pill__title{margin:0;font-family:var(--font-serif);font-weight:600;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.movie-pill__meta{margin:2px 0 0;font-size:11.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.movie-pill__tags{display:flex;gap:5px;flex-shrink:0}
+.movie-pill__score{flex-shrink:0;font-family:Georgia,serif;font-size:16px;font-weight:700;color:var(--gold-soft);min-width:42px;text-align:right}
+.tag-pill{padding:3px 9px;border-radius:999px;font-size:11px;background:rgba(var(--gold-rgb),.09);border:1px solid var(--hairline-soft);color:var(--ink-2);white-space:nowrap}
+.tag-pill--hit{background:rgba(var(--gold-rgb),.2);border-color:rgba(var(--gold-rgb),.42);color:var(--gold-soft)}
+.site-footer{margin-top:40px;padding:40px 0 50px;border-top:1px solid var(--hairline-soft);text-align:center}
+.site-footer p{margin:6px 0 0;color:var(--ink-3);font-size:12.5px}
+.activity-section{padding:10px 0 50px}
+.activity-list{display:flex;flex-direction:column;gap:12px}
+.activity-card{display:flex;align-items:flex-start;gap:14px;padding:18px 20px;background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--hairline-soft);border-radius:16px}
+.activity-card__badge{flex-shrink:0;margin-top:2px;padding:3px 11px;border-radius:999px;font-size:11.5px;font-weight:500;color:#1c1408;background:linear-gradient(135deg,var(--gold-soft),var(--gold))}
+.activity-card__title{margin:0;font-family:var(--font-serif);font-weight:600;font-size:16px}
+.activity-card__desc{margin:4px 0 0;font-size:13px;color:var(--ink-3)}
+.extra-section{padding:10px 0 50px}
+.extra-list{display:flex;flex-direction:column;gap:10px}
+.extra-card{display:block;padding:14px 18px;background:var(--surface);border:1px solid var(--hairline-soft);border-radius:14px;color:var(--ink-2);text-decoration:none;font-size:14px;transition:all .25s}
+.extra-card:hover{border-color:var(--gold-deep);color:var(--gold-soft)}
+.guide-section{padding:8px 0 30px}
+.role-select{text-align:center}
+.role-cards{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.role-card{display:flex;flex-direction:column;align-items:center;gap:8px;width:200px;padding:26px 20px;background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--hairline-soft);border-radius:18px;cursor:pointer;transition:all .3s}
+.role-card:hover{transform:translateY(-3px);border-color:var(--gold-deep)}
+.role-card__icon{font-size:30px}
+.role-card__name{font-family:var(--font-serif);font-weight:600;font-size:18px}
+.role-card__desc{font-size:12.5px;color:var(--ink-3)}
+.wizard{max-width:560px;margin:30px auto 0}
+.wizard__progress{height:4px;background:var(--surface-2);border-radius:999px;overflow:hidden;margin-bottom:16px}
+.wizard__progress span{display:block;height:100%;background:linear-gradient(90deg,var(--gold-soft),var(--gold));transition:width .3s}
+.wizard__step{margin:0 0 6px;font-size:12px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase}
+.wizard__question{margin:0 0 18px;font-family:var(--font-serif);font-weight:600;font-size:22px}
+.wizard__chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.wizard__chips .chip--tag.is-selected{background:rgba(var(--gold-rgb),.22);border-color:var(--gold-deep);color:var(--gold-soft)}
+.wizard__nav{display:flex;gap:10px;justify-content:flex-end;align-items:center}
+.interpretation{padding:16px 18px;border-radius:14px;border:1px solid var(--hairline);background:rgba(var(--gold-rgb),.08);color:var(--ink-2);font-size:14px;line-height:1.9;margin-bottom:6px;white-space:pre-wrap}
+.modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal[hidden]{display:none!important}
+.modal__backdrop{position:absolute;inset:0;background:rgba(8,6,4,.82)}
+.modal__dialog{position:relative;width:min(680px,100%);max-height:86vh;overflow-y:auto;background:linear-gradient(180deg,var(--surface),var(--bg));border:1px solid var(--hairline);border-radius:20px}
+.modal__close{position:sticky;top:14px;float:right;margin:14px 14px 0 0;z-index:2;width:36px;height:36px;border-radius:50%;border:1px solid var(--hairline);background:var(--surface-2);color:var(--ink-2);font-size:14px;cursor:pointer}
+.modal__body{padding:6px 26px 34px}
+.detail-hero{display:grid;grid-template-columns:90px 1fr;gap:20px;align-items:end;margin-bottom:24px}
+.poster{position:relative;aspect-ratio:2/3;border-radius:10px;overflow:hidden;display:flex;align-items:flex-end;padding:12px}
+.poster::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 100%)}
+.poster__title{position:relative;font-family:var(--font-serif);font-weight:600;font-size:14px;color:rgba(255,255,255,.94);letter-spacing:.06em;writing-mode:vertical-rl}
+.detail-title{margin:0;font-family:var(--font-serif);font-weight:700;font-size:26px}
+.detail-en{margin:3px 0 0;font-family:Georgia,serif;font-style:italic;color:var(--ink-3);font-size:14px}
+.detail-meta{margin:12px 0 0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink-2)}
+.meta-dot{color:var(--ink-3)}
+.detail-synopsis{font-size:14.5px;line-height:1.95;color:var(--ink);border-left:2px solid var(--gold-deep);padding-left:16px;margin:0 0 22px}
+.detail-section{margin-bottom:22px}
+.detail-section h4{margin:0 0 9px;font-family:var(--font-serif);font-size:13.5px;font-weight:600;letter-spacing:.14em;color:var(--gold)}
+.detail-section p,.detail-section li{font-size:13.5px;color:var(--ink-2);font-weight:300;line-height:1.9}
+.detail-section ul{margin:0;padding-left:18px}
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.analysis-box{padding:13px 15px;border-radius:11px;background:var(--surface-2);border:1px solid var(--hairline-soft)}
+.analysis-box h5{margin:0 0 5px;font-size:12.5px;color:var(--gold-soft);font-weight:500;letter-spacing:.08em}
+.analysis-box p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.warning{padding:11px 15px;border-radius:10px;border:1px solid rgba(201,106,92,.4);background:rgba(201,106,92,.1);color:#e0a99b;font-size:12.5px}
+.rating{display:inline-flex;align-items:center;gap:4px}
+.rating__src{color:var(--ink-3);font-size:11px}
+.rating__val{color:var(--gold-soft);font-weight:500}
+@media(max-width:520px){.brand__tagline{display:none}.movie-pill__tags{display:none}.movie-pill{padding:8px 11px}.movie-pill__poster{width:36px;height:36px;font-size:16px}.analysis-grid{grid-template-columns:1fr}.ask-box{padding-left:14px}.ask-box__submit{padding:11px 14px}.ask-box__submit span{display:none}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="#top"><span class="brand__mark" id="brand-name">禅说电影</span><span class="brand__cn">影境档案</span></a>
+  <span class="brand__tagline" id="brand-tagline">以影入道 · 借影观心</span>
+  <div class="brand-switch" id="brand-switch">
+    <button data-brand="chanshuo" class="is-active">禅说电影</button>
+    <button data-brand="yingling">影领圈</button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <p class="hero__eyebrow">影视教育 × 艺术治疗</p>
+    <h1 class="hero__title">让一部好电影，<br><em>接住此刻的你</em></h1>
+    <p class="hero__sub">从多部经典电影中，为您挑选适合当下心境的影片。</p>
+    <p class="hero__ai-note">✦ 即将接入大模型 · AI 智能选片与深度解读</p>
+    <form class="ask-box" id="recommend-form" autocomplete="off">
+      <span class="ask-box__icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.35-4.35"></path></svg></span>
+      <input id="query-input" class="ask-box__input" type="text" placeholder="说说你此刻的心情…" />
+      <button class="ask-box__submit" type="submit"><span>为我推荐</span></button>
+    </form>
+    <div class="hero__examples">
+      <span class="hero__examples-label">试着说说：</span>
+      <button class="chip chip--ghost" data-query="我很焦虑，工作让我很累">我很焦虑，工作让我很累</button>
+      <button class="chip chip--ghost" data-query="刚失去亲人，很难过">刚失去亲人，很难过</button>
+      <button class="chip chip--ghost" data-query="孩子学习压力大，我也很无力">孩子学习压力大，我也很无力</button>
+      <button class="chip chip--ghost" data-query="刚看完一部片，特别兴奋">刚看完一部片，特别兴奋</button>
+    </div>
+  </section>
+
+  <section class="guide-section">
+    <div class="container">
+      <div class="role-select" id="role-select">
+        <p class="section-kicker">Choose your role</p>
+        <h2 class="tags-section__title">你以什么身份，走进这座档案馆？</h2>
+        <div class="role-cards">
+          <button class="role-card" data-role="viewer">
+            <span class="role-card__icon">🎬</span>
+            <span class="role-card__name">寻影者</span>
+            <span class="role-card__desc">为自己，寻一部懂你的电影</span>
+          </button>
+          <button class="role-card" data-role="facilitator">
+            <span class="role-card__icon">🧭</span>
+            <span class="role-card__name">影领家</span>
+            <span class="role-card__desc">为他人选片、带观影</span>
+          </button>
+        </div>
+      </div>
+      <div class="wizard" id="wizard" hidden>
+        <div class="wizard__progress"><span id="wizard-progress"></span></div>
+        <p class="wizard__step" id="wizard-step">第 1 / 5 问</p>
+        <h2 class="wizard__question" id="wizard-question"></h2>
+        <div class="wizard__chips" id="wizard-chips"></div>
+        <div class="wizard__nav">
+          <button class="mini-btn" id="wizard-back" hidden>← 上一步</button>
+          <button class="ask-box__submit" id="wizard-next"><span>下一步 →</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tags-section">
+    <div class="container">
+      <header class="tags-section__head">
+        <p class="section-kicker">Pick a mood</p>
+        <h2 class="tags-section__title">或，选择一个贴近你的标签</h2>
+      </header>
+      <div class="tag-groups" id="tag-groups"></div>
+    </div>
+  </section>
+
+  <section class="results" id="results" hidden>
+    <div class="container">
+      <header class="results__head">
+        <div><p class="section-kicker">为你挑选</p><h2 class="results__query">“<span id="echo-query"></span>”</h2></div>
+        <div class="results__intent" id="intent-tags"></div>
+      </header>
+      <div class="results__grid" id="results-grid"></div>
+    </div>
+  </section>
+
+  <section class="activity-section">
+    <div class="container">
+      <header class="tags-section__head">
+        <p class="section-kicker">Now Showing</p>
+        <h2 class="tags-section__title">全国观影联动</h2>
+      </header>
+      <!-- ⬇️⬇️ 活动编辑区开始：在这里增改活动卡片 ⬇️⬇️ -->
+      <div class="activity-list">
+        <article class="activity-card">
+          <span class="activity-card__badge">进行中</span>
+          <div><h3 class="activity-card__title">本周联动观影 · 主题征集中</h3>
+          <p class="activity-card__desc">时间、形式、参与方式、往期回顾等，在此处编辑。</p></div>
+        </article>
+      </div>
+      <!-- ⬆️⬆️ 活动编辑区结束 ⬆️⬆️ -->
+    </div>
+  </section>
+
+  <section class="extra-section">
+    <div class="container">
+      <header class="tags-section__head">
+        <p class="section-kicker">Go Deeper</p>
+        <h2 class="tags-section__title">延伸阅读 · 工具包</h2>
+      </header>
+      <!-- ⬇️ 链接占位区：把 href="#" 换成真实文章/视频/工具包链接 ⬇️ -->
+      <div class="extra-list">
+        <a class="extra-card" href="#">📖 相关文章 · 标题待填</a>
+        <a class="extra-card" href="#">🎬 相关视频 · 标题待填</a>
+        <a class="extra-card" href="#">🧰 观影工具包 · 标题待填</a>
+      </div>
+      <!-- ⬆️ 链接占位区结束 ⬆️ -->
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span class="brand__mark">CineArchive</span> <span class="brand__cn">影境档案</span>
+    <p>影视教育 · 艺术治疗 · 一座会生长的好电影档案馆</p>
+  </div>
+</footer>
+
+<div class="modal" id="movie-modal" hidden>
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__dialog" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="关闭">✕</button>
+    <div class="modal__body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const MOVIES = [{"id": 1, "title": "死亡诗社", "title_en": "Dead Poets Society", "year": 1989, "director": "彼得·威尔", "cast": ["罗宾·威廉姆斯", "罗伯特·肖恩·莱纳德", "伊桑·霍克"], "country": "美国", "duration": 128, "genres": ["剧情", "成长"], "rating_domestic": 9.2, "rating_international": 8.1, "synopsis": "保守的威尔顿学院里，新来的英文老师基廷用诗歌唤醒学生独立思考、追逐热爱，鼓励他们「抓住每一天」。学生们重建「死亡诗社」，却在梦想与家庭期望、传统与自我的冲突中走向一个令人心碎的结局。", "analysis": {"theme": "教育应该点燃而非填鸭；青春期的自我觉醒与权威、父辈期待的冲突。", "art_value": "「Carpe Diem」的意象贯穿全片，站在课桌上换视角的镜头成为影史经典；诗歌与画面互为隐喻，情绪层层铺垫直至爆发。", "edu_value": "是讨论「教育的目的是什么」「如何支持孩子的自我认同」的最佳影像教材，适合家长、教师与青少年共同观看并展开对话。", "therapy_value": "让被规则与期待压得喘不过气的人看见：迷茫与自我探索本身就是成长的一部分；影片对「被否定」的痛有极深的共情，也能帮助父母理解过度控制可能带来的代价。"}, "audiences": ["青少年", "青春期孩子父母", "教育工作者", "迷茫中的人"], "support_types": ["视角转换", "自我接纳", "勇气示范", "沟通启发", "意义探寻"], "therapy_notes": "适合青春期自我认同议题与亲子关系议题。观影后建议围绕「孩子的热爱该被如何对待」展开对话，而非评判影片结局的对错。", "warnings": ["影片包含青少年自杀情节，情绪低落者建议在有支持的环境下观看，并由成人引导讨论。"], "questions": ["基廷老师的教育方式，哪些值得学习，哪些有争议？", "片中的父母和学校，最想保护的是什么？又忽略了什么？", "如果你的热爱与父母的期待冲突，你会如何沟通？"], "tags": ["青春期", "亲子冲突", "自我认同", "迷茫", "勇气", "成长", "师生情", "教育", "青春期孩子父母", "教育工作者", "青少年", "自由", "希望"]}, {"id": 2, "title": "心灵捕手", "title_en": "Good Will Hunting", "year": 1997, "director": "格斯·范·桑特", "cast": ["马特·达蒙", "罗宾·威廉姆斯", "本·阿弗莱克"], "country": "美国", "duration": 126, "genres": ["剧情", "心理"], "rating_domestic": 8.9, "rating_international": 8.3, "synopsis": "天才清洁工威尔有惊人的数学天赋，却因童年创伤与自我防御，用攻击和逃避推开所有人。心理医生肖恩以真诚的陪伴，一句「这不是你的错」，慢慢敲开他坚硬的外壳，帮他敢于爱、敢于选择自己的人生。", "analysis": {"theme": "创伤如何让人自我设限；真诚的关系是疗愈的起点；「这不是你的错」。", "art_value": "通过对话推进的心理剧，靠表演与台词承载张力；肖恩与威尔在湖边长椅上的对话是影史最动人的治疗场景之一。", "edu_value": "展示了什么是「有边界的真诚」的助人关系；可用于理解童年创伤与防御机制。", "therapy_value": "对「觉得自己不配被爱」「用攻击保护自己」的人有极强的疗愈意义；也让人们看见：被稳稳接住一次，可能改变一生。"}, "audiences": ["心理咨询师", "经历创伤的人", "自我怀疑的人", "教育工作者"], "support_types": ["情感共鸣", "关系镜像", "自我接纳", "陪伴", "希望感"], "therapy_notes": "适合探讨创伤、自我价值与信任议题。心理咨询师可将其作为「治疗关系」的教学片段。", "warnings": ["涉及童年虐待的回忆片段，有过相关经历者建议在有支持下观看。"], "questions": ["是什么让威尔终于相信了肖恩？", "「这不是你的错」这句话的力量来自哪里？", "我们是否也曾用「推开别人」来保护自己？"], "tags": ["创伤", "自我认同", "羞耻", "希望", "接纳", "陪伴", "治愈", "心理咨询师", "成长", "和解", "友谊"]}, {"id": 3, "title": "千与千寻", "title_en": "Spirited Away", "year": 2001, "director": "宫崎骏", "cast": ["柊瑠美", "入野自由", "夏木真理"], "country": "日本", "duration": 125, "genres": ["动画", "奇幻", "成长"], "rating_domestic": 9.4, "rating_international": 8.6, "synopsis": "少女千寻误入神灵世界，父母因贪吃变成猪。为了拯救父母、找回自己的名字，她在汤屋打工，学会勇敢、责任与善意，从一个依赖父母的女孩成长为独立的人。", "analysis": {"theme": "成长即是一场「记住自己名字」的旅程；迷失与找回自我。", "art_value": "宫崎骏的巅峰之作，天马行空的想象力与细腻的东方美学；「无脸男」等形象成为关于欲望与孤独的经典隐喻。", "edu_value": "帮助孩子理解劳动、责任与善意；也让孩子看到「害怕但仍向前」的勇气。", "therapy_value": "对处于转变期（升学、离家、进入新环境）的人尤其有共鸣：成长伴随着恐惧与失去，但只要不忘记自己是谁，就能穿过隧道。"}, "audiences": ["青少年", "孩子", "经历转变的人", "情绪困扰者"], "support_types": ["情感共鸣", "勇气示范", "自我接纳", "意义探寻", "希望感"], "therapy_notes": "温和、适合亲子共赏。可用来和孩子谈论「进入新环境的不安」与「如何面对害怕」。", "warnings": [], "questions": ["千寻为什么一定不能忘记自己的名字？", "你进入一个陌生的新环境时，是什么感觉？", "无脸男想要的是什么？他为什么那么孤独？"], "tags": ["成长", "迷茫", "孤独", "勇气", "自我认同", "治愈", "希望", "青少年", "友谊", "陪伴"]}, {"id": 4, "title": "阳光小美女", "title_en": "Little Miss Sunshine", "year": 2006, "director": "乔纳森·戴顿 / 维莱莉·法瑞斯", "cast": ["阿比盖尔·布雷斯林", "格雷戈·金尼尔", "史蒂夫·卡瑞尔", "艾伦·阿金"], "country": "美国", "duration": 101, "genres": ["喜剧", "家庭"], "rating_domestic": 8.3, "rating_international": 7.8, "synopsis": "一个「失败」家庭开着一辆破旧面包车，送小女儿奥利芙参加选美比赛。爷爷教她「真正的失败是害怕去尝试」，一路上每个人都与自己的失败和解，最终明白：家人的接纳比成功更重要。", "analysis": {"theme": "对「成功学」的温柔解构；接纳失败与彼此；家人是可以一起推车的人。", "art_value": "公路片与家庭喜剧的完美结合，用荒诞幽默包裹深刻情感；结尾全家上台跳舞的场景是对「标准答案」的有力反叛。", "edu_value": "帮助孩子和家长重新定义「成功」，理解「努力了但结果不如意」也有价值。", "therapy_value": "对「害怕失败」「追求完美」的人极具疗愈：它告诉你，真正的失败不是没赢，而是因为害怕而不敢尝试。"}, "audiences": ["低谷中的人", "家庭关系紧张的人", "青少年", "学生", "抑郁症家属"], "support_types": ["情感共鸣", "认知重构", "接纳", "希望感", "陪伴"], "therapy_notes": "适合全家观看，尤其适合有「必须成功」焦虑的家庭。片中对抑郁症角色（舅舅）的处理温和而有尊严。", "warnings": ["有角色提及自杀未遂经历（以克制方式呈现）。"], "questions": ["这个家庭「失败」在哪里，「成功」又在哪里？", "爷爷说「真正的失败是害怕尝试」，你同意吗？", "家人之间，如何既能坦诚又能接纳彼此的不完美？"], "tags": ["家庭关系", "抑郁", "接纳", "希望", "梦想", "勇气", "陪伴", "低谷中的人", "亲情", "治愈", "自我认同", "喜悦", "温暖"]}, {"id": 5, "title": "海边的曼彻斯特", "title_en": "Manchester by the Sea", "year": 2016, "director": "肯尼思·洛纳根", "cast": ["卡西·阿弗莱克", "米歇尔·威廉姆斯", "卢卡斯·赫奇斯"], "country": "美国", "duration": 137, "genres": ["剧情", "家庭"], "rating_domestic": 8.6, "rating_international": 7.8, "synopsis": "李·钱德勒因一场事故失去了三个孩子，从此心如死灰。哥哥去世后，他被指定为侄子帕特里克的监护人，被迫回到那个充满回忆的海边小镇。影片没有廉价的救赎，而是诚实地说：有些伤痛无法愈合，人只能带着它活下去。", "analysis": {"theme": "哀伤的真实样貌——它不一定走向和解，而可能是「带着伤活下去」。", "art_value": "极简克制的叙事与卡西·阿弗莱克的表演，让悲伤不靠煽情而是靠沉默传递；被许多影评人视为近十年最真实地呈现悲伤的电影。", "edu_value": "帮助人们理解：面对丧失，说「都会好起来的」有时是一种压力；陪伴不必急着安慰。", "therapy_value": "对正在哀伤中的人，这部片是一种「被理解」：它不催促你振作，而是一起坐在悲伤里。也教会旁人如何以不打扰的方式陪伴。"}, "audiences": ["经历丧失者", "经历创伤的人", "心理咨询师", "陪伴哀伤者的人"], "support_types": ["情感共鸣", "认知重构", "陪伴", "接纳", "情绪命名"], "therapy_notes": "这是一部「反治愈」的哀伤电影，力量在于真实。建议用于哀伤辅导，但不适合处于急性哀伤期、急需希望感的人独自观看。", "warnings": ["核心情节涉及儿童丧生与强烈内疚，情绪敏感者慎看；建议由专业人士引导。"], "questions": ["李为什么无法原谅自己？他真的「不配」快乐吗？", "「我走不出来」和「我不想走出来」有什么区别？", "当朋友陷入哀伤，我们能做的最好的事是什么？"], "tags": ["丧失与哀伤", "悲伤", "内疚", "创伤", "接纳", "陪伴", "死亡", "经历丧失者", "心理咨询师", "和解"]}, {"id": 6, "title": "当幸福来敲门", "title_en": "The Pursuit of Happyness", "year": 2006, "director": "加布里埃莱·穆奇诺", "cast": ["威尔·史密斯", "贾登·史密斯"], "country": "美国", "duration": 117, "genres": ["剧情", "传记"], "rating_domestic": 9.2, "rating_international": 8.0, "synopsis": "医疗器械推销员克里斯投资失败、妻子离去，带着年幼的儿子流离失所，甚至睡在公共厕所里。他咬牙争取到无薪实习机会，在绝境中不放弃，最终靠坚持与父爱为儿子撑起一片天。", "analysis": {"theme": "在绝境中守护希望与尊严；父爱是永不放弃的理由。", "art_value": "基于真实故事改编，威尔·史密斯的表演极具感染力；「幸福」一词的拼写错误（Happyness）本身就是一个温柔的隐喻。", "edu_value": "帮助孩子理解坚持的意义，也帮助成年人看见：低谷不是终点。", "therapy_value": "对「无力感」「经济压力」「孤立无援」的人是一剂强心针：它不否认苦难，而是示范如何在苦难中守住爱与希望。"}, "audiences": ["低谷中的人", "父亲", "经济压力中的人", "职业倦怠者"], "support_types": ["希望感", "勇气示范", "韧性", "视角转换", "意义探寻"], "therapy_notes": "适合在低谷期寻找力量时观看。注意：不要用「别人那么惨都坚持下来了」来否定自己或他人的痛苦，而应聚焦「希望与行动」本身。", "warnings": ["呈现无家可归、经济困境等现实压力。"], "questions": ["是什么支撑克里斯在最难的时候没有倒下？", "幸福是需要「追求」的，还是「感受」的？", "克里斯如何守护儿子的安全感？"], "tags": ["无力感", "经济压力", "希望", "韧性", "勇气", "梦想", "亲情", "低谷中的人", "父亲", "尊严", "成长", "振奋", "感动"]}, {"id": 7, "title": "头脑特工队", "title_en": "Inside Out", "year": 2015, "director": "彼特·道格特", "cast": ["艾米·波勒", "菲利丝·史密斯", "刘易斯·布莱克"], "country": "美国", "duration": 95, "genres": ["动画", "家庭", "心理"], "rating_domestic": 8.8, "rating_international": 8.1, "synopsis": "女孩莱莉随父母搬家，脑中五种情绪——乐乐、忧忧、怕怕、厌厌、怒怒——在她的大脑中展开一场冒险。影片告诉观众：悲伤不是需要赶走的坏情绪，而是让人与人靠近、让记忆有深度的力量。", "analysis": {"theme": "所有情绪都有价值；接纳悲伤，是心理健康的关键一步。", "art_value": "皮克斯用极具想象力的视觉化，把抽象的情绪与记忆机制变成可感的故事；「核心记忆」「性格岛」成为讨论心理的通俗语言。", "edu_value": "是儿童情绪教育的绝佳教材，帮助孩子命名情绪、理解「难过是正常的」。", "therapy_value": "对情绪困扰者与家长都有帮助：它传递的核心信息是——情绪没有好坏，被允许表达的情绪才不会变成问题。"}, "audiences": ["青少年", "孩子", "青春期孩子父母", "情绪困扰者", "教育工作者"], "support_types": ["情绪命名", "认知重构", "自我接纳", "沟通启发", "情感共鸣"], "therapy_notes": "非常适合亲子共赏、情绪教育课与心理咨询的入门素材。可引导孩子给自己的情绪起名字。", "warnings": [], "questions": ["忧忧为什么那么重要？没有悲伤会发生什么？", "你最近一次「允许自己难过」是什么时候？", "如果给你现在的情绪画一个角色，它长什么样？"], "tags": ["情绪困扰", "抑郁", "焦虑", "悲伤", "接纳", "自我认同", "成长", "青春期", "亲子冲突", "青少年", "青春期孩子父母", "治愈", "陪伴", "亲情"]}, {"id": 8, "title": "肖申克的救赎", "title_en": "The Shawshank Redemption", "year": 1994, "director": "弗兰克·德拉邦特", "cast": ["蒂姆·罗宾斯", "摩根·弗里曼"], "country": "美国", "duration": 142, "genres": ["剧情", "犯罪"], "rating_domestic": 9.7, "rating_international": 9.3, "synopsis": "银行家安迪蒙冤入狱，在肖申克监狱的高墙内，他用二十年的隐忍、智慧与希望，凿出一条通往自由的路，也照亮了狱友瑞德的人生。", "analysis": {"theme": "希望是穿透高墙的光；「有些鸟是关不住的，它们的羽毛太鲜亮了」。", "art_value": "影史公认的经典，结构严谨、台词隽永；「希望」被拍成了可以触摸的信念。", "edu_value": "教会人长期主义与耐心；也讨论制度对人的异化与人的尊严。", "therapy_value": "对身处困境、感到被「困住」的人极具力量：它不说教地告诉你——即便在最灰暗的处境里，你仍能保有内在的自由与希望。"}, "audiences": ["低谷中的人", "无力感中的人", "身处困境的人"], "support_types": ["希望感", "韧性", "勇气示范", "意义探寻", "自由"], "therapy_notes": "适合在感觉被困、看不到出路时观看。可引导讨论「什么是真正的自由」。", "warnings": ["含监狱暴力、性暴力暗示与自杀情节（以克制方式呈现）。"], "questions": ["安迪的「希望」和「行动」是什么关系？", "瑞德为什么说「希望是危险的东西」，后来他又如何改变？", "在你现在的生活里，什么让你感到「被关住」？"], "tags": ["希望", "无力感", "韧性", "自由", "尊严", "勇气", "友谊", "低谷中的人", "治愈", "意义探寻"]}, {"id": 9, "title": "怦然心动", "title_en": "Flipped", "year": 2010, "director": "罗伯·莱纳", "cast": ["玛德琳·卡罗尔", "卡兰·麦克奥利菲"], "country": "美国", "duration": 90, "genres": ["剧情", "爱情", "成长"], "rating_domestic": 9.1, "rating_international": 7.7, "synopsis": "朱莉从小就喜欢邻居男孩布莱斯，而布莱斯却一直躲着她。影片用双视角讲述这段少年心事，让观众看见同一件事在不同人眼中截然不同，也看见朱莉如何学会珍视自己、守护心爱的梧桐树。", "analysis": {"theme": "喜欢一个人之前，先成为值得被喜欢的自己；「整体大于部分之和」。", "art_value": "双视角叙事是最大亮点，教会观众「换位思考」；纯真而不幼稚。", "edu_value": "青春期情感教育的温和范本，讨论喜欢、尊重与自我价值。", "therapy_value": "对青少年建立自我认同很有帮助：朱莉不因喜欢而失去自我，她守护的梧桐树，正是「守住自己的价值」的象征。"}, "audiences": ["青少年", "青春期孩子父母", "教育工作者"], "support_types": ["自我接纳", "视角转换", "沟通启发", "情感共鸣", "勇气示范"], "therapy_notes": "适合青春期亲子共赏，可用于讨论「喜欢一个人」与「尊重自己」的关系。", "warnings": [], "questions": ["同一件事，朱莉和布莱斯看到的世界为什么如此不同？", "朱莉的哪些品质让她闪闪发光？", "喜欢一个人时，如何不弄丢自己？"], "tags": ["青春期", "亲子冲突", "自我认同", "成长", "沟通", "勇气", "亲情", "接纳", "青少年", "青春期孩子父母", "友谊", "治愈"]}, {"id": 10, "title": "入殓师", "title_en": "Departures", "year": 2008, "director": "泷田洋二郎", "cast": ["本木雅弘", "广末凉子", "山崎努"], "country": "日本", "duration": 130, "genres": ["剧情", "音乐"], "rating_domestic": 8.9, "rating_international": 8.1, "synopsis": "大提琴手小林大悟因乐团解散失业，阴差阳错成为入殓师。在为逝者做最后仪容的过程中，他从最初的抗拒到逐渐理解这份工作的意义，也在此过程中与父亲、与死亡、与自己达成了和解。", "analysis": {"theme": "死亡是生命的一部分；好好告别，是给活着的人的礼物。", "art_value": "获奥斯卡最佳外语片。久石让的配乐与大提琴的意象，把死亡拍得庄重而温柔，不恐怖、不煽情。", "edu_value": "是「死亡教育」与「职业认同」的绝佳教材，帮助人直面告别。", "therapy_value": "对丧亲者、照护者、以及有职业困惑的人都有疗愈作用：它让人明白，认真对待死亡，其实是在认真对待生命。"}, "audiences": ["经历丧失者", "照护者", "职业倦怠者", "面对死亡议题的人"], "support_types": ["情感共鸣", "认知重构", "和解", "意义探寻", "尊严"], "therapy_notes": "适合用于哀伤辅导与死亡教育。观影后可引导谈论「如何好好告别」。", "warnings": ["含遗体处理的仪式画面（庄重克制），对死亡敏感者慎看。"], "questions": ["入殓师这份工作，改变的究竟是逝者还是生者？", "大悟与父亲的最后一幕，完成了怎样的和解？", "在我们的文化里，「告别」有哪些值得被认真对待的时刻？"], "tags": ["丧失与哀伤", "死亡", "和解", "尊严", "职业倦怠", "接纳", "亲情", "经历丧失者", "照护者", "治愈", "意义探寻"]}, {"id": 11, "title": "寻梦环游记", "title_en": "Coco", "year": 2017, "director": "李·昂克里奇", "cast": ["安东尼·冈萨雷斯", "盖尔·加西亚·贝纳尔"], "country": "美国", "duration": 105, "genres": ["动画", "家庭", "奇幻"], "rating_domestic": 9.1, "rating_international": 8.4, "synopsis": "热爱音乐的小男孩米格，在亡灵节意外进入亡灵世界，为寻找曾曾祖父、实现音乐梦想展开冒险。影片用一个温暖的故事告诉观众：只要被家人记得，爱就不会消失。", "analysis": {"theme": "记忆让爱永恒；梦想与家庭可以和解而非对立。", "art_value": "以墨西哥亡灵节为背景，绚烂的视觉与《Remember Me》的旋律，把「死亡」讲得明亮动人。", "edu_value": "是家庭观与死亡教育的优秀素材，帮助孩子理解「被记得」的意义。", "therapy_value": "对丧亲者、尤其失去长辈的人有温柔的疗愈：它给出一种「逝者仍在爱中与我们相连」的意象，让人可以安放思念。"}, "audiences": ["经历丧失者", "孩子", "家庭关系紧张的人", "青少年"], "support_types": ["情感共鸣", "和解", "希望感", "视角转换", "陪伴"], "therapy_notes": "适合全家观看、也适合哀伤辅导。可引导谈论「记忆如何让我们与逝去的亲人保持联结」。", "warnings": ["主题涉及死亡与亲人离世，但对儿童友好、以温暖方式呈现。"], "questions": ["「真正的死亡是被遗忘」，你如何理解这句话？", "米格如何在音乐梦想与家人之间找到平衡？", "你想被怎样地记得？你又记得谁？"], "tags": ["丧失与哀伤", "家庭关系", "亲情", "梦想", "和解", "希望", "治愈", "死亡", "经历丧失者", "成长", "接纳", "感动", "温暖"]}, {"id": 12, "title": "三傻大闹宝莱坞", "title_en": "3 Idiots", "year": 2009, "director": "拉库马·希拉尼", "cast": ["阿米尔·汗", "马德哈万", "沙尔曼·乔什"], "country": "印度", "duration": 171, "genres": ["喜剧", "剧情"], "rating_domestic": 9.2, "rating_international": 8.4, "synopsis": "兰彻以「追求卓越，成功自然随之而来」的人生态度，挑战僵化的应试教育，影响并拯救了两个在压力中挣扎的朋友。影片在爆笑与泪水中追问：我们到底是为了自己而活，还是为了别人的期待？", "analysis": {"theme": "对「唯成绩论」教育的反思；找到热爱比盲目内卷更重要。", "art_value": "印度商业片的巅峰，把喜剧、歌舞与社会批判融为一体，娱乐性与深度兼具。", "edu_value": "是讨论应试压力、教育焦虑的绝佳素材，引发「学习为了什么」的思考。", "therapy_value": "对身处学业/职场压力、被期待压垮的人极具疗愈：它大声说出「All is well」，也示范了如何在压力中守住自己。"}, "audiences": ["学生", "青少年", "教育工作者", "职业倦怠者", "焦虑中的人"], "support_types": ["视角转换", "勇气示范", "希望感", "自我接纳", "认知重构"], "therapy_notes": "适合学生、家长、教师一起看。注意：影片批判的是「僵化的评价体系」，而非努力本身。", "warnings": ["包含学生自杀情节（与学业压力相关），敏感者需有引导。"], "questions": ["「追求卓越，成功自然随之而来」和「为了成功而学习」有什么本质不同？", "片中的压力从何而来？我们如何不成为压力的帮凶？", "如果不必在意任何人的眼光，你会选择学什么、做什么？"], "tags": ["学业压力", "焦虑", "职业倦怠", "自我认同", "迷茫", "勇气", "希望", "学生", "青少年", "教育工作者", "教育", "友谊", "梦想", "成长", "亲子冲突"]}, {"id": 13, "title": "美丽人生", "title_en": "Life Is Beautiful", "year": 1997, "director": "罗伯托·贝尼尼", "cast": ["罗伯托·贝尼尼", "尼可莱塔·布拉斯基", "乔治·坎塔里尼"], "country": "意大利", "duration": 116, "genres": ["剧情", "战争"], "rating_domestic": 9.6, "rating_international": 8.6, "synopsis": "犹太青年圭多风趣乐观，与妻子多拉、儿子乔舒亚过着幸福生活。二战中父子被送入集中营，圭多为了保护儿子幼小的心灵，把残酷的处境编成一场「游戏」，用父爱与想象力守护孩子的童年。", "analysis": {"theme": "爱可以在最黑暗处创造光；用「游戏」守护孩子的纯真与希望。", "art_value": "前半的喜剧与后半的悲剧形成巨大张力，贝尼尼自导自演，把「父爱」拍成了可以对抗地狱的力量。", "edu_value": "讨论父爱、乐观与苦难；也让人思考「保护孩子」可以有多极致。", "therapy_value": "对父亲、照护者、以及身处困境的人有深刻触动：它展示了一种在绝望中仍选择给予希望的姿态。"}, "audiences": ["父亲", "照护者", "低谷中的人", "家庭关系紧张的人"], "support_types": ["希望感", "勇气示范", "韧性", "陪伴", "意义探寻"], "therapy_notes": "适合父亲成长议题与「如何在困难中守护孩子」的讨论。观影后可引导谈论「乐观」与「逃避现实」的边界。", "warnings": ["二战集中营背景，含历史创伤与悲剧结局，情绪敏感者慎看。"], "questions": ["圭多的「游戏」是在欺骗孩子，还是在保护孩子？", "乐观和麻木逃避现实有什么区别？", "父母为子女遮蔽风雨的边界在哪里？"], "tags": ["希望", "亲情", "父亲", "勇气", "韧性", "陪伴", "梦想", "照护者", "低谷中的人", "死亡", "尊严"]}, {"id": 14, "title": "触不可及", "title_en": "Intouchables", "year": 2011, "director": "奥利维耶·纳卡什 / 埃里克·托莱达诺", "cast": ["弗朗索瓦·克鲁塞", "奥马·希"], "country": "法国", "duration": 112, "genres": ["喜剧", "剧情"], "rating_domestic": 9.3, "rating_international": 8.5, "synopsis": "因跳伞事故瘫痪的富豪菲利普，雇用了刚从监狱出来的黑人青年德瑞斯做看护。两个来自不同世界的人，在看似不可能的组合中相互照亮：德瑞斯给了菲利普久违的「被当作正常人」的尊重，菲利普则让德瑞斯找回了人生方向。", "analysis": {"theme": "真正的尊重，是不把你当作「可怜的人」；友谊跨越阶层与困境。", "art_value": "改编自真实故事，法国影史票房经典；用幽默化解沉重，把「残疾」「阶层」拍得温暖而有尊严。", "edu_value": "帮助理解「残障者需要的是平等而非同情」；也讨论职业与自我价值。", "therapy_value": "对照护者、残障者及其家属都有疗愈：它传递的核心是——陪伴的最高形式，是让对方保有尊严与笑声。"}, "audiences": ["照护者", "面对疾病的人", "孤独的人", "职业倦怠者"], "support_types": ["情感共鸣", "视角转换", "陪伴", "尊严", "希望感"], "therapy_notes": "适合照护者与被照护者家庭共同观看，可用于讨论「如何平等地陪伴」。", "warnings": ["涉及瘫痪与照护场景，整体以温暖幽默方式呈现。"], "questions": ["德瑞斯与其他看护最大的不同是什么？", "「不把对方当病人」为什么反而是一种尊重？", "菲利普和德瑞斯分别从对方身上得到了什么？"], "tags": ["面对疾病", "孤独", "陪伴", "尊严", "希望", "友谊", "接纳", "照护者", "职业倦怠", "治愈", "和解", "喜悦", "满足", "温暖"]}, {"id": 15, "title": "阿甘正传", "title_en": "Forrest Gump", "year": 1994, "director": "罗伯特·泽米吉斯", "cast": ["汤姆·汉克斯", "罗宾·怀特", "加里·西尼斯"], "country": "美国", "duration": 142, "genres": ["剧情", "爱情"], "rating_domestic": 9.5, "rating_international": 8.8, "synopsis": "智商只有75的阿甘，凭着一颗简单纯粹的心，跑过了越战、跑过了时代变迁，也跑进了无数人的心里。他一次次失去、一次次坚持，用「傻人有傻福」的一生，讲透了坚持、爱与命运。", "analysis": {"theme": "命运不可控，但我们可以选择如何跑完自己的一生；纯真本身就是一种力量。", "art_value": "将个人命运与美国现代史编织在一起的特效叙事经典，汤姆·汉克斯贡献了教科书级表演。", "edu_value": "帮助理解「坚持」与「接纳」；也引发对成功、智力与幸福的反思。", "therapy_value": "对低谷中、怀疑自己的人有温柔的抚慰：人生没有标准答案，笨拙地向前跑，也能跑出自己的路。"}, "audiences": ["低谷中的人", "迷茫中的人", "自我怀疑的人"], "support_types": ["希望感", "韧性", "接纳", "视角转换", "意义探寻"], "therapy_notes": "适合在怀疑自己、感到人生失控时观看。可引导讨论「什么是真正的聪明与成功」。", "warnings": ["含战争与亲人离世情节。"], "questions": ["阿甘的「傻」和「智慧」是什么关系？", "「人生就像一盒巧克力」，你如何理解这句话？", "如果命运不可控，我们还能掌控什么？"], "tags": ["希望", "韧性", "成长", "陪伴", "亲情", "梦想", "命运", "接纳", "低谷中的人", "意义探寻", "治愈", "振奋", "感动", "温暖"]}, {"id": 16, "title": "心灵奇旅", "title_en": "Soul", "year": 2020, "director": "彼特·道格特", "cast": ["杰米·福克斯", "蒂娜·菲"], "country": "美国", "duration": 100, "genres": ["动画", "奇幻", "音乐"], "rating_domestic": 8.8, "rating_international": 8.0, "synopsis": "中学音乐老师乔伊终于等到登台机会，却意外掉进「生之来处」。在帮助灵魂「22号」寻找「火花」的过程中，他明白了：生命的意义不一定是一个宏大的目标，也可能是落在掌心的一片叶子。", "analysis": {"theme": "人生的火花不是目标，而是「想要活着」本身；意义藏在每一个平凡的当下。", "art_value": "皮克斯用绚烂的视觉把「灵魂」「火花」等抽象概念讲得温暖通透，配乐极佳。", "edu_value": "帮助孩子与成人理解「热爱」与「目标」的区别，缓解「必须成功」的焦虑。", "therapy_value": "对「找不到人生意义」「总觉得一事无成」的人极具疗愈：活着本身，就是意义。"}, "audiences": ["迷茫中的人", "职业倦怠者", "焦虑中的人", "青少年"], "support_types": ["认知重构", "意义探寻", "自我接纳", "情感共鸣", "视角转换"], "therapy_notes": "适合对「意义感」「职业倦怠」的探讨。观影后可引导谈论「让你觉得活着真好的瞬间」。", "warnings": [], "questions": ["乔伊的「火花」到底是什么？", "「目标」和「热爱生活」有什么区别？", "哪些平凡的瞬间，让你觉得活着真好？"], "tags": ["生命意义", "迷茫", "焦虑", "职业倦怠", "意义探寻", "自我认同", "治愈", "希望", "青少年", "情绪困扰者", "梦想", "平静", "满足", "温暖"]}, {"id": 17, "title": "海上钢琴师", "title_en": "The Legend of 1900", "year": 1998, "director": "朱塞佩·托纳多雷", "cast": ["蒂姆·罗斯", "比尔·努恩", "梅兰尼·蒂埃里"], "country": "意大利", "duration": 169, "genres": ["剧情", "音乐"], "rating_domestic": 9.3, "rating_international": 8.1, "synopsis": "被遗弃在邮轮上的孤儿「1900」，一生从未下过船，却用钢琴弹出了整个世界。当爱情与陆地向他招手时，他选择留在属于自己的「有限」里，在无限与有限之间做出了自己的选择。", "analysis": {"theme": "人对「无限」的恐惧与对「有限」的归属；每个人都有自己的船。", "art_value": "托纳多雷「时空三部曲」之一，钢琴斗琴片段影史经典；浪漫而孤独。", "edu_value": "引发对「选择」「归属」「我到底想要什么」的思考。", "therapy_value": "对「恐惧未知」「害怕选择」的人有深刻共鸣：不选择也是一种选择，重要的是忠于自己的内心。"}, "audiences": ["孤独的人", "迷茫中的人", "恐惧改变的人"], "support_types": ["情感共鸣", "自我接纳", "意义探寻", "视角转换", "勇气示范"], "therapy_notes": "适合探讨「对无限未知的恐惧」与「自我边界」。观影后可谈论「你的船是什么」。", "warnings": ["含对世界的疏离与忧伤情绪。"], "questions": ["1900 为什么不敢走下那艘船？", "「有限的键盘」和「无限的世界」，你更向往哪个？", "你心中的「船」是什么？"], "tags": ["孤独", "自我认同", "迷茫", "恐惧", "自由", "成长", "接纳", "意义探寻", "治愈", "平静"]}, {"id": 18, "title": "放牛班的春天", "title_en": "Les Choristes", "year": 2004, "director": "克里斯托夫·巴拉蒂", "cast": ["热拉尔·朱尼奥", "弗朗索瓦·贝莱昂", "让-巴蒂斯特·莫尼耶"], "country": "法国", "duration": 97, "genres": ["剧情", "音乐"], "rating_domestic": 9.3, "rating_international": 7.9, "synopsis": "失意的音乐家马修来到一所「问题少年」寄宿学校，用合唱团的方式，一点点唤醒了孩子们内心的光，也改变了一个天才少年的一生。", "analysis": {"theme": "教育不是惩罚与控制，而是看见与点燃；每个「坏孩子」心里都藏着光。", "art_value": "音乐与童声合唱贯穿全片，《眺望你的路途》旋律纯净动人。", "edu_value": "教育工作者与家长的必看：示范了「看见孩子」比「纠正孩子」更有力量。", "therapy_value": "对曾被误解、被否定的孩子，以及教育中的无力者都有疗愈：一个被真正看见的人，会自己走向光。"}, "audiences": ["教育工作者", "青春期孩子父母", "学生", "青少年"], "support_types": ["希望感", "沟通启发", "情感共鸣", "视角转换", "自我接纳"], "therapy_notes": "适合亲子、师生共赏，可引导讨论「如何看见一个孩子的光」。", "warnings": ["含体罚等旧式教育方式（作为反思呈现）。"], "questions": ["马修老师和校长对待孩子的方式，根本区别在哪？", "音乐为什么能改变这些孩子？", "你曾被谁「看见」过？"], "tags": ["教育", "师生情", "希望", "治愈", "成长", "勇气", "自我认同", "学生", "教育工作者", "青春期孩子父母", "沟通", "感动", "振奋", "温暖"]}, {"id": 19, "title": "飞屋环游记", "title_en": "Up", "year": 2009, "director": "彼特·道格特", "cast": ["爱德华·阿斯纳", "乔丹·长井"], "country": "美国", "duration": 96, "genres": ["动画", "冒险", "家庭"], "rating_domestic": 9.0, "rating_international": 8.3, "synopsis": "老卡尔用千万只气球带着房子飞向亡妻梦想的「天堂瀑布」，却在路上与小男孩罗素结伴，完成了从「执念」到「放下、重新出发」的旅程。", "analysis": {"theme": "告别不是遗忘，而是带着爱继续生活；新的旅程从放下执念开始。", "art_value": "开场十分钟无对白的蒙太奇被誉为动画史上最动人的爱情浓缩。", "edu_value": "帮助理解「执念」与「放下」，以及陪伴与传承。", "therapy_value": "对失去伴侣、失去重要他人的人有温柔的疗愈：逝去的爱不会消失，它会变成你继续向前的力量。"}, "audiences": ["经历丧失者", "年长者", "低谷中的人", "孩子"], "support_types": ["情感共鸣", "和解", "希望感", "陪伴", "视角转换"], "therapy_notes": "适合哀伤辅导与「重新出发」议题。可引导讨论「放下执念不等于忘记」。", "warnings": ["含伴侣离世与老年孤独议题。"], "questions": ["卡尔为什么一开始不肯放下房子？", "「告别」和「带着爱继续走」如何并存？", "你愿意为新的旅程，放下什么执念？"], "tags": ["丧失与哀伤", "亲情", "陪伴", "梦想", "希望", "和解", "治愈", "经历丧失者", "死亡", "接纳"]}, {"id": 20, "title": "楚门的世界", "title_en": "The Truman Show", "year": 1998, "director": "彼得·威尔", "cast": ["金·凯瑞", "劳拉·琳妮", "艾德·哈里斯"], "country": "美国", "duration": 103, "genres": ["剧情", "科幻"], "rating_domestic": 9.3, "rating_international": 8.2, "synopsis": "楚门从出生起就活在一场全球直播的真人秀里，身边一切都是布景与演员。当他开始怀疑世界，最终选择推开那扇通往真实的大门，走出被安排的人生。", "analysis": {"theme": "什么是「真实」与「自由」；走出被设定的人生需要巨大的勇气。", "art_value": "极具预见性的寓言，金·凯瑞突破喜剧的严肃表演，结尾一句「以防再不见你」余味悠长。", "edu_value": "引发对「活出自己」与「随波逐流」的思考，适合青少年自我认同议题。", "therapy_value": "对「感觉活在他人期待里」「想挣脱却又害怕」的人极具力量：走出去很可怕，但留下更可怕。"}, "audiences": ["迷茫中的人", "青少年", "自我怀疑的人"], "support_types": ["勇气示范", "自我认同", "视角转换", "意义探寻", "认知重构"], "therapy_notes": "适合探讨「他人的期待 vs 真实的自己」。可引导讨论「你的『摄影棚』是什么」。", "warnings": [], "questions": ["楚门为什么最终选择走出去？", "我们生活里有哪些「被设定」的部分？", "如果明知外面有风险，你还会推开那扇门吗？"], "tags": ["自由", "自我认同", "迷茫", "勇气", "恐惧", "成长", "意义探寻", "青少年", "治愈"]}, {"id": 21, "title": "忠犬八公的故事", "title_en": "Hachi: A Dog's Tale", "year": 2009, "director": "拉斯·霍尔斯道姆", "cast": ["理查·基尔", "琼·艾伦"], "country": "美国", "duration": 93, "genres": ["剧情", "家庭"], "rating_domestic": 9.4, "rating_international": 8.1, "synopsis": "大学教授帕克收养了流浪犬八公，一人一狗形影不离。帕克猝然离世后，八公仍每天到车站等待，一等就是十年，用一生诠释了「忠诚与等待」。", "analysis": {"theme": "无条件的爱、忠诚与不离不弃；被记得，就是没有真正离开。", "art_value": "改编自真实故事，克制而真挚，把「忠诚」拍成了可以触摸的情感。", "edu_value": "帮助孩子理解「爱」「责任」与「失去」；也教会人珍惜陪伴。", "therapy_value": "对失去所爱、以及渴望被无条件陪伴的人有强烈共鸣：真正的爱，不会因离开而消失。"}, "audiences": ["经历丧失者", "养宠物的人", "孩子", "孤独的人"], "support_types": ["情感共鸣", "陪伴", "忠诚", "视角转换", "和解"], "therapy_notes": "适合哀伤辅导与「爱与失去」话题；情感浓度高，敏感者可备纸巾。", "warnings": ["含宠物主人离世与漫长等待的情节，情绪敏感者慎看。"], "questions": ["八公在等什么？", "「被记得就是没有真正离开」，你如何理解？", "我们该如何好好珍惜身边的人与陪伴？"], "tags": ["忠诚", "陪伴", "丧失与哀伤", "悲伤", "治愈", "亲情", "经历丧失者", "接纳", "和解", "感动", "温暖"]}, {"id": 22, "title": "绿皮书", "title_en": "Green Book", "year": 2018, "director": "彼得·法雷里", "cast": ["维果·莫腾森", "马赫沙拉·阿里"], "country": "美国", "duration": 130, "genres": ["剧情", "喜剧", "传记"], "rating_domestic": 8.9, "rating_international": 8.2, "synopsis": "白人司机托尼与黑人钢琴家唐，在种族隔离的美国南方展开巡演。两个背景迥异的人在旅途中从误解到理解，跨越偏见，成为彼此的光。", "analysis": {"theme": "跨越偏见与阶层，真正的尊严来自自我认同；理解能打破一切隔阂。", "art_value": "获奥斯卡最佳影片；用公路喜剧的轻松外壳，承载沉重的社会议题。", "edu_value": "讨论偏见、尊严与同理心的优秀教材，适合多元议题教育。", "therapy_value": "对「被偏见对待」「感到不被理解」的人有抚慰：你的价值不由他人定义；真正的朋友会跨过所有标签看见你。"}, "audiences": ["被偏见困扰的人", "孤独的人", "渴望理解的人"], "support_types": ["视角转换", "尊严", "沟通", "和解", "勇气示范"], "therapy_notes": "适合探讨「偏见」「身份认同」与「被理解」。可引导讨论「你曾被怎样误解」。", "warnings": ["含种族歧视与暴力场景。"], "questions": ["唐医生最大的痛苦，是肤色，还是「不被任何一边接纳」？", "托尼和唐分别从对方身上学到了什么？", "偏见如何被打破？"], "tags": ["偏见", "友谊", "尊严", "和解", "沟通", "勇气", "陪伴", "孤独", "接纳", "治愈"]}, {"id": 23, "title": "摔跤吧！爸爸", "title_en": "Dangal", "year": 2016, "director": "涅提·蒂瓦里", "cast": ["阿米尔·汗", "法缇玛·萨那·纱卡", "桑亚·玛荷塔"], "country": "印度", "duration": 161, "genres": ["剧情", "传记", "运动"], "rating_domestic": 9.1, "rating_international": 8.4, "synopsis": "前摔跤冠军马哈维亚，顶着全村人的嘲笑，把两个女儿培养成世界级摔跤手，在印度女孩难有出路的年代，为她们「摔」出了一条自我实现的路。", "analysis": {"theme": "父爱有时是「逼你变强」；打破偏见，让女孩拥有选择人生的权利。", "art_value": "改编自真实故事，阿米尔·汗为角色增重再减重；体育片与父女情完美结合。", "edu_value": "讨论「严厉的爱」「梦想的代际传承」与「性别平等」。", "therapy_value": "对「与父母期望冲突」的子女，以及「望子成龙却怕越界」的父母都有启发：真正的爱，是帮孩子长出翅膀，而不是替他们飞翔。"}, "audiences": ["父亲", "青春期孩子父母", "青少年", "学生"], "support_types": ["视角转换", "勇气示范", "希望感", "沟通启发", "意义探寻"], "therapy_notes": "适合父女/亲子共赏，可引导讨论「严厉的爱」与「控制」的边界。", "warnings": ["含高强度训练与父权式教育方式（可作为讨论点）。"], "questions": ["爸爸的「严厉」，是爱还是控制？", "两个女儿从抗拒到主动，转折点是什么？", "父母该如何在「为孩子好」和「尊重孩子」之间平衡？"], "tags": ["亲子冲突", "父亲", "梦想", "教育", "希望", "成长", "家庭关系", "青春期孩子父母", "青少年", "勇气", "自我认同"]}, {"id": 24, "title": "你好，李焕英", "title_en": "Hi, Mom", "year": 2021, "director": "贾玲", "cast": ["贾玲", "张小斐", "沈腾"], "country": "中国", "duration": 128, "genres": ["喜剧", "剧情", "奇幻"], "rating_domestic": 7.9, "rating_international": 7.0, "synopsis": "贾晓玲穿越回1981年，遇到年轻的母亲李焕英，想尽办法「让妈妈高兴」，却在最后发现，妈妈早就知道一切。那句「我的女儿，我只要她健康快乐」，戳中了无数人。", "analysis": {"theme": "母爱是无条件的；「子欲养而亲不待」的遗憾，与母爱的伟大。", "art_value": "改编自贾玲亲身经历，笑中带泪；用喜剧外壳包裹最深的思念，情感真实而克制。", "edu_value": "帮助理解亲情、遗憾与珍惜；也引发对「孩子只要健康快乐」的思考。", "therapy_value": "对「觉得自己不够好」「对不起父母」的人有疗愈：妈妈的爱从不以你「有出息」为前提。"}, "audiences": ["经历丧失者", "亲子关系紧张的人", "想妈妈的人"], "support_types": ["情感共鸣", "和解", "视角转换", "自我接纳", "希望感"], "therapy_notes": "适合思念亲人、亲子议题。情感浓度高，可引导谈论「父母到底想要你怎样」。", "warnings": ["含母亲离世情节，丧亲者慎看。"], "questions": ["「我只要她健康快乐」这句话，为什么那么有力量？", "晓玲的「遗憾」和「爱」之间是什么关系？", "如果可以回到过去，你最想对谁说什么？"], "tags": ["母爱", "亲情", "丧失与哀伤", "内疚", "和解", "治愈", "家庭关系", "经历丧失者", "接纳", "希望"]}, {"id": 25, "title": "我不是药神", "title_en": "Dying to Survive", "year": 2018, "director": "文牧野", "cast": ["徐峥", "王传君", "周一围"], "country": "中国", "duration": 117, "genres": ["剧情", "喜剧"], "rating_domestic": 9.0, "rating_international": 8.0, "synopsis": "保健品店主程勇，为救买不起天价药的白血病患者，铤而走险走私仿制药，从唯利是图到舍身取义，完成了人性的蜕变，也照亮了一群被疾病与贫穷困住的人。", "analysis": {"theme": "在疾病与困境面前，尊严、良知与希望；「谁家里没个病人」。", "art_value": "现象级现实主义作品，群像塑造出色，用商业类型片承载沉重社会议题。", "edu_value": "引发对生命、医疗、公平与良知的思考，是讨论「困境中的人性」的教材。", "therapy_value": "对照护者、患者家属、身处困境的人有共鸣：在最难的处境里，仍有人选择善良与担当。"}, "audiences": ["照护者", "面对疾病的人", "低谷中的人"], "support_types": ["视角转换", "希望感", "尊严", "意义探寻", "情感共鸣"], "therapy_notes": "适合讨论疾病、贫困与人性光辉。可引导关注「困境中的人如何保有尊严」。", "warnings": ["含病痛、死亡与医药困境，情绪敏感者慎看。"], "questions": ["程勇的转变，是从哪一刻开始的？", "「命就是钱」，你如何看这句话？", "在困境中，我们还能为他人做点什么？"], "tags": ["面对疾病", "经济压力", "尊严", "希望", "韧性", "恐惧", "照护者", "低谷中的人", "治愈", "意义探寻"]}, {"id": 26, "title": "星际穿越", "title_en": "Interstellar", "year": 2014, "director": "克里斯托弗·诺兰", "cast": ["马修·麦康纳", "安妮·海瑟薇", "杰西卡·查斯坦"], "country": "美国", "duration": 169, "genres": ["科幻", "剧情", "冒险"], "rating_domestic": 9.3, "rating_international": 8.7, "synopsis": "地球濒临毁灭，宇航员库珀为寻找人类新家园穿越虫洞，在浩瀚宇宙与时间扭曲中，用一场跨越维度的告别与重逢，诠释了「爱是唯一能穿越时空的力量」。", "analysis": {"theme": "离别与牺牲；爱与引力一样，能跨越时间与空间。", "art_value": "诺兰的硬科幻巅峰，黑洞「卡冈图雅」的视觉奇观与汉斯·季默的配乐震撼人心。", "edu_value": "激发对科学、宇宙的好奇；也讨论「为更大的善而牺牲」的伦理。", "therapy_value": "对「与亲人离别」「害怕失去」的人有共鸣：哪怕相隔光年，爱也不会消失。"}, "audiences": ["经历离别的人", "青少年", "科学爱好者", "父亲"], "support_types": ["希望感", "情感共鸣", "意义探寻", "视角转换", "勇气示范"], "therapy_notes": "适合探讨离别、父女关系与「更大的责任」。可引导讨论「爱如何跨越距离」。", "warnings": ["含灾难、牺牲与漫长离别，情感浓度高。"], "questions": ["库珀选择离开，是自私还是伟大？", "「爱能穿越时空」在电影里如何体现？", "你如何面对与重要的人的离别？"], "tags": ["亲情", "恐惧", "希望", "韧性", "陪伴", "梦想", "父亲", "青少年", "意义探寻", "治愈", "死亡", "惊叹", "振奋"]}];
+const TAGS = {"无力感": {"category": "emotion", "desc": "感到使不上劲、精疲力尽、看不到改变的希望"}, "悲伤": {"category": "emotion", "desc": "深沉的难过、失去与哀恸"}, "焦虑": {"category": "emotion", "desc": "持续的紧张、不安与压力"}, "内疚": {"category": "emotion", "desc": "对自己或过去行为的自责与歉疚"}, "迷茫": {"category": "emotion", "desc": "找不到方向、困惑、不知道该如何选择"}, "孤独": {"category": "emotion", "desc": "感到不被理解、与人群疏离"}, "恐惧": {"category": "emotion", "desc": "对未知、丧失或改变的害怕"}, "抑郁": {"category": "emotion", "desc": "情绪持续低落、兴趣丧失、缺乏动力"}, "情绪困扰": {"category": "emotion", "desc": "被情绪困扰、难以自我调节的状态"}, "羞耻": {"category": "emotion", "desc": "觉得自己不够好、不被接纳的自我否定"}, "愤怒": {"category": "emotion", "desc": "对不公、伤害或被压抑的强烈不满"}, "兴奋": {"category": "emotion", "desc": "激动、被点燃的高能量状态"}, "喜悦": {"category": "emotion", "desc": "发自内心的开心与愉悦"}, "感动": {"category": "emotion", "desc": "被触动、被温暖到想落泪的瞬间"}, "惊叹": {"category": "emotion", "desc": "被震撼、被惊艳的赞叹"}, "满足": {"category": "emotion", "desc": "内心充盈、被填满的踏实感"}, "平静": {"category": "emotion", "desc": "安宁、松弛、不慌不忙的稳定"}, "期待": {"category": "emotion", "desc": "对美好事物的盼望与向往"}, "温暖": {"category": "emotion", "desc": "被善意包围的暖意"}, "振奋": {"category": "emotion", "desc": "被鼓舞、想立刻行动的劲头"}, "亲子冲突": {"category": "situation", "desc": "父母与孩子之间沟通不畅、关系紧张"}, "青春期": {"category": "situation", "desc": "青少年阶段的自我探索与亲子张力"}, "职业倦怠": {"category": "situation", "desc": "工作压力大、内耗、失去意义感"}, "丧失与哀伤": {"category": "situation", "desc": "亲人离世、重要关系或事物失去后的哀悼"}, "家庭关系": {"category": "situation", "desc": "原生家庭、夫妻、代际之间的复杂关系"}, "学业压力": {"category": "situation", "desc": "升学、考试与自我期待带来的压力"}, "面对疾病": {"category": "situation", "desc": "自身或家人患病、照护与生活剧变"}, "经济压力": {"category": "situation", "desc": "失业、贫穷与生存困境"}, "创伤": {"category": "situation", "desc": "过往创伤经历带来的长期影响"}, "青春期孩子父母": {"category": "audience", "desc": "正与青春期孩子相处、感到无力的父母"}, "经历丧失者": {"category": "audience", "desc": "正在经历失去与哀伤的人"}, "职业倦怠者": {"category": "audience", "desc": "被工作消耗、寻找意义的人"}, "青少年": {"category": "audience", "desc": "处于自我探索期的青少年"}, "教育工作者": {"category": "audience", "desc": "教师、家长等承担教育角色的人"}, "心理咨询师": {"category": "audience", "desc": "可用影片辅助工作的助人者"}, "低谷中的人": {"category": "audience", "desc": "身处人生低谷、需要被接住的人"}, "学生": {"category": "audience", "desc": "面临学业与成长压力的学生"}, "情绪困扰者": {"category": "audience", "desc": "受情绪困扰、渴望被理解的人"}, "照护者": {"category": "audience", "desc": "长期照顾他人、需要自我关怀的人"}, "父亲": {"category": "audience", "desc": "身为父亲、探索父职角色的人"}, "希望": {"category": "value", "desc": "在黑暗中看见光、相信改变可能"}, "勇气": {"category": "value", "desc": "面对恐惧与未知仍向前一步"}, "接纳": {"category": "value", "desc": "接纳不完美的自己与他人"}, "自我认同": {"category": "value", "desc": "找到并确认自己的价值与位置"}, "沟通": {"category": "value", "desc": "学习如何表达与倾听"}, "韧性": {"category": "value", "desc": "在逆境中恢复与坚持的能力"}, "和解": {"category": "value", "desc": "与过去、与他人、与自己和解"}, "自由": {"category": "value", "desc": "摆脱束缚、活出自己"}, "尊严": {"category": "value", "desc": "在任何处境中都保有人的尊严"}, "陪伴": {"category": "value", "desc": "被看见、被陪伴、不孤单"}, "意义探寻": {"category": "value", "desc": "在经历中寻找生命的意义与方向"}, "成长": {"category": "theme", "desc": "关于长大、成熟与蜕变"}, "亲情": {"category": "theme", "desc": "关于家人与亲情"}, "师生情": {"category": "theme", "desc": "关于师生之间的影响与传承"}, "友谊": {"category": "theme", "desc": "关于朋友与相互照亮"}, "死亡": {"category": "theme", "desc": "关于死亡、告别与生命意义"}, "梦想": {"category": "theme", "desc": "关于追逐梦想与坚持"}, "治愈": {"category": "theme", "desc": "具有疗愈力量的温暖故事"}, "教育": {"category": "theme", "desc": "关于教育的本质与反思"}, "命运": {"category": "theme", "desc": "关于命运、际遇与人生的不可控"}, "母爱": {"category": "theme", "desc": "关于母爱与无条件的付出"}, "生命意义": {"category": "theme", "desc": "关于生命的意义与活在当下"}, "偏见": {"category": "situation", "desc": "因身份、阶层、外貌等遭受的偏见与不公"}, "忠诚": {"category": "value", "desc": "无条件的忠诚、守护与不离不弃"}};
+const SYNONYMS = {"无力感": ["无力", "无助", "使不上劲", "精疲力尽", "耗尽", "撑不下去", "没劲", "累了"], "亲子冲突": ["亲子", "交流不顺", "沟通不畅", "叛逆", "不听话", "代沟", "管不住", "跟孩子"], "青春期": ["青春期", "叛逆期", "少年", "青少年", "十几岁"], "丧失与哀伤": ["丧失", "失去", "离世", "去世", "死亡", "哀伤", "悲伤", "丧亲", "永别", "悼念", "走了"], "职业倦怠": ["倦怠", "工作", "职业", "加班", "内耗", "职场", "辞", "压力大"], "孤独": ["孤独", "寂寞", "没人理解", "被孤立", "一个人"], "焦虑": ["焦虑", "紧张", "不安", "压力", "担心", "恐慌", "心慌"], "迷茫": ["迷茫", "找不到方向", "困惑", "迷失", "不知道怎么办", "人生意义", "路在何方"], "自我认同": ["自我", "认同", "我是谁", "自卑", "不自信", "接纳自己", "价值感"], "希望": ["希望", "绝望", "放弃", "坚持不下去", "没信心", "灰心"], "家庭关系": ["家庭", "父母", "父子", "母女", "家人", "原生家庭", "爸妈"], "抑郁": ["抑郁", "低落", "情绪不好", "开心不起来", "兴趣", "想哭"], "兴奋": ["兴奋", "激动", "热血", "燃", "太爽", "停不下来", "high"], "喜悦": ["喜悦", "开心", "高兴", "快乐", "愉悦", "欢喜"], "感动": ["感动", "泪目", "想哭", "被戳中", "暖到", "戳中"], "惊叹": ["惊叹", "震撼", "惊艳", "叹为观止", "太牛", "哇塞"], "满足": ["满足", "充实", "踏实", "圆满", "心安"], "平静": ["平静", "安宁", "松弛", "放松", "静心", "心静"], "期待": ["期待", "盼望", "憧憬", "向往", "跃跃欲试"], "温暖": ["温暖", "暖心", "温馨", "被爱", "治愈"], "振奋": ["振奋", "鼓舞", "来劲", "元气满满", "满血"]};
+const TAG_NAMES = ["无力感", "悲伤", "焦虑", "内疚", "迷茫", "孤独", "恐惧", "抑郁", "情绪困扰", "羞耻", "愤怒", "兴奋", "喜悦", "感动", "惊叹", "满足", "平静", "期待", "温暖", "振奋", "亲子冲突", "青春期", "职业倦怠", "丧失与哀伤", "家庭关系", "学业压力", "面对疾病", "经济压力", "创伤", "青春期孩子父母", "经历丧失者", "职业倦怠者", "青少年", "教育工作者", "心理咨询师", "低谷中的人", "学生", "情绪困扰者", "照护者", "父亲", "希望", "勇气", "接纳", "自我认同", "沟通", "韧性", "和解", "自由", "尊严", "陪伴", "意义探寻", "成长", "亲情", "师生情", "友谊", "死亡", "梦想", "治愈", "教育", "命运", "母爱", "生命意义", "偏见", "忠诚"];
+
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const PALETTE = [["#3a2c1d","#6b4a2a"],["#1f2a33","#3d5a6b"],["#2e1f2a","#5d3a52"],["#16261f","#2f4f3c"],["#3a2416","#7a4a1f"],["#20232e","#4a4f6b"],["#2c1f18","#59422f"],["#1c2a2e","#3f5a58"]];
+const gradientFor = t => { let h=0; for(const c of (t||"")) h=(h*31+c.charCodeAt(0))>>>0; const [a,b]=PALETTE[h%PALETTE.length]; return `linear-gradient(158deg,${a} 0%,${b} 100%)`; };
+
+function extractIntent(q){
+  const labels = [];
+  for(const name of TAG_NAMES) if(q.includes(name)) labels.push(name);
+  for(const [canonical, kws] of Object.entries(SYNONYMS)) if(kws.some(k => q.includes(k))) labels.push(canonical);
+  return [...new Set(labels)];
+}
+
+function recommend(query, limit=6){
+  const intent = extractIntent(query);
+  const q = query.toLowerCase();
+  const scored = MOVIES.map(m => {
+    const matched = intent.filter(t => m.tags.includes(t));
+    const tagScore = intent.length ? matched.length / intent.length : 0;
+    const hay = (m.title + m.title_en + m.synopsis + m.tags.join("") + (m.audiences||[]).join("")).toLowerCase();
+    let kw = 0; for(const ch of q){ if(ch !== " " && hay.includes(ch)) kw++; } kw = q ? kw/q.length : 0;
+    const quality = (m.rating_domestic + m.rating_international) / 20;
+    const score = intent.length ? (0.55*tagScore + 0.25*kw + 0.2*quality) : (0.7*kw + 0.3*quality);
+    return {movie:m, matched, score};
+  });
+  scored.sort((a,b) => b.score - a.score);
+  return {intent, items: scored.slice(0, limit)};
+}
+
+const CAT_LABEL = {emotion:"此刻的心情", situation:"正处的境遇", audience:"我是谁", value:"我渴望", theme:"想看的主题"};
+function loadTagOptions(){
+  const groups = {};
+  for(const [name, t] of Object.entries(TAGS)) (groups[t.category] = groups[t.category] || []).push(name);
+  const order = ["emotion","situation","audience","value","theme"];
+  $("#tag-groups").innerHTML = order.filter(c => groups[c]).map(c => `
+    <div class="tag-group">
+      <p class="tag-group__label">${CAT_LABEL[c]||c}</p>
+      <div class="tag-group__chips">${groups[c].map(t => `<button class="chip chip--tag" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+    </div>`).join("");
+}
+
+function cardHTML(item, max){
+  const m = item.movie;
+  const rel = Math.max(55, Math.round(item.score/max*100));
+  const tags = (m.tags||[]).filter(t => item.matched.includes(t)).slice(0,3);
+  return `<article class="movie-pill" data-id="${m.id}">
+    <div class="movie-pill__poster" style="background:${gradientFor(m.title)}">${esc(m.title.charAt(0))}</div>
+    <div class="movie-pill__main"><h3 class="movie-pill__title">${esc(m.title)}</h3>
+      <p class="movie-pill__meta">${m.year} · ${esc(m.director)} · ${m.rating_domestic} 分</p></div>
+    <div class="movie-pill__tags">${tags.map(t => `<span class="tag-pill tag-pill--hit">${esc(t)}</span>`).join("")}</div>
+    <span class="movie-pill__score">${rel}%</span></article>`;
+}
+
+function renderResults(query){
+  const {intent, items} = recommend(query);
+  $("#results").hidden = false;
+  $("#echo-query").textContent = query;
+  $("#intent-tags").innerHTML = intent.length ? intent.map(t => `<span class="chip chip--gold">${esc(t)}</span>`).join("") : `<span class="chip chip--muted">未识别到明确情绪</span>`;
+  const max = Math.max(...items.map(i => i.score), 0.0001);
+  $("#results-grid").innerHTML = items.map(it => cardHTML(it, max)).join("");
+  $$(".movie-pill").forEach(p => p.addEventListener("click", () => openMovie(Number(p.dataset.id))));
+  $("#results").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function openMovie(id){
+  const m = MOVIES.find(x => x.id === id); if(!m) return;
+  const da = m.analysis || {};
+  const rateLine = `<span class="rating"><span class="rating__src">豆瓣</span><span class="rating__val">${m.rating_domestic}</span></span><span class="meta-dot">·</span><span class="rating"><span class="rating__src">IMDb</span><span class="rating__val">${m.rating_international}</span></span>`;
+  const warnings = (m.warnings||[]).length ? `<div class="warning">${m.warnings.map(esc).join("<br>")}</div>` : "";
+  const questions = (m.questions||[]).length ? `<ul>${m.questions.map(q => `<li>${esc(q)}</li>`).join("")}</ul>` : "";
+  $("#modal-body").innerHTML = `
+    <div class="detail-hero">
+      <div class="poster" style="background:${gradientFor(m.title)}"><span class="poster__title">${esc(m.title)}</span></div>
+      <div><h3 class="detail-title">${esc(m.title)}</h3><p class="detail-en">${esc(m.title_en)}</p></div>
+      <div class="detail-meta"><span>${m.year}</span><span class="meta-dot">·</span><span>${esc(m.director)} 执导</span><span class="meta-dot">·</span><span>${esc(m.country)}</span><span class="meta-dot">·</span><span>${m.duration} 分钟</span></div>
+    </div>
+    <p class="detail-synopsis">${esc(m.synopsis)}</p>
+    <div class="detail-section"><h4>主创 · 评分</h4><div class="detail-meta" style="margin:0 0 6px">${rateLine}</div><p>主演：${esc((m.cast||[]).join("、"))}</p><p>类型：${esc((m.genres||[]).join(" · "))}</p></div>
+    <div class="detail-section"><h4>深度解读</h4><div class="analysis-grid">
+      <div class="analysis-box"><h5>主题</h5><p>${esc(da.theme||"—")}</p></div>
+      <div class="analysis-box"><h5>艺术价值</h5><p>${esc(da.art_value||"—")}</p></div>
+      <div class="analysis-box"><h5>教育价值</h5><p>${esc(da.edu_value||"—")}</p></div>
+      <div class="analysis-box"><h5>治疗价值</h5><p>${esc(da.therapy_value||"—")}</p></div>
+    </div></div>
+    <div class="detail-section"><h4>这部影片如何支持你</h4>
+      <div class="tag-row">${(m.support_types||[]).map(s => `<span class="tag-pill">${esc(s)}</span>`).join("")}</div>
+      <p><strong style="color:var(--ink)">适合人群：</strong>${esc((m.audiences||[]).join("、"))}</p>
+      <p>${esc(m.therapy_notes||"")}</p></div>
+    ${questions ? `<div class="detail-section"><h4>观影后的讨论问题</h4>${questions}</div>` : ""}
+    ${warnings ? `<div class="detail-section"><h4>观看提醒</h4>${warnings}</div>` : ""}
+    <div class="detail-section"><h4>相关标签</h4><div class="tag-row">${(m.tags||[]).map(t => `<span class="chip chip--muted">${esc(t)}</span>`).join("")}</div></div>`;
+  $("#movie-modal").hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+$("#recommend-form").addEventListener("submit", e => { e.preventDefault(); const q = $("#query-input").value.trim(); if(q) renderResults(q); });
+$$(".chip[data-query]").forEach(c => c.addEventListener("click", () => { $("#query-input").value = c.dataset.query; renderResults(c.dataset.query); }));
+document.addEventListener("click", e => { const c = e.target.closest(".chip--tag"); if(c){ $("#query-input").value = c.dataset.tag; renderResults(c.dataset.tag); } });
+$("#movie-modal").addEventListener("click", e => { if(e.target.closest("[data-close]")){ $("#movie-modal").hidden = true; document.body.style.overflow = ""; } });
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ $("#movie-modal").hidden = true; document.body.style.overflow = ""; } });
+
+/* —— 双角色 · 5问引导（离线版，标签匹配）—— */
+const GUIDE_CONFIG = {
+  viewer: [
+    { key: "emotion", q: "此刻的你，心情如何？" },
+    { key: "situation", q: "你正处在什么样的境遇里？" },
+    { key: "value", q: "你渴望从电影里获得什么？" },
+    { key: "audience", q: "你现在的角色是？" },
+    { key: "theme", q: "你想看什么主题？" },
+  ],
+  facilitator: [
+    { key: "emotion", q: "服务对象的需求是什么？" },
+    { key: "situation", q: "服务对象想达成的目标是什么？" },
+    { key: "value", q: "这次活动你的想法是什么？" },
+    { key: "audience", q: "服务对象是谁？" },
+    { key: "theme", q: "想带大家走哪个主题方向？" },
+  ],
+};
+const CAT_TAGS = {};
+for(const [name, t] of Object.entries(TAGS)) (CAT_TAGS[t.category] = CAT_TAGS[t.category] || []).push(name);
+let guideRole = null, guideStep = 0, guideAnswers = {};
+function startGuide(role){
+  guideRole = role; guideStep = 0; guideAnswers = {};
+  $("#role-select").hidden = true; $("#wizard").hidden = false; renderGuideStep();
+}
+function renderGuideStep(){
+  const steps = GUIDE_CONFIG[guideRole], step = steps[guideStep];
+  $("#wizard-step").textContent = `第 ${guideStep+1} / ${steps.length} 问`;
+  $("#wizard-progress").style.width = ((guideStep+1)/steps.length*100) + "%";
+  $("#wizard-question").textContent = step.q;
+  const tags = CAT_TAGS[step.key] || [];
+  $("#wizard-chips").innerHTML = tags.map(t => `<button class="chip chip--tag ${guideAnswers[step.key]===t?"is-selected":""}" data-tag="${esc(t)}">${esc(t)}</button>`).join("");
+  $$("#wizard-chips .chip--tag").forEach(c => c.addEventListener("click", () => { guideAnswers[step.key] = c.dataset.tag; renderGuideStep(); }));
+  $("#wizard-back").hidden = guideStep === 0;
+  $("#wizard-next").querySelector("span").textContent = guideStep === steps.length-1 ? "生成推荐" : "下一步 →";
+}
+function localInterpretation(role, answers, titles){
+  const ts = titles.slice(0,3).join("、") || "（暂无匹配）";
+  const em = answers.emotion || "此刻", si = answers.situation || "当下";
+  if(role === "facilitator") return `【影领家 · 带领建议】围绕「${em} + ${si}」这个案例，为你匹配了：${ts}。建议从情绪最贴近的一部先看，观影后引导大家分享「哪个瞬间最触动你」，并留意影片触发预警，为情绪敏感的成员预留支持空间。`;
+  return `【寻影者 · 观影陪伴】此刻的「${em}」与「${si}」，为你挑选了：${ts}。建议在安静不被打扰的时候观看，不必急着「看懂」，允许自己被某个画面、某句台词轻轻接住；看完给自己留一点时间，把涌上来的感受写下来。`;
+}
+function renderGuidedResults(){
+  const query = Object.values(guideAnswers).filter(Boolean).join(" ");
+  const { intent, items } = recommend(query);
+  $("#results").hidden = false;
+  $("#echo-query").textContent = guideRole === "facilitator" ? "影领家 · 五问选片" : "寻影者 · 五问选片";
+  $("#intent-tags").innerHTML = intent.length ? intent.map(t => `<span class="chip chip--gold">${esc(t)}</span>`).join("") : `<span class="chip chip--muted">未识别到明确情绪</span>`;
+  const max = Math.max(...items.map(i => i.score), 0.0001);
+  const titles = items.map(i => i.movie.title);
+  $("#results-grid").innerHTML = `<div class="interpretation">${esc(localInterpretation(guideRole, guideAnswers, titles))}</div>` + items.map(it => cardHTML(it, max)).join("");
+  $$(".movie-pill").forEach(p => p.addEventListener("click", () => openMovie(Number(p.dataset.id))));
+  $("#results").scrollIntoView({behavior:"smooth", block:"start"});
+}
+$$(".role-card").forEach(c => c.addEventListener("click", () => startGuide(c.dataset.role)));
+$("#wizard-next").addEventListener("click", () => {
+  const steps = GUIDE_CONFIG[guideRole];
+  if(guideStep < steps.length-1){ guideStep++; renderGuideStep(); } else { renderGuidedResults(); }
+});
+$("#wizard-back").addEventListener("click", () => { if(guideStep > 0){ guideStep--; renderGuideStep(); } });
+
+/* —— 品牌切换（禅说电影 / 影领圈）—— */
+const BRANDS = {
+  chanshuo: { name: "禅说电影", tagline: "以影入道 · 借影观心" },
+  yingling: { name: "影领圈", tagline: "让电影领你同行" },
+};
+function applyBrand(key){
+  const b = BRANDS[key] || BRANDS.chanshuo;
+  document.body.dataset.brand = key;
+  $("#brand-name").textContent = b.name;
+  $("#brand-tagline").textContent = b.tagline;
+  $$(".brand-switch button").forEach(x => x.classList.toggle("is-active", x.dataset.brand === key));
+  try { localStorage.setItem("cine_brand", key); } catch(e){}
+}
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".brand-switch button");
+  if(btn) applyBrand(btn.dataset.brand);
+});
+applyBrand((() => { try { return localStorage.getItem("cine_brand"); } catch(e){ return null; } })() || "chanshuo");
+
+loadTagOptions();
+</script>
+</body>
+</html>

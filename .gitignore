@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 数据与密钥
+backend/data/
+.env
+*.db
+*.db-wal
+*.db-shm
+
+# 系统
+.DS_Store
