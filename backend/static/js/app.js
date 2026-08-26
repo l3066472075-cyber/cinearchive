@@ -705,8 +705,13 @@
     }
   }
 
+  let lastGuidedItems = [];
+  let lastGuidedRole = "viewer";
+
   function renderGuidedResults(data) {
     resultsSection.hidden = false;
+    lastGuidedItems = data.items;
+    lastGuidedRole = data.role;
     $("#echo-query").textContent =
       data.role === "facilitator" ? "影领家 · 五问选片" : "寻影者 · 五问选片";
     $("#intent-tags").innerHTML = (data.intent_labels || [])
@@ -718,10 +723,46 @@
     const interp = data.interpretation
       ? `<div class="interpretation">${esc(data.interpretation)}</div>`
       : "";
-    grid.innerHTML = interp + data.items.map((item) => cardHTML(item, max)).join("");
+    const pptBtn =
+      data.role === "facilitator"
+        ? `<div style="margin:14px 0"><button class="ask-box__submit" id="export-ppt"><span>⬇ 导出带领方案 PPT</span></button></div>`
+        : "";
+    grid.innerHTML = interp + pptBtn + data.items.map((item) => cardHTML(item, max)).join("");
     bindCards(grid);
+    const eb = $("#export-ppt");
+    if (eb) eb.addEventListener("click", exportPpt);
     resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     observeReveal(grid);
+  }
+
+  async function exportPpt() {
+    const movies = lastGuidedItems.map((it) => ({
+      title: it.movie.title,
+      synopsis: it.movie.synopsis,
+      therapy_notes: it.movie.therapy_notes,
+      trigger_warnings: it.movie.trigger_warnings,
+      discussion_questions: it.movie.discussion_questions,
+    }));
+    const headers = { "Content-Type": "application/json" };
+    const token = getToken();
+    if (token) headers["Authorization"] = "Bearer " + token;
+    try {
+      const res = await fetch(API + "/export/ppt", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ answers: buildGuideAnswers(), movies }),
+      });
+      if (!res.ok) throw new Error("导出失败");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "观电影法带领方案.pptx";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert("导出 PPT 失败：" + e.message);
+    }
   }
 
   $$(".role-card").forEach((c) =>

@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import auth, feedback, match, meta, movies, notes, progress, recommend, search, sessions
+from .routers import auth, export, feedback, match, meta, movies, notes, progress, recommend, search, sessions
 from .seed import init_db
 
 app = FastAPI(
@@ -45,6 +45,7 @@ app.include_router(notes.router)
 app.include_router(progress.router)
 app.include_router(sessions.router)
 app.include_router(match.router)
+app.include_router(export.router)
 app.include_router(meta.router)
 
 # 静态前端

@@ -248,3 +248,9 @@ class MatchResponse(BaseModel):
     same_city_count: int = 0
     my_tags: list[str] = []
     resonance: list[dict[str, Any]] = []
+
+
+# ---------- 导出 PPT ----------
+class PptExportRequest(BaseModel):
+    answers: dict[str, str] = {}
+    movies: list[dict[str, Any]] = []

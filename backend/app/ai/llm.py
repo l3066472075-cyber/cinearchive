@@ -37,7 +37,8 @@ def explain_recommendation(
 观影治疗说明：{therapy_notes}
 
 要求：不要说教、不要贴标签、不要夸大疗效；像一位懂电影也懂人的朋友在说话。
-严禁：推荐理由里不要出现「看完后再奖励自己看一部轻松电影」这类自相矛盾的建议——观影后自我照顾应是「观影之外」的事，比如散个步、把感受写下来、找人聊一聊、早点休息。"""
+严禁：推荐理由里不要出现「看完后再奖励自己看一部轻松电影」这类自相矛盾的建议——观影后自我照顾应是「观影之外」的事，比如散个步、把感受写下来、找人聊一聊、早点休息。
+{_GUAN_DIAN_YING_FA}"""
     return lc.llm_generate(_SYSTEM_PROMPT, prompt)
 
 
@@ -68,6 +69,15 @@ _HUMAN_TOUCH = (
     "⑤ 短句为主，像聊天，不像文章。"
 )
 
+# 「观电影法」理论与语言：让所有回应都带这套方法论的底色
+_GUAN_DIAN_YING_FA = (
+    "【「观电影法」理论与语言】请自然融入「观电影法」的理念与措辞，不要生硬堆砌："
+    "① 核心观：「借电影观自己」「以影入道」「一部电影，一面心镜」——电影是照见自己的镜子，不是逃离现实；"
+    "② 常用词：观照、照见、投射、觉知、内在、观心、渡、和解、松绑、光亮、心灯；"
+    "③ 金句：「生命是条长河，最终渡你的还是自己」；"
+    "④ 立场：观电影是向内看，不评判、不诊断、不替人下结论，只陪伴与照见。"
+)
+
 _ROLE_SYSTEM = {
     "viewer": "你是「影境档案」的观影陪伴者。你温暖、真诚、不评判，像一位懂电影也懂人的朋友，陪伴寻影者用电影照见自己。",
     "facilitator": "你是「影境档案」的影视心理分析师/影领家督导。你面对的是专业的带领者，"
@@ -95,6 +105,7 @@ def guided_interpretation(
     role: str,
     answers: dict[str, str],
     movies: list[dict],
+    memory: str = "",
 ) -> str | None:
     """基于 5 问答案生成角色化解读。movies 为候选影片信息（含真实简介，避免编造剧情）。
 
@@ -109,6 +120,8 @@ def guided_interpretation(
         for m in (movies or [])[:3]
     ) or "（暂无）"
 
+    memory_block = f"\n\n【这位用户的过往记忆】\n{memory}" if memory else ""
+
     prompt = f"""请基于以下 5 问答案，为这位{'寻影者' if role == 'viewer' else '影领家'}提供回应。
 
 5 问答案（需求/目标/想法/对象/主题）：
@@ -116,8 +129,11 @@ def guided_interpretation(
 
 系统匹配到的候选影片（含真实简介，请严格依据简介描述剧情，不要编造情节）：
 {movie_block}
+{memory_block}
 
-{_ROLE_FOCUS[role]}"""
+{_ROLE_FOCUS[role]}
+
+{_GUAN_DIAN_YING_FA}"""
 
     if role == "facilitator":
         prompt += "\n\n（注意：你是在给专业的影领家写「带领方案」，不是安慰他本人；影片细节必须以上面简介为准。）"
@@ -154,6 +170,7 @@ def respond_to_note(
     role: str,
     content: dict,
     movie_title: str,
+    memory: str = "",
 ) -> str | None:
     """针对用户的观影笔记/复盘笔记，生成深度专属回应。返回 None 表示走模板。"""
     if role not in _ROLE_SYSTEM:
@@ -175,12 +192,17 @@ def respond_to_note(
             "③ 结合他的分享意愿，鼓励沉淀可复用的带领经验。共 150~220 字，专业、克制、可执行。"
         )
 
+    memory_block = f"\n\n【这位用户的过往笔记】\n{memory}" if memory else ""
+
     prompt = f"""影片：《{movie_title or '（未指定）'}》
 角色：{'寻影者' if role == 'viewer' else '影领家'}
 笔记内容：
 {fields}
+{memory_block}
 
 {focus}
+
+{_GUAN_DIAN_YING_FA}
 
 {_HUMAN_TOUCH}"""
     return lc.llm_generate(_ROLE_SYSTEM[role], prompt)

@@ -12,6 +12,7 @@ from ..ai import llm
 from ..config import settings
 from ..db import get_db
 from ..schemas import NoteCreate, NoteResponse
+from ..services import growth
 
 router = APIRouter(prefix="/api/v1/notes", tags=["notes"])
 
@@ -28,7 +29,8 @@ def create_note(
         movie = db.get(models.Movie, req.movie_id)
         movie_title = movie.title if movie else ""
 
-    llm_text = llm.respond_to_note(req.role, req.content, movie_title)
+    memory = growth.build_memory(db, user)
+    llm_text = llm.respond_to_note(req.role, req.content, movie_title, memory=memory)
     response = llm_text or llm.template_note_response(req.role, req.content, movie_title)
 
     note = models.Note(

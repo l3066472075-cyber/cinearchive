@@ -16,6 +16,37 @@ from .. import models
 from ..schemas import FeedbackResponse, Insight
 
 
+def build_memory(db: Session, user: models.User | None) -> str:
+    """构建用户的「过往记忆」（近期搜索 + 近期笔记要点），供 LLM 个性化回应。"""
+    if user is None:
+        return ""
+    parts: list[str] = []
+    searches = (
+        db.query(models.SearchLog)
+        .filter(models.SearchLog.user_id == user.id)
+        .order_by(models.SearchLog.created_at.desc())
+        .limit(5)
+        .all()
+    )
+    queries = [s.raw_query for s in searches if s.raw_query]
+    if queries:
+        parts.append("近期搜索过：" + "、".join(queries))
+
+    notes = (
+        db.query(models.Note)
+        .filter(models.Note.user_id == user.id)
+        .order_by(models.Note.created_at.desc())
+        .limit(3)
+        .all()
+    )
+    for n in notes:
+        vals = [str(v) for v in (n.content or {}).values() if v]
+        if vals:
+            parts.append(f"写过笔记：{' / '.join(vals)[:80]}")
+
+    return "；".join(parts) if parts else ""
+
+
 def log_search(
     db: Session,
     raw_query: str,

@@ -88,8 +88,9 @@ def guided_recommend(
         for it in items
     ]
     titles = [it.movie.title for it in items]
+    memory = growth.build_memory(db, user)
     interpretation = llm.guided_interpretation(
-        req.role, req.answers, movie_infos
+        req.role, req.answers, movie_infos, memory=memory
     ) or llm.template_guided_interpretation(req.role, req.answers, titles)
 
     return GuidedResponse(

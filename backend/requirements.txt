@@ -19,3 +19,6 @@ cryptography>=42,<45
 
 # —— 免费内测部署（Postgres：Neon / Supabase / Render）——
 psycopg2-binary>=2.9,<3.0
+
+# —— 导出 PPT ——
+python-pptx>=0.6.23,<1.0
