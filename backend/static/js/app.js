@@ -799,19 +799,6 @@
           <span class="login-opt__icon">💬</span>
           <span><strong>微信登录</strong><small>识别你正在使用的微信号</small></span>
         </button>
-        <button class="login-opt" id="phone-login-btn">
-          <span class="login-opt__icon">📱</span>
-          <span><strong>手机号登录</strong><small>发送短信验证码</small></span>
-        </button>
-      </div>
-      <div id="phone-form" hidden style="margin-top:16px">
-        <input id="phone-input" placeholder="输入手机号" maxlength="11" style="width:100%;margin-bottom:10px;padding:12px 16px;border-radius:12px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
-        <div style="display:flex;gap:8px">
-          <input id="code-input" placeholder="验证码" maxlength="6" style="flex:1;padding:12px 16px;border-radius:12px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
-          <button class="mini-btn" id="send-code-btn">发送验证码</button>
-        </div>
-        <p id="sms-hint" style="font-size:12.5px;color:var(--gold-soft);margin:10px 2px 0"></p>
-        <button class="ask-box__submit" id="sms-login-btn" style="width:100%;margin-top:12px"><span>登录</span></button>
       </div>`;
     loginModal.hidden = false;
     document.body.style.overflow = "hidden";
@@ -824,29 +811,6 @@
       } else {
         alert("请在微信中打开本页面，即可使用微信登录");
       }
-    });
-    $("#phone-login-btn").addEventListener("click", () => {
-      $("#phone-form").hidden = false;
-    });
-    $("#send-code-btn").addEventListener("click", async () => {
-      const phone = $("#phone-input").value.trim();
-      if (!/^1\d{10}$/.test(phone)) { $("#sms-hint").textContent = "请输入正确的 11 位手机号"; return; }
-      try {
-        const r = await api("/auth/sms/send", { method: "POST", body: { phone } });
-        $("#sms-hint").textContent = r.dev_code ? `开发模式验证码：${r.dev_code}` : r.message;
-      } catch (e) { $("#sms-hint").textContent = "发送失败：" + e.message; }
-    });
-    $("#sms-login-btn").addEventListener("click", async () => {
-      const phone = $("#phone-input").value.trim();
-      const code = $("#code-input").value.trim();
-      if (!phone || !code) { $("#sms-hint").textContent = "请填写手机号和验证码"; return; }
-      try {
-        const r = await api("/auth/sms/login", { method: "POST", body: { phone, code } });
-        setToken(r.token);
-        loginModal.hidden = true;
-        document.body.style.overflow = "";
-        $("#login-btn").textContent = "已登录 ✓";
-      } catch (e) { $("#sms-hint").textContent = "登录失败：" + e.message; }
     });
   }
   $("#login-btn").addEventListener("click", openLogin);

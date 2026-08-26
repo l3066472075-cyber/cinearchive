@@ -4,14 +4,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from .. import auth, models
 from ..config import settings
 from ..db import get_db
-from ..schemas import MeResponse, SmsLoginRequest, SmsSendRequest, SmsSendResponse, WxLoginRequest, WxLoginResponse
+from ..schemas import MeResponse, WxLoginRequest, WxLoginResponse
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -49,34 +49,6 @@ def wx_login(req: WxLoginRequest, db: Session = Depends(get_db)):
         openid=openid,
         is_new_user=is_new,
         wx_enabled=wx_enabled,
-    )
-
-
-@router.post("/sms/send", response_model=SmsSendResponse)
-def sms_send(req: SmsSendRequest):
-    """发送短信验证码（开发模式：验证码直接返回，便于演示）。"""
-    code = auth.sms_send_code(req.phone)
-    return SmsSendResponse(
-        ok=True,
-        dev_code=code,
-        message=f"验证码已生成（开发模式，生产需接短信服务商）。验证码：{code}",
-    )
-
-
-@router.post("/sms/login", response_model=WxLoginResponse)
-def sms_login(req: SmsLoginRequest, db: Session = Depends(get_db)):
-    """手机号 + 验证码登录。"""
-    if not auth.sms_verify(req.phone, req.code):
-        raise HTTPException(status_code=400, detail="验证码错误或已过期")
-    openid = f"phone_{req.phone}"
-    user, is_new = _get_or_create_user(db, openid)
-    user.phone = req.phone
-    db.commit()
-    return WxLoginResponse(
-        token=auth.create_token(openid),
-        openid=openid,
-        is_new_user=is_new,
-        wx_enabled=False,
     )
 
 
