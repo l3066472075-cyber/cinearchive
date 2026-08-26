@@ -78,8 +78,8 @@ body {
 
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
   text-decoration: none;
   color: var(--ink);
 }
@@ -93,8 +93,14 @@ body {
 .brand__cn {
   font-family: var(--font-serif);
   font-size: 15px;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.08em;
   color: var(--ink-2);
+}
+.brand__dot {
+  color: var(--gold-soft);
+  font-size: 13px;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .site-nav {
