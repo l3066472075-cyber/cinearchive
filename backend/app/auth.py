@@ -71,6 +71,34 @@ def dev_openid(code: str) -> str:
     return "dev_" + hashlib.sha256(f"cinelib:{code}".encode()).hexdigest()[:24]
 
 
+# ---------- 手机号短信验证码（开发模式：验证码直接返回；生产需接短信服务商） ----------
+import random
+import time
+
+_sms_codes: dict[str, tuple[str, float]] = {}  # phone -> (code, 过期时间戳)
+
+
+def sms_send_code(phone: str) -> str:
+    """生成 6 位验证码并"发送"。开发模式返回验证码本身。"""
+    code = f"{random.randint(0, 999999):06d}"
+    _sms_codes[phone] = (code, time.time() + 300)  # 5 分钟有效
+    return code
+
+
+def sms_verify(phone: str, code: str) -> bool:
+    rec = _sms_codes.get(phone)
+    if not rec:
+        return False
+    saved, exp = rec
+    if time.time() > exp:
+        _sms_codes.pop(phone, None)
+        return False
+    if saved != code:
+        return False
+    _sms_codes.pop(phone, None)
+    return True
+
+
 # ---------- 公众号 H5 网页授权（OAuth） ----------
 def wechat_oauth_authorize_url(redirect_uri: str, state: str, scope: str = "snsapi_base") -> str:
     """构造公众号网页授权跳转地址。"""

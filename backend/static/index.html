@@ -21,16 +21,12 @@
   <!-- 顶栏 -->
   <header class="site-header">
     <a class="brand" href="#top">
-      <span class="brand__mark" id="brand-name">禅说电影</span>
+      <span class="brand__mark">CineArchive</span>
       <span class="brand__cn">影境档案</span>
     </a>
-    <span class="brand__tagline" id="brand-tagline">以影入道 · 借影观心</span>
-    <div class="brand-switch" id="brand-switch">
-      <button data-brand="chanshuo" class="is-active">禅说电影</button>
-      <button data-brand="yingling">影领圈</button>
-    </div>
+    <span class="brand__tagline">观电影法 · 借影观心</span>
     <button class="api-link" id="growth-btn" style="background:none;border:none;cursor:pointer">🪔 我的观心</button>
-    <a class="api-link" href="/docs" target="_blank" rel="noopener">API ↗</a>
+    <button class="api-link" id="login-btn" style="background:none;border:none;cursor:pointer">登录</button>
   </header>
 
   <main id="top">
@@ -177,6 +173,15 @@
     <div class="modal__dialog" role="dialog" aria-modal="true">
       <button class="modal__close" data-close aria-label="关闭">✕</button>
       <div class="modal__body" id="growth-body"></div>
+    </div>
+  </div>
+
+  <!-- 登录弹层 -->
+  <div class="modal" id="login-modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__dialog modal__dialog--sm" role="dialog" aria-modal="true">
+      <button class="modal__close" data-close aria-label="关闭">✕</button>
+      <div class="modal__body" id="login-body"></div>
     </div>
   </div>
 

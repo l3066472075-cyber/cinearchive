@@ -169,6 +169,22 @@ class MeResponse(BaseModel):
     last_login_at: Optional[datetime] = None
 
 
+# ---------- 手机号短信验证码登录 ----------
+class SmsSendRequest(BaseModel):
+    phone: str = Field(..., min_length=11, max_length=11)
+
+
+class SmsSendResponse(BaseModel):
+    ok: bool = True
+    dev_code: str = ""  # 开发模式返回验证码，生产为空
+    message: str = ""
+
+
+class SmsLoginRequest(BaseModel):
+    phone: str = Field(..., min_length=11, max_length=11)
+    code: str = Field(..., min_length=4, max_length=6)
+
+
 # ---------- 「观电影法」笔记 ----------
 class NoteCreate(BaseModel):
     role: str = Field(..., description="viewer（观影笔记）| facilitator（复盘笔记）")

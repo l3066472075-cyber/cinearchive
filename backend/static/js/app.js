@@ -785,30 +785,81 @@
   });
   $("#wizard-switch").addEventListener("click", backToRoleSelect);
 
-  // ============ 品牌切换（禅说电影 / 影领圈） ============
-  const BRANDS = {
-    chanshuo: { name: "禅说电影", tagline: "以影入道 · 借影观心" },
-    yingling: { name: "影领圈", tagline: "让电影领你同行" },
-  };
-  function applyBrand(key) {
-    const b = BRANDS[key] || BRANDS.chanshuo;
-    document.body.dataset.brand = key;
-    $("#brand-name").textContent = b.name;
-    $("#brand-tagline").textContent = b.tagline;
-    $$(".brand-switch button").forEach((x) =>
-      x.classList.toggle("is-active", x.dataset.brand === key)
-    );
-    try { localStorage.setItem("cine_brand", key); } catch (e) {}
+  // ============ 登录（微信 / 手机号） ============
+  const loginModal = $("#login-modal");
+  function openLogin() {
+    $("#login-body").innerHTML = `
+      <div class="login-hero">
+        <p class="section-kicker">Sign in</p>
+        <h3 class="login-title">登录 · 让档案馆更懂你</h3>
+        <p class="login-sub">登录后，会获得更精准的电影推荐、「观电影法」笔记回应等专属体验。</p>
+      </div>
+      <div class="login-options">
+        <button class="login-opt" id="wx-login-btn">
+          <span class="login-opt__icon">💬</span>
+          <span><strong>微信登录</strong><small>识别你正在使用的微信号</small></span>
+        </button>
+        <button class="login-opt" id="phone-login-btn">
+          <span class="login-opt__icon">📱</span>
+          <span><strong>手机号登录</strong><small>发送短信验证码</small></span>
+        </button>
+      </div>
+      <div id="phone-form" hidden style="margin-top:16px">
+        <input id="phone-input" placeholder="输入手机号" maxlength="11" style="width:100%;margin-bottom:10px;padding:12px 16px;border-radius:12px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
+        <div style="display:flex;gap:8px">
+          <input id="code-input" placeholder="验证码" maxlength="6" style="flex:1;padding:12px 16px;border-radius:12px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
+          <button class="mini-btn" id="send-code-btn">发送验证码</button>
+        </div>
+        <p id="sms-hint" style="font-size:12.5px;color:var(--gold-soft);margin:10px 2px 0"></p>
+        <button class="ask-box__submit" id="sms-login-btn" style="width:100%;margin-top:12px"><span>登录</span></button>
+      </div>`;
+    loginModal.hidden = false;
+    document.body.style.overflow = "hidden";
+
+    $("#wx-login-btn").addEventListener("click", () => {
+      const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+      if (isWeChat) {
+        const back = encodeURIComponent(location.href);
+        location.replace(`/api/v1/auth/mp/authorize?redirect_uri=${back}&scope=snsapi_base`);
+      } else {
+        alert("请在微信中打开本页面，即可使用微信登录");
+      }
+    });
+    $("#phone-login-btn").addEventListener("click", () => {
+      $("#phone-form").hidden = false;
+    });
+    $("#send-code-btn").addEventListener("click", async () => {
+      const phone = $("#phone-input").value.trim();
+      if (!/^1\d{10}$/.test(phone)) { $("#sms-hint").textContent = "请输入正确的 11 位手机号"; return; }
+      try {
+        const r = await api("/auth/sms/send", { method: "POST", body: { phone } });
+        $("#sms-hint").textContent = r.dev_code ? `开发模式验证码：${r.dev_code}` : r.message;
+      } catch (e) { $("#sms-hint").textContent = "发送失败：" + e.message; }
+    });
+    $("#sms-login-btn").addEventListener("click", async () => {
+      const phone = $("#phone-input").value.trim();
+      const code = $("#code-input").value.trim();
+      if (!phone || !code) { $("#sms-hint").textContent = "请填写手机号和验证码"; return; }
+      try {
+        const r = await api("/auth/sms/login", { method: "POST", body: { phone, code } });
+        setToken(r.token);
+        loginModal.hidden = true;
+        document.body.style.overflow = "";
+        $("#login-btn").textContent = "已登录 ✓";
+      } catch (e) { $("#sms-hint").textContent = "登录失败：" + e.message; }
+    });
   }
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".brand-switch button");
-    if (btn) applyBrand(btn.dataset.brand);
+  $("#login-btn").addEventListener("click", openLogin);
+  loginModal.addEventListener("click", (e) => {
+    if (e.target.closest("[data-close]")) {
+      loginModal.hidden = true;
+      document.body.style.overflow = "";
+    }
   });
 
   // ============ 初始化 ============
   (async function init() {
     handleMpLogin();
-    applyBrand((() => { try { return localStorage.getItem("cine_brand"); } catch (e) { return null; } })() || "chanshuo");
     observeReveal(document);
     try {
       await loadGuideThemes();
@@ -817,5 +868,6 @@
     }
     ensureGuestLogin();
     loadSessions();
+    if (getToken()) $("#login-btn").textContent = "已登录 ✓";
   })();
 })();

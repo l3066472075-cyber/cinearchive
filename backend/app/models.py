@@ -116,12 +116,13 @@ class MovieTag(Base):
 
 
 class User(Base):
-    """微信小程序用户（静默登录后建立）。"""
+    """用户（微信 openid 或 手机号 登录）。"""
 
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     openid: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    phone: Mapped[str] = mapped_column(String(20), default="", index=True)  # 手机号登录
     nickname: Mapped[str] = mapped_column(String(100), default="")
     avatar_url: Mapped[str] = mapped_column(String(500), default="")
     city: Mapped[str] = mapped_column(String(50), default="")  # 城市坐标（找同城人）
