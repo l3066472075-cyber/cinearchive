@@ -5,12 +5,22 @@
 """
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from ..config import settings
+
+# 禁用代理以避免SOCKS代理问题
+os.environ["NO_PROXY"] = "*"
+os.environ["http_proxy"] = ""
+os.environ["https_proxy"] = ""
+os.environ["HTTP_PROXY"] = ""
+os.environ["HTTPS_PROXY"] = ""
+os.environ["ALL_PROXY"] = ""
+os.environ["all_proxy"] = ""
 
 
 @lru_cache(maxsize=1)
@@ -24,6 +34,7 @@ def get_chat_model() -> ChatOpenAI | None:
         temperature=0.7,
         max_tokens=400,
         timeout=30.0,
+        http_client_kwargs={"trust_env": False},  # 禁用环境变量代理
     )
 
 
@@ -36,6 +47,7 @@ def get_embeddings_model() -> OpenAIEmbeddings | None:
         api_key=settings.embedding_api_key,
         base_url=settings.embedding_base_url,
         timeout=30.0,
+        http_client_kwargs={"trust_env": False},  # 禁用环境变量代理
     )
 
 
