@@ -646,11 +646,11 @@
       { key: "theme", q: "你想看什么主题？（可多选或自己填写）", type: "tags+free" },
     ],
     facilitator: [
-      { key: "emotion", q: "服务对象的需求是什么？（可多选）", type: "tags" },
-      { key: "situation", q: "服务对象想达成的目标是什么？（可多选）", type: "tags" },
-      { key: "value", q: "这次活动你的想法是什么？（可多选）", type: "tags" },
-      { key: "audience", q: "服务对象是谁？（可多选）", type: "tags" },
-      { key: "theme", q: "想带大家走哪个主题方向？（可多选或自己填写）", type: "tags+free" },
+      { key: "emotion", q: "服务对象的需求是什么？", type: "free", ph: "描述服务对象的需求，如：想缓解焦虑、找回自信、走出低谷…" },
+      { key: "situation", q: "服务对象想达成的目标是什么？", type: "free", ph: "描述想达成的目标，如：希望成员之间更信任、更愿意表达…" },
+      { key: "value", q: "这次活动你的想法是什么？", type: "free", ph: "你打算怎么带这场活动？想用电影引发什么？" },
+      { key: "audience", q: "服务对象是谁？", type: "free", ph: "描述服务对象，如：30+ 职场妈妈、青春期学生、丧亲者…" },
+      { key: "theme", q: "想带大家走哪个主题方向？", type: "free", ph: "如：亲子关系、成长、丧失与哀伤、自我认同…" },
     ],
   };
 
@@ -701,7 +701,7 @@
         .join("")}</div>`;
     }
     if (step.type === "free" || step.type === "tags+free") {
-      html += `<input id="wizard-free" placeholder="${step.key === "theme" ? "或自己填写主题" : "自己填写"}" value="${esc(guideFree[step.key] || "")}" style="width:100%;margin:2px 0 0;padding:11px 14px;border-radius:999px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />`;
+      html += `<input id="wizard-free" placeholder="${esc(step.ph || "自己填写")}" value="${esc(guideFree[step.key] || "")}" style="width:100%;margin:2px 0 0;padding:11px 14px;border-radius:999px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />`;
     }
     $("#wizard-chips").innerHTML = html;
 
