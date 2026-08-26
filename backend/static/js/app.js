@@ -295,9 +295,7 @@
             <button class="mini-btn is-on" data-nrole="viewer">寻影者 · 观影笔记</button>
             <button class="mini-btn" data-nrole="facilitator">影领家 · 复盘笔记</button>
           </div>
-          <select id="note-movie" style="width:100%;margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)">
-            <option value="">（可选）这次笔记关于哪部电影</option>
-          </select>
+          <input id="note-movie" placeholder="哪部电影（可留空，自己填写）" style="width:100%;margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
           <div id="note-fields"></div>
           <div style="margin-top:12px">
             <button class="ask-box__submit" id="note-submit"><span>提交笔记 · 获得专属回应</span></button>
@@ -355,11 +353,10 @@
         ],
       };
       let noteRole = "viewer";
-      // 填充可选影片
+      // 拉取影片列表（用于按名称匹配 movie_id）
+      let allMovies = [];
       try {
-        const movies = await api("/movies?limit=100");
-        $("#note-movie").innerHTML = `<option value="">（可选）这次笔记关于哪部电影</option>` +
-          movies.map((mv) => `<option value="${mv.id}">${esc(mv.title)}</option>`).join("");
+        allMovies = await api("/movies?limit=100");
       } catch (e) {}
 
       function renderNoteFields() {
@@ -397,7 +394,13 @@
         btn.classList.add("is-loading");
         btn.querySelector("span").textContent = "正在回应…";
         try {
-          const movieId = $("#note-movie").value ? Number($("#note-movie").value) : null;
+          const movieName = $("#note-movie").value.trim();
+          let movieId = null;
+          if (movieName) {
+            const hit = allMovies.find((mv) => mv.title === movieName || mv.title.includes(movieName) || movieName.includes(mv.title));
+            if (hit) movieId = hit.id;
+            else content["电影"] = movieName; // 没匹配到库内影片，就存进笔记内容
+          }
           const res = await api("/notes", { method: "POST", body: { role: noteRole, movie_id: movieId, content } });
           $("#note-result").style.display = "block";
           $("#note-result").textContent = res.llm_response;
