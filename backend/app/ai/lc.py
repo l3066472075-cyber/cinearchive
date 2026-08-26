@@ -39,13 +39,16 @@ def get_embeddings_model() -> OpenAIEmbeddings | None:
     )
 
 
-def llm_generate(system: str, human: str) -> str | None:
+def llm_generate(system: str, human: str, max_tokens: int = 400) -> str | None:
     """用 LangChain ChatOpenAI 生成文本；失败/未配置返回 None。"""
     model = get_chat_model()
     if model is None:
         return None
     try:
-        resp = model.invoke([SystemMessage(content=system), HumanMessage(content=human)])
+        resp = model.invoke(
+            [SystemMessage(content=system), HumanMessage(content=human)],
+            max_tokens=max_tokens,
+        )
         content = resp.content if isinstance(resp.content, str) else str(resp.content)
         return content.strip() or None
     except Exception:  # noqa: BLE001

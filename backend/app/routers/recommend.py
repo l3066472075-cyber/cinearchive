@@ -78,9 +78,18 @@ def guided_recommend(
         user_id=user.id if user else None,
     )
 
+    # 把候选影片的真实简介/治疗要点传给 LLM，避免编造剧情
+    movie_infos = [
+        {
+            "title": it.movie.title,
+            "synopsis": it.movie.synopsis,
+            "therapy_notes": it.movie.therapy_notes,
+        }
+        for it in items
+    ]
     titles = [it.movie.title for it in items]
     interpretation = llm.guided_interpretation(
-        req.role, req.answers, titles
+        req.role, req.answers, movie_infos
     ) or llm.template_guided_interpretation(req.role, req.answers, titles)
 
     return GuidedResponse(
