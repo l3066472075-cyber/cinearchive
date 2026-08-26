@@ -230,19 +230,6 @@
       </div>
 
       <div class="detail-section" style="border-top:1px solid var(--hairline-soft);padding-top:22px">
-        <h4>「观电影法」笔记</h4>
-        <div class="note-role" id="note-role" style="display:flex;gap:8px;margin-bottom:14px">
-          <button class="mini-btn is-on" data-nrole="viewer">寻影者 · 观影笔记</button>
-          <button class="mini-btn" data-nrole="facilitator">影领家 · 复盘笔记</button>
-        </div>
-        <div id="note-fields"></div>
-        <div class="wizard__nav" style="margin-top:14px;justify-content:flex-start">
-          <button class="ask-box__submit" id="note-submit"><span>提交笔记 · 获得专属回应</span></button>
-        </div>
-        <div id="note-result" class="interpretation" style="margin-top:14px;display:none"></div>
-      </div>
-
-      <div class="detail-section" style="border-top:1px solid var(--hairline-soft);padding-top:22px">
         <h4>分享 · 观影感悟卡</h4>
         <input id="share-note" placeholder="写一句你的感悟（可留空）" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
         <button class="ask-box__submit" id="share-gen"><span>生成卡片 · 长按保存</span></button>
@@ -267,75 +254,6 @@
       });
       $("#feedback-hint").textContent = res.message;
       $("#tag-suggest").value = "";
-    });
-
-    // —— 「观电影法」笔记 ——
-    const NOTE_FIELDS = {
-      viewer: [
-        { key: "内心触动的片段", ph: "哪个画面、哪段情节，最触动你？" },
-        { key: "喜欢的台词", ph: "有没有哪句台词，你想记下来？" },
-        { key: "电影带来的思考", ph: "这部电影让你想到了什么？内心的想法？" },
-      ],
-      facilitator: [
-        { key: "是否达成预期", ph: "对照开场前设的目标，整场观影会完成得如何？" },
-        { key: "带领收获", ph: "这次带领，你有哪些成长或新发现？" },
-        { key: "体验环节", ph: "从破冰→观影→引导→结尾，用了哪些技能或道具？哪个效果好？" },
-        { key: "PPT精彩处", ph: "带领PPT最打动人的部分是什么？" },
-        { key: "是否愿意分享PPT", ph: "愿意分享给他人吗（他人喜欢可打赏）？", select: ["愿意分享（可被打赏）", "暂不分享"] },
-      ],
-    };
-    let noteRole = "viewer";
-    function renderNoteFields() {
-      const wrap = $("#note-fields");
-      wrap.innerHTML = NOTE_FIELDS[noteRole]
-        .map((f) => {
-          if (f.select) {
-            return `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
-              <select class="note-input" data-key="${esc(f.key)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)">
-                ${f.select.map((o) => `<option>${esc(o)}</option>`).join("")}
-              </select></div>`;
-          }
-          return `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
-            <textarea class="note-input" data-key="${esc(f.key)}" rows="2" placeholder="${esc(f.ph)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:14px;resize:vertical"></textarea></div>`;
-        })
-        .join("");
-    }
-    $$("#note-role button", modalBody).forEach((b) =>
-      b.addEventListener("click", () => {
-        noteRole = b.dataset.nrole;
-        $$("#note-role button", modalBody).forEach((x) => x.classList.toggle("is-on", x === b));
-        renderNoteFields();
-      })
-    );
-    renderNoteFields();
-    $("#note-submit").addEventListener("click", async () => {
-      const content = {};
-      $$(".note-input", modalBody).forEach((el) => {
-        content[el.dataset.key] = el.value.trim();
-      });
-      const filled = Object.values(content).filter(Boolean).length;
-      if (!filled) {
-        $("#note-result").style.display = "block";
-        $("#note-result").textContent = "先写下一点感受，再提交吧。";
-        return;
-      }
-      const btn = $("#note-submit");
-      btn.classList.add("is-loading");
-      btn.querySelector("span").textContent = "正在回应…";
-      try {
-        const res = await api("/notes", {
-          method: "POST",
-          body: { role: noteRole, movie_id: m.id, content },
-        });
-        $("#note-result").style.display = "block";
-        $("#note-result").textContent = res.llm_response;
-      } catch (e) {
-        $("#note-result").style.display = "block";
-        $("#note-result").textContent = "提交失败：" + e.message;
-      } finally {
-        btn.classList.remove("is-loading");
-        btn.querySelector("span").textContent = "提交笔记 · 获得专属回应";
-      }
     });
 
     // —— 分享卡片 ——
@@ -420,6 +338,25 @@
         <div class="growth-section" id="monthly-section">
           <h4>观心月历</h4>
           <p style="font-size:13px;color:var(--ink-3)">加载中…</p>
+        </div>
+        <div class="growth-section">
+          <h4>「观电影法」笔记</h4>
+          <div class="note-role" id="note-role" style="display:flex;gap:8px;margin-bottom:12px">
+            <button class="mini-btn is-on" data-nrole="viewer">寻影者 · 观影笔记</button>
+            <button class="mini-btn" data-nrole="facilitator">影领家 · 复盘笔记</button>
+          </div>
+          <select id="note-movie" style="width:100%;margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)">
+            <option value="">（可选）这次笔记关于哪部电影</option>
+          </select>
+          <div id="note-fields"></div>
+          <div style="margin-top:12px">
+            <button class="ask-box__submit" id="note-submit"><span>提交笔记 · 获得专属回应</span></button>
+          </div>
+          <div id="note-result" class="interpretation" style="margin-top:12px;display:none"></div>
+        </div>
+        <div class="growth-section">
+          <h4>我的笔记</h4>
+          <div id="my-notes"><p style="font-size:13px;color:var(--ink-3)">加载中…</p></div>
         </div>`;
       growthModal.hidden = false;
       document.body.style.overflow = "hidden";
@@ -443,16 +380,9 @@
         const m = await api("/match");
         let html = "";
         if (m.city) {
-          html += `<p style="font-size:13px;color:var(--ink-2);margin:0 0 8px">📍 在「${esc(m.city)}」，有 ${m.same_city_count} 位同城影友。</p>`;
+          html += `<p style="font-size:13px;color:var(--ink-2);margin:0">📍 在「${esc(m.city)}」，有 ${m.same_city_count} 位同城影友。</p>`;
         } else {
-          html += `<p style="font-size:13px;color:var(--ink-3);margin:0 0 8px">填上城市，就能找到同城影友。</p>`;
-        }
-        if (m.resonance && m.resonance.length) {
-          html += `<div class="tag-row" style="margin-bottom:0">${m.resonance.map((r) => `<span class="tag-pill">「${esc(r.tag)}」· ${r.count} 位同频</span>`).join("")}</div>`;
-        } else if (m.my_tags && m.my_tags.length) {
-          html += `<p style="font-size:13px;color:var(--ink-3);margin:0">你最近在找：${m.my_tags.map((t) => `「${esc(t)}」`).join("、")}，暂时还没有同频影友，成为第一个吧。</p>`;
-        } else {
-          html += `<p style="font-size:13px;color:var(--ink-3);margin:0">去寻一次影，系统就能帮你找到心境相近的人。</p>`;
+          html += `<p style="font-size:13px;color:var(--ink-3);margin:0">填上城市，就能找到同城影友。</p>`;
         }
         $("#match-section").innerHTML = `<h4>同频影友</h4>${html}`;
       } catch (e) {
@@ -473,6 +403,97 @@
       } catch (e) {
         $("#monthly-section").innerHTML = `<h4>观心月历</h4><p style="font-size:13px;color:var(--ink-3)">暂时无法加载</p>`;
       }
+
+      // 「观电影法」笔记
+      const NOTE_FIELDS = {
+        viewer: [
+          { key: "内心触动的片段", ph: "哪个画面、哪段情节，最触动你？" },
+          { key: "喜欢的台词", ph: "有没有哪句台词，你想记下来？" },
+          { key: "电影带来的思考", ph: "这部电影让你想到了什么？内心的想法？" },
+        ],
+        facilitator: [
+          { key: "是否达成预期", ph: "对照开场前设的目标，整场观影会完成得如何？" },
+          { key: "带领收获", ph: "这次带领，你有哪些成长或新发现？" },
+          { key: "体验环节", ph: "从破冰→观影→引导→结尾，用了哪些技能或道具？哪个效果好？" },
+          { key: "PPT精彩处", ph: "带领PPT最打动人的部分是什么？" },
+          { key: "是否愿意分享PPT", ph: "愿意分享给他人吗（他人喜欢可打赏）？", select: ["愿意分享（可被打赏）", "暂不分享"] },
+        ],
+      };
+      let noteRole = "viewer";
+      // 填充可选影片
+      try {
+        const movies = await api("/movies?limit=100");
+        $("#note-movie").innerHTML = `<option value="">（可选）这次笔记关于哪部电影</option>` +
+          movies.map((mv) => `<option value="${mv.id}">${esc(mv.title)}</option>`).join("");
+      } catch (e) {}
+
+      function renderNoteFields() {
+        $("#note-fields").innerHTML = NOTE_FIELDS[noteRole]
+          .map((f) => {
+            if (f.select) {
+              return `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
+                <select class="note-input" data-key="${esc(f.key)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)">
+                  ${f.select.map((o) => `<option>${esc(o)}</option>`).join("")}
+                </select></div>`;
+            }
+            return `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
+              <textarea class="note-input" data-key="${esc(f.key)}" rows="2" placeholder="${esc(f.ph)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:14px;resize:vertical"></textarea></div>`;
+          })
+          .join("");
+      }
+      $$("#note-role button").forEach((b) =>
+        b.addEventListener("click", () => {
+          noteRole = b.dataset.nrole;
+          $$("#note-role button").forEach((x) => x.classList.toggle("is-on", x === b));
+          renderNoteFields();
+        })
+      );
+      renderNoteFields();
+      $("#note-submit").addEventListener("click", async () => {
+        const content = {};
+        $$(".note-input").forEach((el) => { content[el.dataset.key] = el.value.trim(); });
+        const filled = Object.values(content).filter(Boolean).length;
+        if (!filled) {
+          $("#note-result").style.display = "block";
+          $("#note-result").textContent = "先写下一点感受，再提交吧。";
+          return;
+        }
+        const btn = $("#note-submit");
+        btn.classList.add("is-loading");
+        btn.querySelector("span").textContent = "正在回应…";
+        try {
+          const movieId = $("#note-movie").value ? Number($("#note-movie").value) : null;
+          const res = await api("/notes", { method: "POST", body: { role: noteRole, movie_id: movieId, content } });
+          $("#note-result").style.display = "block";
+          $("#note-result").textContent = res.llm_response;
+          loadMyNotes();
+        } catch (e) {
+          $("#note-result").style.display = "block";
+          $("#note-result").textContent = "提交失败：" + e.message;
+        } finally {
+          btn.classList.remove("is-loading");
+          btn.querySelector("span").textContent = "提交笔记 · 获得专属回应";
+        }
+      });
+
+      // 我的笔记列表
+      async function loadMyNotes() {
+        try {
+          const notes = await api("/notes");
+          if (!notes.length) {
+            $("#my-notes").innerHTML = `<p style="font-size:13px;color:var(--ink-3)">还没有笔记，写下第一篇吧。</p>`;
+            return;
+          }
+          $("#my-notes").innerHTML = notes.map((n) => `
+            <div class="note-item">
+              <p class="note-item__meta">${n.role === "facilitator" ? "影领家 · 复盘" : "寻影者 · 观影"} · ${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
+              <p class="note-item__resp">${esc(n.llm_response || "")}</p>
+            </div>`).join("");
+        } catch (e) {
+          $("#my-notes").innerHTML = `<p style="font-size:13px;color:var(--ink-3)">笔记加载失败</p>`;
+        }
+      }
+      loadMyNotes();
     } catch (e) {
       $("#growth-body").innerHTML = `<p style="color:var(--ink-2)">加载观心数据失败：${esc(e.message)}</p>`;
       growthModal.hidden = false;
