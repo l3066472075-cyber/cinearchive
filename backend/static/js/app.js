@@ -463,19 +463,29 @@
 
   // ============ 公众号 H5 静默登录 ============
   function handleMpLogin() {
-    const params = new URLSearchParams(location.search);
-    const token = params.get("token");
-    if (token) {
-      setToken(token);
-      params.delete("token");
-      const qs = params.toString();
-      history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
-      return;
-    }
-    const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-    if (isWeChat && !getToken()) {
-      const back = encodeURIComponent(location.href);
-      location.replace(`/api/v1/auth/mp/authorize?redirect_uri=${back}&scope=snsapi_base`);
+    try {
+      const params = new URLSearchParams(location.search);
+      const token = params.get("token");
+      if (token) {
+        setToken(token);
+        params.delete("token");
+        const qs = params.toString();
+        history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+        return;
+      }
+      const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+      // 只在微信中且没有token时才自动跳转登录
+      if (isWeChat && !getToken() && !params.has('skip_wx_login')) {
+        try {
+          const back = encodeURIComponent(location.href + (location.href.includes('?') ? '&' : '?') + 'skip_wx_login=1');
+          location.replace(`/api/v1/auth/mp/authorize?redirect_uri=${back}&scope=snsapi_base`);
+        } catch (e) {
+          console.warn("微信登录跳转失败", e);
+          // 失败后继续使用访客模式
+        }
+      }
+    } catch (e) {
+      console.warn("微信登录处理失败", e);
     }
   }
 
@@ -739,14 +749,25 @@
 
   // ============ 初始化 ============
   (async function init() {
-    handleMpLogin();
-    observeReveal(document);
     try {
-      await loadGuideThemes();
+      handleMpLogin();
+      observeReveal(document);
+      try {
+        await loadGuideThemes();
+      } catch (e) {
+        console.warn("加载主题失败", e);
+        // 主题加载失败不影响其他功能，继续运行
+      }
+      // 延迟执行访客登录，避免阻塞页面渲染
+      setTimeout(() => {
+        ensureGuestLogin();
+      }, 500);
+      if (getToken()) $("#login-btn").textContent = "已登录 ✓";
     } catch (e) {
-      console.warn("初始化失败", e);
+      console.error("初始化错误", e);
+      // 显示友好的错误提示，但不阻止页面使用
+      document.body.classList.add("init-error");
+      console.log("页面仍可正常使用，部分功能可能受限");
     }
-    ensureGuestLogin();
-    if (getToken()) $("#login-btn").textContent = "已登录 ✓";
   })();
 })();
