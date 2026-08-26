@@ -446,90 +446,6 @@
     }
   });
 
-  // ============ 共修场 · 影领家带领 ============
-  async function loadSessions() {
-    try {
-      const list = await api("/sessions");
-      renderSessions(list);
-    } catch (e) {
-      console.warn("加载共修场失败", e);
-    }
-  }
-
-  function renderSessions(list) {
-    const wrap = $("#sessions-list");
-    if (!wrap) return;
-    if (!list.length) {
-      wrap.innerHTML = `<p class="rank-list__empty">还没有共修场，成为第一个开场的影领家吧。</p>`;
-      return;
-    }
-    wrap.innerHTML = list
-      .map(
-        (s) => `
-        <article class="session-card">
-          <div class="session-card__main">
-            <h3 class="session-card__title">${esc(s.theme || s.movie_title)}</h3>
-            <p class="session-card__meta">🎬 ${esc(s.movie_title)} · ${s.mode === "sync" ? "同步" : "异步"} · ${esc(s.start_at || "时间待定")}</p>
-            <p class="session-card__desc">${esc(s.description || "")}</p>
-            <p class="session-card__meta">📍 ${esc(s.facilitator_city || "城市未填")} · 已入座 ${s.signup_count} 人</p>
-          </div>
-          <button class="mini-btn ${s.joined ? "is-on" : ""}" data-join="${s.id}">${s.joined ? "已入座 · 离开" : "入座"}</button>
-        </article>`
-      )
-      .join("");
-    $$("[data-join]", wrap).forEach((b) =>
-      b.addEventListener("click", async () => {
-        const id = Number(b.dataset.join);
-        const isJoined = b.classList.contains("is-on");
-        try {
-          await api(`/sessions/${id}/${isJoined ? "leave" : "join"}`, { method: "POST", body: {} });
-          loadSessions();
-        } catch (e) {
-          alert("操作失败：" + e.message);
-        }
-      })
-    );
-  }
-
-  $("#open-session-btn").addEventListener("click", async () => {
-    const wrap = $("#sessions-list");
-    let movies = [];
-    try { movies = await api("/movies?limit=100"); } catch (e) {}
-    wrap.innerHTML = `
-      <div class="session-form">
-        <h4 style="margin:0 0 12px;font-family:var(--font-serif);color:var(--gold)">开一场共修</h4>
-        <label style="font-size:13px;color:var(--ink-2)">选一部影片</label>
-        <select id="sf-movie" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)">${movies.map((m) => `<option value="${m.id}">${esc(m.title)}（${m.year}）</option>`).join("")}</select>
-        <label style="font-size:13px;color:var(--ink-2)">场次主题</label>
-        <input id="sf-theme" placeholder="如：照见 · 心灵的岔路口" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
-        <label style="font-size:13px;color:var(--ink-2)">时间（同步场）</label>
-        <input id="sf-time" placeholder="如：每周六晚 8 点" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
-        <label style="font-size:13px;color:var(--ink-2)">引导语 / 说明</label>
-        <textarea id="sf-desc" rows="2" placeholder="这场共修，你想带大家聊什么？" style="width:100%;margin:6px 0 14px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink);resize:vertical"></textarea>
-        <div style="display:flex;gap:8px">
-          <button class="ask-box__submit" id="sf-submit"><span>发布场次</span></button>
-          <button class="mini-btn" id="sf-cancel">取消</button>
-        </div>
-      </div>`;
-    $("#sf-submit").addEventListener("click", async () => {
-      const theme = $("#sf-theme").value.trim();
-      const body = {
-        movie_id: Number($("#sf-movie").value),
-        theme: theme || ($("#sf-movie option:checked").text.split("（")[0] + " · 共修"),
-        description: $("#sf-desc").value.trim(),
-        start_at: $("#sf-time").value.trim(),
-        mode: "sync",
-      };
-      try {
-        await api("/sessions", { method: "POST", body });
-        loadSessions();
-      } catch (e) {
-        alert("发布失败：" + e.message);
-      }
-    });
-    $("#sf-cancel").addEventListener("click", loadSessions);
-  });
-
   // ============ 入场动画 ============
   const io = new IntersectionObserver(
     (entries) =>
@@ -831,7 +747,6 @@
       console.warn("初始化失败", e);
     }
     ensureGuestLogin();
-    loadSessions();
     if (getToken()) $("#login-btn").textContent = "已登录 ✓";
   })();
 })();
