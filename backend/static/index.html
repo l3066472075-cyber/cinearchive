@@ -46,7 +46,7 @@
           从多部经典电影中，<br class="hide-mobile" />
           为您挑选适合当下心境的影片。
         </p>
-        <p class="hero__ai-note">✦ 即将接入大模型 · AI 智能选片与深度解读</p>
+        <p class="hero__ai-note" style="display:none"></p>
 
         <form class="ask-box" id="recommend-form" autocomplete="off">
           <span class="ask-box__icon" aria-hidden="true">
@@ -101,6 +101,7 @@
         </div>
 
         <div class="wizard" id="wizard" hidden>
+          <button class="mini-btn" id="wizard-switch" style="margin-bottom:14px">← 换个身份</button>
           <div class="wizard__progress"><span id="wizard-progress"></span></div>
           <p class="wizard__step" id="wizard-step">第 1 / 5 问</p>
           <h2 class="wizard__question" id="wizard-question"></h2>
@@ -110,17 +111,6 @@
             <button class="ask-box__submit" id="wizard-next"><span>下一步 →</span></button>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- ============ 标签选项 ============ -->
-    <section class="tags-section" id="tags">
-      <div class="container">
-        <header class="tags-section__head">
-          <p class="section-kicker">Pick a mood</p>
-          <h2 class="tags-section__title">或，选择一个贴近你的标签</h2>
-        </header>
-        <div class="tag-groups" id="tag-groups"></div>
       </div>
     </section>
 

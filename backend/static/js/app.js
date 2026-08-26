@@ -148,33 +148,6 @@
     }
   }
 
-  // ============ 标签选项 ============
-  const TAG_CATEGORY_LABELS = {
-    emotion: "此刻的心情",
-    situation: "正处的境遇",
-    audience: "我是谁",
-    value: "我渴望",
-    theme: "想看的主题",
-  };
-
-  async function loadTagOptions() {
-    const themes = await api("/themes");
-    const wrap = $("#tag-groups");
-    const order = ["emotion", "situation", "audience", "value", "theme"];
-    wrap.innerHTML = order
-      .filter((cat) => (themes[cat] || []).length)
-      .map(
-        (cat) => `
-        <div class="tag-group">
-          <p class="tag-group__label">${TAG_CATEGORY_LABELS[cat] || cat}</p>
-          <div class="tag-group__chips">
-            ${themes[cat].map((t) => `<button class="chip chip--tag" data-tag="${esc(t.name)}">${esc(t.name)}</button>`).join("")}
-          </div>
-        </div>`
-      )
-      .join("");
-  }
-
   // ============ 详情弹层 ============
   const modal = $("#movie-modal");
   const modalBody = $("#modal-body");
@@ -625,13 +598,6 @@
       runRecommend(c.dataset.query);
     })
   );
-  document.addEventListener("click", (e) => {
-    const chip = e.target.closest(".chip--tag");
-    if (!chip) return;
-    const tag = chip.dataset.tag;
-    input.value = tag;
-    runRecommend(tag);
-  });
 
   // ============ 公众号 H5 静默登录 ============
   function handleMpLogin() {
@@ -673,24 +639,25 @@
   // ============ 双角色 · 5问引导 ============
   const GUIDE_CONFIG = {
     viewer: [
-      { key: "emotion", q: "此刻的你，心情如何？" },
-      { key: "situation", q: "你正处在什么样的境遇里？" },
-      { key: "value", q: "你渴望从电影里获得什么？" },
-      { key: "audience", q: "你现在的角色是？" },
-      { key: "theme", q: "你想看什么主题？" },
+      { key: "emotion", q: "此刻的你，心情如何？（可多选）", type: "tags" },
+      { key: "situation", q: "你正处在什么样的境遇里？（可多选）", type: "tags" },
+      { key: "value", q: "你渴望从电影里获得什么？（可多选）", type: "tags" },
+      { key: "audience", q: "你现在的角色是？（自己填写）", type: "free" },
+      { key: "theme", q: "你想看什么主题？（可多选或自己填写）", type: "tags+free" },
     ],
     facilitator: [
-      { key: "emotion", q: "服务对象的需求是什么？" },
-      { key: "situation", q: "服务对象想达成的目标是什么？" },
-      { key: "value", q: "这次活动你的想法是什么？" },
-      { key: "audience", q: "服务对象是谁？" },
-      { key: "theme", q: "想带大家走哪个主题方向？" },
+      { key: "emotion", q: "服务对象的需求是什么？（可多选）", type: "tags" },
+      { key: "situation", q: "服务对象想达成的目标是什么？（可多选）", type: "tags" },
+      { key: "value", q: "这次活动你的想法是什么？（可多选）", type: "tags" },
+      { key: "audience", q: "服务对象是谁？（可多选）", type: "tags" },
+      { key: "theme", q: "想带大家走哪个主题方向？（可多选或自己填写）", type: "tags+free" },
     ],
   };
 
   let guideRole = null;
   let guideStep = 0;
-  let guideAnswers = {};
+  let guideSelections = {}; // {key: [tag...]}
+  let guideFree = {}; // {key: 自由填写文本}
   let guideThemes = {};
 
   async function loadGuideThemes() {
@@ -700,10 +667,19 @@
   function startGuide(role) {
     guideRole = role;
     guideStep = 0;
-    guideAnswers = {};
+    guideSelections = {};
+    guideFree = {};
     $("#role-select").hidden = true;
     $("#wizard").hidden = false;
     renderGuideStep();
+  }
+
+  function backToRoleSelect() {
+    $("#wizard").hidden = true;
+    $("#role-select").hidden = false;
+    guideRole = null;
+    guideSelections = {};
+    guideFree = {};
   }
 
   function renderGuideStep() {
@@ -712,23 +688,58 @@
     $("#wizard-step").textContent = `第 ${guideStep + 1} / ${steps.length} 问`;
     $("#wizard-progress").style.width = `${((guideStep + 1) / steps.length) * 100}%`;
     $("#wizard-question").textContent = step.q;
-    const tags = guideThemes[step.key] || [];
-    $("#wizard-chips").innerHTML = tags
-      .map((t) => {
-        const sel = guideAnswers[step.key] === t.name;
-        return `<button class="chip chip--tag ${sel ? "is-selected" : ""}" data-tag="${esc(t.name)}">${esc(t.name)}</button>`;
-      })
-      .join("");
+
+    let html = "";
+    if (step.type !== "free") {
+      const tags = guideThemes[step.key] || [];
+      const sel = guideSelections[step.key] || [];
+      html += `<div class="wizard__chips">${tags
+        .map((t) => {
+          const on = sel.includes(t.name);
+          return `<button class="chip chip--tag ${on ? "is-selected" : ""}" data-tag="${esc(t.name)}">${esc(t.name)}</button>`;
+        })
+        .join("")}</div>`;
+    }
+    if (step.type === "free" || step.type === "tags+free") {
+      html += `<input id="wizard-free" placeholder="${step.key === "theme" ? "或自己填写主题" : "自己填写"}" value="${esc(guideFree[step.key] || "")}" style="width:100%;margin:2px 0 0;padding:11px 14px;border-radius:999px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />`;
+    }
+    $("#wizard-chips").innerHTML = html;
+
+    // 多选切换（不整块重渲染，避免输入框失焦）
     $$("#wizard-chips .chip--tag").forEach((c) =>
       c.addEventListener("click", () => {
-        guideAnswers[step.key] = c.dataset.tag;
-        renderGuideStep();
+        const arr = guideSelections[step.key] || (guideSelections[step.key] = []);
+        const i = arr.indexOf(c.dataset.tag);
+        if (i >= 0) {
+          arr.splice(i, 1);
+          c.classList.remove("is-selected");
+        } else {
+          arr.push(c.dataset.tag);
+          c.classList.add("is-selected");
+        }
       })
     );
+    const freeInput = $("#wizard-free");
+    if (freeInput) {
+      freeInput.addEventListener("input", () => {
+        guideFree[step.key] = freeInput.value;
+      });
+    }
+
     $("#wizard-back").hidden = guideStep === 0;
     const btn = $("#wizard-next");
     btn.querySelector("span").textContent =
-      guideStep === steps.length - 1 ? "生成推荐" : "下一步 →";
+      guideStep === steps.length - 1 ? "为你推荐" : "下一步 →";
+  }
+
+  function buildGuideAnswers() {
+    const answers = {};
+    for (const step of GUIDE_CONFIG[guideRole]) {
+      const sel = (guideSelections[step.key] || []).join(" ");
+      const free = (guideFree[step.key] || "").trim();
+      answers[step.key] = [sel, free].filter(Boolean).join(" ");
+    }
+    return answers;
   }
 
   async function submitGuide() {
@@ -737,7 +748,7 @@
     try {
       const data = await api("/recommend/guided", {
         method: "POST",
-        body: { role: guideRole, answers: guideAnswers },
+        body: { role: guideRole, answers: buildGuideAnswers() },
       });
       lastSearchLogId = data.search_log_id;
       renderGuidedResults(data);
@@ -785,6 +796,7 @@
       renderGuideStep();
     }
   });
+  $("#wizard-switch").addEventListener("click", backToRoleSelect);
 
   // ============ 品牌切换（禅说电影 / 影领圈） ============
   const BRANDS = {
@@ -812,7 +824,7 @@
     applyBrand((() => { try { return localStorage.getItem("cine_brand"); } catch (e) { return null; } })() || "chanshuo");
     observeReveal(document);
     try {
-      await Promise.all([loadTagOptions(), loadGuideThemes()]);
+      await loadGuideThemes();
     } catch (e) {
       console.warn("初始化失败", e);
     }

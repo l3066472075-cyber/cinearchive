@@ -16,11 +16,41 @@ def _validate() -> None:
                 raise ValueError(f"影片《{movie['title']}》引用了未注册的标签「{tag}」")
 
 
+def sync_tags(db: Session) -> None:
+    """影片已存在时，增量同步新增的标签 + 影片标签关联（用于线上无痛升级）。"""
+    # 1) 补齐标签
+    for name, (category, desc) in TAGS.items():
+        tag = db.query(models.Tag).filter(models.Tag.name == name).first()
+        if tag is None:
+            db.add(models.Tag(name=name, category=category, description=desc, source="curated"))
+    db.flush()
+
+    # 2) 补齐影片-标签关联
+    for m in MOVIES:
+        movie = db.query(models.Movie).filter(models.Movie.title == m["title"]).first()
+        if movie is None:
+            continue
+        for tag_name in m["tags"]:
+            tag = db.query(models.Tag).filter(models.Tag.name == tag_name).first()
+            if tag is None:
+                continue
+            link = (
+                db.query(models.MovieTag)
+                .filter(models.MovieTag.movie_id == movie.id, models.MovieTag.tag_id == tag.id)
+                .first()
+            )
+            if link is None:
+                db.add(models.MovieTag(movie_id=movie.id, tag_id=tag.id, weight=1.0, source="curated"))
+    db.commit()
+    print(f"[seed] 标签同步完成：共 {db.query(models.Tag).count()} 个标签。")
+
+
 def seed(db: Session) -> None:
     _validate()
     existing = db.query(models.Movie).count()
     if existing:
-        print(f"[seed] 库中已有 {existing} 部影片，跳过初始化。")
+        print(f"[seed] 库中已有 {existing} 部影片，执行增量标签同步。")
+        sync_tags(db)
         return
 
     # 1) 建标签
