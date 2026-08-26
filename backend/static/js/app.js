@@ -64,54 +64,8 @@
     <span class="rating"><span class="rating__src">${esc(m.rating_international_source)}</span>
       <span class="rating__val">${m.rating_international || "—"}</span></span>`;
 
-  // ============ 推荐 ============
-  const form = $("#recommend-form");
-  const input = $("#query-input");
+  // ============ 推荐结果容器 ============
   const resultsSection = $("#results");
-
-  async function runRecommend(query) {
-    const submit = $(".ask-box__submit");
-    submit.classList.add("is-loading");
-    submit.querySelector("span").textContent = "正在寻找…";
-    try {
-      const data = await api("/recommend", {
-        method: "POST",
-        body: { query, limit: 6, with_explanation: true },
-      });
-      lastSearchLogId = data.search_log_id;
-      renderRecommend(data);
-    } catch (e) {
-      alert("推荐失败：" + e.message);
-    } finally {
-      submit.classList.remove("is-loading");
-      submit.querySelector("span").textContent = "为我推荐";
-    }
-  }
-
-  function renderRecommend(data) {
-    resultsSection.hidden = false;
-    $("#echo-query").textContent = data.query;
-
-    const intentWrap = $("#intent-tags");
-    intentWrap.innerHTML = data.intent_labels.length
-      ? data.intent_labels
-          .map((t) => `<span class="chip chip--gold">${esc(t)}</span>`)
-          .join("")
-      : `<span class="chip chip--muted">未识别到明确情绪</span>`;
-
-    const note = $("#results-note");
-    note.textContent = data.note || "";
-
-    const grid = $("#results-grid");
-    const max = Math.max(...data.items.map((i) => i.score), 0.0001);
-    grid.innerHTML = data.items
-      .map((item) => cardHTML(item, max))
-      .join("");
-
-    bindCards(grid);
-    resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-    observeReveal(grid);
-  }
 
   function cardHTML(item, maxScore) {
     const m = item.movie;
@@ -335,10 +289,6 @@
           <h4>同频影友</h4>
           <p style="font-size:13px;color:var(--ink-3)">加载中…</p>
         </div>
-        <div class="growth-section" id="monthly-section">
-          <h4>观心月历</h4>
-          <p style="font-size:13px;color:var(--ink-3)">加载中…</p>
-        </div>
         <div class="growth-section">
           <h4>「观电影法」笔记</h4>
           <div class="note-role" id="note-role" style="display:flex;gap:8px;margin-bottom:12px">
@@ -387,21 +337,6 @@
         $("#match-section").innerHTML = `<h4>同频影友</h4>${html}`;
       } catch (e) {
         $("#match-section").innerHTML = `<h4>同频影友</h4><p style="font-size:13px;color:var(--ink-3)">暂时无法加载</p>`;
-      }
-
-      // 观心月历
-      try {
-        const mo = await api("/me/monthly");
-        $("#monthly-section").innerHTML = `
-          <h4>观心月历 · ${esc(mo.month)}</h4>
-          <div style="text-align:center;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--hairline-soft)">
-            <div style="font-family:var(--font-serif);font-size:40px;color:var(--gold-soft)">${esc(mo.keyword)}</div>
-            <p style="margin:6px 0 0;font-size:13px;color:var(--ink-2)">本月观心字</p>
-            <p style="margin:10px 0 0;font-size:12.5px;color:var(--ink-3)">观影 ${mo.search_month} · 打卡 ${mo.checkin_month} 天 · 笔记 ${mo.note_month} 篇 · 段位「${esc(mo.level_name)}」</p>
-            <p style="margin:12px 0 0;font-size:13px;color:var(--ink-2);font-style:italic">「${esc(mo.quote)}」</p>
-          </div>`;
-      } catch (e) {
-        $("#monthly-section").innerHTML = `<h4>观心月历</h4><p style="font-size:13px;color:var(--ink-3)">暂时无法加载</p>`;
       }
 
       // 「观电影法」笔记
@@ -606,19 +541,6 @@
   function observeReveal(root) {
     $$(".reveal:not(.is-visible)", root).forEach((el) => io.observe(el));
   }
-
-  // ============ 事件绑定 ============
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const q = input.value.trim();
-    if (q) runRecommend(q);
-  });
-  $$(".chip[data-query]").forEach((c) =>
-    c.addEventListener("click", () => {
-      input.value = c.dataset.query;
-      runRecommend(c.dataset.query);
-    })
-  );
 
   // ============ 公众号 H5 静默登录 ============
   function handleMpLogin() {
