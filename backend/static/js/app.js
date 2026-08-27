@@ -280,14 +280,12 @@
           <p id="checkin-msg" style="color:var(--gold-soft);font-size:13px;margin-top:8px"></p>
         </div>
         <div class="growth-section">
-          <h4 class="note-toggle" id="note-toggle" style="cursor:pointer;user-select:none">
-            📓 「观电影法」笔记 <span style="font-size:12px;color:var(--ink-3);font-weight:400">（点击展开 ▾）</span>
-          </h4>
+          <h4>「观电影法」笔记</h4>
+          <div class="note-role" id="note-role" style="display:flex;gap:8px;margin-bottom:12px">
+            <button class="mini-btn is-on" data-nrole="viewer">寻影者 · 观影笔记</button>
+            <button class="mini-btn" data-nrole="facilitator">影领家 · 复盘笔记</button>
+          </div>
           <div id="note-wrap" style="display:none">
-            <div class="note-role" id="note-role" style="display:flex;gap:8px;margin-bottom:12px">
-              <button class="mini-btn is-on" data-nrole="viewer">寻影者 · 观影笔记</button>
-              <button class="mini-btn" data-nrole="facilitator">影领家 · 复盘笔记</button>
-            </div>
             <input id="note-movie" placeholder="哪部电影（可留空，自己填写）" style="width:100%;margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
             <div id="note-fields"></div>
             <div style="margin-top:12px">
@@ -313,18 +311,7 @@
         setTimeout(openGrowth, 400);
       });
 
-      // 「观电影法」笔记（点击标题展开/收起）
-      const noteToggle = $("#note-toggle");
-      if (noteToggle) {
-        noteToggle.addEventListener("click", () => {
-          const wrap = $("#note-wrap");
-          const isOpen = wrap.style.display !== "none";
-          wrap.style.display = isOpen ? "none" : "block";
-          const span = noteToggle.querySelector("span");
-          if (span) span.textContent = isOpen ? "（点击展开 ▾）" : "（点击收起 ▴）";
-          if (!isOpen) renderNoteFields();
-        });
-      }
+      // 「观电影法」笔记：点击角色标签 → 展开对应填写区
       const NOTE_FIELDS = {
         viewer: [
           { key: "内心触动的片段", ph: "哪个画面、哪段情节，最触动你？" },
@@ -388,6 +375,7 @@
           noteRole = b.dataset.nrole;
           $$("#note-role button").forEach((x) => x.classList.toggle("is-on", x === b));
           renderNoteFields();
+          $("#note-wrap").style.display = "block"; // 点击标签即展开填写区
         })
       );
       renderNoteFields();
