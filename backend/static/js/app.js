@@ -251,7 +251,12 @@
       ).join("");
       const badges = p.badges
         .map((b) =>
-          `<div class="badge ${b.earned ? "is-earned" : ""}"><span class="badge__icon">${b.earned ? "✦" : "·"}</span><span class="badge__name">${esc(b.name)}</span><span class="badge__desc">${esc(b.desc)}</span></div>`
+          `<div class="badge ${b.earned ? "is-earned" : ""}" ${b.earned ? 'data-earned="1"' : ""}>
+            <span class="badge__icon">${b.earned ? "🕯" : "🔒"}</span>
+            <span class="badge__name">${esc(b.name)}</span>
+            <span class="badge__desc">${esc(b.desc)}</span>
+            ${b.earned ? '<span class="badge__lit">已点亮</span>' : ""}
+          </div>`
         )
         .join("");
       $("#growth-body").innerHTML = `
@@ -275,21 +280,6 @@
           <p id="checkin-msg" style="color:var(--gold-soft);font-size:13px;margin-top:8px"></p>
         </div>
         <div class="growth-section">
-          <h4>我的印记</h4>
-          <div class="badges">${badges}</div>
-        </div>
-        <div class="growth-section">
-          <h4>城市坐标 · 寻找同城影友</h4>
-          <div style="display:flex;gap:8px">
-            <input id="city-input" value="${esc(p.city)}" placeholder="填写城市，寻找同城影友" style="flex:1;border:1px solid var(--hairline-soft);border-radius:999px;padding:10px 16px;background:var(--surface);color:var(--ink)" />
-            <button class="mini-btn" id="city-save">保存</button>
-          </div>
-        </div>
-        <div class="growth-section" id="match-section">
-          <h4>同频影友</h4>
-          <p style="font-size:13px;color:var(--ink-3)">加载中…</p>
-        </div>
-        <div class="growth-section">
           <h4>「观电影法」笔记</h4>
           <div class="note-role" id="note-role" style="display:flex;gap:8px;margin-bottom:12px">
             <button class="mini-btn is-on" data-nrole="viewer">寻影者 · 观影笔记</button>
@@ -303,6 +293,10 @@
           <div id="note-result" class="interpretation" style="margin-top:12px;display:none"></div>
         </div>
         <div class="growth-section">
+          <h4>我的印记</h4>
+          <div class="badges">${badges}</div>
+        </div>
+        <div class="growth-section">
           <h4>我的笔记</h4>
           <div id="my-notes"><p style="font-size:13px;color:var(--ink-3)">加载中…</p></div>
         </div>`;
@@ -314,28 +308,6 @@
         $("#checkin-msg").textContent = r.message;
         setTimeout(openGrowth, 400);
       });
-      $("#city-save").addEventListener("click", async () => {
-        const city = $("#city-input").value.trim();
-        if (city) {
-          await api("/me/city", { method: "PATCH", body: { city } });
-          $("#checkin-msg").textContent = "城市已更新：定位到「" + city + "」的同频影友";
-          setTimeout(openGrowth, 400);
-        }
-      });
-
-      // 同频影友
-      try {
-        const m = await api("/match");
-        let html = "";
-        if (m.city) {
-          html += `<p style="font-size:13px;color:var(--ink-2);margin:0">📍 在「${esc(m.city)}」，有 ${m.same_city_count} 位同城影友。</p>`;
-        } else {
-          html += `<p style="font-size:13px;color:var(--ink-3);margin:0">填上城市，就能找到同城影友。</p>`;
-        }
-        $("#match-section").innerHTML = `<h4>同频影友</h4>${html}`;
-      } catch (e) {
-        $("#match-section").innerHTML = `<h4>同频影友</h4><p style="font-size:13px;color:var(--ink-3)">暂时无法加载</p>`;
-      }
 
       // 「观电影法」笔记
       const NOTE_FIELDS = {
