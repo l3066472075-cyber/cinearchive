@@ -85,14 +85,14 @@ body {
 }
 .brand__mark {
   font-family: var(--font-display);
-  font-size: 21px;
+  font-size: 23px;
   font-weight: 600;
   letter-spacing: 0.14em;
   color: var(--gold-soft);
 }
 .brand__cn {
   font-family: var(--font-serif);
-  font-size: 15px;
+  font-size: 16.5px;
   letter-spacing: 0.08em;
   color: var(--ink-2);
 }
@@ -129,13 +129,32 @@ body {
 }
 
 .api-link {
+  background: none;
+  border: none;
+  cursor: pointer;
   color: var(--ink-3);
   text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 0.02em;
   transition: color 0.3s var(--ease);
 }
 .api-link:hover { color: var(--gold-soft); }
+
+/* 「我的观心」：金色高亮胶囊主入口，一眼可见 */
+#growth-btn {
+  padding: 6px 16px;
+  border: 1px solid rgba(201, 161, 92, 0.55);
+  border-radius: 999px;
+  color: var(--gold-soft);
+  font-weight: 600;
+  font-size: 14px;
+  background: rgba(201, 161, 92, 0.12);
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+#growth-btn:hover {
+  background: rgba(201, 161, 92, 0.22);
+  border-color: var(--gold);
+}
 
 /* ============ Hero ============ */
 .hero {
@@ -860,26 +879,26 @@ body {
 .brand__tagline {
   margin-left: auto;
   margin-right: 20px;
-  font-size: 12.5px;
+  font-size: 13px;
   letter-spacing: 0.06em;
   color: var(--ink-3);
 }
 @media (max-width: 720px) {
-  /* 手机端顶栏：一行内放「品牌 + 按钮」，极致紧凑 */
+  /* 手机端顶栏：品牌只留「影境档案」，给大字号和按钮让位 */
   .site-header {
     flex-wrap: nowrap;
-    gap: 6px;
-    padding: 6px 10px;
+    gap: 8px;
+    padding: 8px 12px;
   }
   .brand { gap: 3px; min-width: 0; }
   .brand__mark { display: none; }
-  .brand__cn { font-size: 13px; letter-spacing: 0.02em; white-space: nowrap; }
-  .brand__dot { font-size: 11px; transform: none; }
+  .brand__cn:nth-child(2), .brand__cn:nth-child(4), .brand__dot { display: none; }
+  .brand__cn { font-size: 16px; letter-spacing: 0.02em; white-space: nowrap; }
   .brand__tagline { display: none; }
-  #growth-btn { margin-left: auto; }
-  .api-link { font-size: 13px; }
-  #growth-btn, #login-btn {
-    padding: 4px 9px;
+  #growth-btn { margin-left: auto; padding: 5px 12px; font-size: 14px; }
+  .api-link { font-size: 14px; }
+  #login-btn {
+    padding: 4px 10px;
     white-space: nowrap;
     border: 1px solid var(--hairline-soft);
     border-radius: 999px;
