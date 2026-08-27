@@ -87,11 +87,25 @@ def explain(state: RecState) -> dict:
     use_llm = bool(state["with_explanation"] and settings.llm_enabled)
     cands = state["candidates"]
 
+    # 优先「一次调用批量生成」全部推荐理由（最快；DeepSeek 并发限流时串行/并行都很慢）
+    batch: dict[str, str] = {}
+    if use_llm and len(cands) > 1:
+        movies_info = [
+            {
+                "title": state["movies"][c["movie_id"]]["detail"]["title"],
+                "matched_tags": c["matched_tags"],
+                "support_audiences": state["movies"][c["movie_id"]]["support_audiences"] or [],
+                "therapy_notes": state["movies"][c["movie_id"]].get("therapy_notes", ""),
+            }
+            for c in cands
+        ]
+        batch = llm.explain_movies_batch(state["query"], state["intent_labels"], movies_info) or {}
+
     def gen(c: dict) -> dict:
         entry = state["movies"][c["movie_id"]]
         detail = entry["detail"]
-        explanation = ""
-        if state["with_explanation"]:
+        explanation = batch.get(detail["title"], "")
+        if not explanation and state["with_explanation"]:
             if use_llm:
                 explanation = llm.explain_recommendation(
                     state["query"],
@@ -110,8 +124,8 @@ def explain(state: RecState) -> dict:
                 )
         return {**c, "explanation": explanation}
 
-    # 多条推荐理由并行生成（DeepSeek 单次 5~10s，串行 5 条会到 50s；并行只等最慢一条）
-    if use_llm and len(cands) > 1:
+    # 兜底：批量失败时并行生成（httpx.Client 线程安全）
+    if use_llm and not batch and len(cands) > 1:
         with concurrent.futures.ThreadPoolExecutor(
             max_workers=min(len(cands), 5)
         ) as ex:

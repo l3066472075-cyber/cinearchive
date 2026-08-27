@@ -59,6 +59,53 @@ def template_explanation(
     )
 
 
+def explain_movies_batch(
+    query: str,
+    intent_labels: list[str],
+    movies_info: list[dict],
+) -> dict[str, str] | None:
+    """一次 LLM 调用为多部影片批量生成推荐理由（避免多次串行/并发调用拖慢响应）。
+
+    movies_info: [{title, matched_tags, support_audiences, therapy_notes}]
+    返回 {影片标题: 推荐理由}；失败返回 None（调用方逐个回退单条 LLM / 模板）。
+    """
+    lines = "\n".join(
+        f"{i}. 《{m['title']}》｜匹配标签：{'、'.join(m.get('matched_tags') or []) or '（无）'}｜"
+        f"支持人群：{'、'.join(m.get('support_audiences') or []) or '（一般）'}｜"
+        f"治疗说明：{(m.get('therapy_notes') or '')[:70]}"
+        for i, m in enumerate(movies_info[:5], 1)
+    )
+    prompt = f"""观众自述：{query}
+识别出的情感/境遇：{', '.join(intent_labels) if intent_labels else '（未明确）'}
+候选影片（按推荐度从高到低）：
+{lines}
+
+请为每一部影片各写一段 60~100 字的推荐理由，说明它为什么适合眼前这位观众。
+要求：温暖、真诚、不评判、不说教；像一位懂电影也懂人的朋友在说话；不要夸大疗效；不要出现「希望这对你有帮助」这类 AI 结尾。
+{_GUAN_DIAN_YING_FA}
+
+严格输出 JSON（不要多余文字），键用影片完整标题：{{"《片名》": "推荐理由", "《片名2》": "推荐理由2"}}"""
+    text = lc.llm_generate(_SYSTEM_PROMPT, prompt, max_tokens=1800)
+    if not text:
+        return None
+    import json
+    import re
+
+    m = re.search(r"\{.*\}", text, re.DOTALL)
+    if not m:
+        return None
+    try:
+        data = json.loads(m.group(0))
+        out: dict[str, str] = {}
+        for k, v in data.items():
+            title = str(k).strip().strip("《》").strip()
+            if isinstance(v, str) and v.strip():
+                out[title] = v.strip()
+        return out or None
+    except Exception:  # noqa: BLE001
+        return None
+
+
 # —— 角色化解读（5 问引导）——
 _HUMAN_TOUCH = (
     "【写作要求：真人感】像一位懂电影也懂人的老朋友当面说话："
