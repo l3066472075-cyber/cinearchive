@@ -763,7 +763,6 @@
       setTimeout(() => {
         ensureGuestLogin();
       }, 500);
-      if (getToken()) $("#login-btn").textContent = "已登录 ✓";
     } catch (e) {
       console.error("初始化错误", e);
       // 显示友好的错误提示，但不阻止页面使用
