@@ -87,7 +87,8 @@ def explain(state: RecState) -> dict:
     use_llm = bool(state["with_explanation"] and settings.llm_enabled)
     cands = state["candidates"]
 
-    # 优先「一次调用批量生成」全部推荐理由（最快；DeepSeek 并发限流时串行/并行都很慢）
+    # 优先「一次调用批量生成」前 3 部推荐理由（最快；DeepSeek 并发限流时串行/并行都很慢；
+    # 只解释前 3 部可让批量 token 减半，第 4~5 部走模板兜底）
     batch: dict[str, str] = {}
     if use_llm and len(cands) > 1:
         movies_info = [
@@ -97,7 +98,7 @@ def explain(state: RecState) -> dict:
                 "support_audiences": state["movies"][c["movie_id"]]["support_audiences"] or [],
                 "therapy_notes": state["movies"][c["movie_id"]].get("therapy_notes", ""),
             }
-            for c in cands
+            for c in cands[:3]
         ]
         batch = llm.explain_movies_batch(state["query"], state["intent_labels"], movies_info) or {}
 
@@ -106,7 +107,8 @@ def explain(state: RecState) -> dict:
         detail = entry["detail"]
         explanation = batch.get(detail["title"], "")
         if not explanation and state["with_explanation"]:
-            if use_llm:
+            # 仅当批量完全失败时才逐个调单条 LLM；批量成功则第 4~5 条直接用模板
+            if use_llm and not batch:
                 explanation = llm.explain_recommendation(
                     state["query"],
                     state["intent_labels"],
