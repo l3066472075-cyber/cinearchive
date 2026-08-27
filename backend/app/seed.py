@@ -99,9 +99,30 @@ def seed(db: Session) -> None:
     print(f"[seed] 初始化完成：{len(TAGS)} 个标签，{len(MOVIES)} 部影片。")
 
 
+def _migrate_columns() -> None:
+    """给已有表补齐缺失的列（create_all 不会给旧表加列，需要手动 ALTER）。"""
+    from sqlalchemy import inspect, text
+
+    insp = inspect(engine)
+    try:
+        with engine.begin() as conn:
+            table_names = insp.get_table_names()
+            if "users" in table_names:
+                cols = {c["name"] for c in insp.get_columns("users")}
+                if "phone" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN phone VARCHAR(20) DEFAULT ''"))
+                    print("[migrate] users 表已补 phone 列")
+                if "city" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN city VARCHAR(50) DEFAULT ''"))
+                    print("[migrate] users 表已补 city 列")
+    except Exception as e:  # noqa: BLE001
+        print(f"[migrate] 跳过迁移：{e}")
+
+
 def init_db() -> None:
-    """建表并写入种子数据（幂等）。"""
+    """建表 + 迁移缺失列 + 写入种子数据（幂等）。"""
     Base.metadata.create_all(bind=engine)
+    _migrate_columns()
     from .db import SessionLocal
 
     with SessionLocal() as db:
