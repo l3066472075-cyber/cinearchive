@@ -226,3 +226,43 @@ def template_note_response(role: str, content: dict, movie_title: str) -> str:
         f"能被触动的，往往正是我们心里本就有的东西。{q}"
         f"不必急着下结论，允许这份感受再停留一会儿，它会在合适的时候给你答案。"
     )
+
+
+def personalize_movie(movie: dict, answers: dict) -> dict | None:
+    """根据用户 5 问答案，生成亲切的「这部影片如何支持你」+「观影观己」讨论问题。
+
+    返回 {"support": str, "questions": [str]}；失败返回 None（前端回退通用内容）。
+    """
+    prompt = f"""用户填写的五个问题（这是他的真实处境，务必紧扣；他没提到的内容不要硬扯）：
+- 此刻的心情/需求：{answers.get('emotion') or '未填'}
+- 正处的境遇：{answers.get('situation') or '未填'}
+- 渴望获得：{answers.get('value') or '未填'}
+- 角色/身份：{answers.get('audience') or '未填'}
+- 想看的主题：{answers.get('theme') or '未填'}
+
+影片《{movie.get('title', '')}》简介：{(movie.get('synopsis') or '')[:150]}
+治疗要点：{(movie.get('therapy_notes') or '')[:100]}
+
+请像一位懂电影也懂你的老朋友，亲切地写两段（总约 260 字）：
+第一段「支持」：这部影片如何支持「此刻的你」——紧扣他上面填的心情/境遇/渴望；他只提到孩子才提孩子，没说就不提；不说道理，像朋友聊天。
+第二段「问题」：给 3 个「观影观己」的讨论问题，围绕「影片中哪些片段触动到了你」「这些桥段和你的生活有哪些类似」展开，并自然融入他的回答。
+
+严格输出 JSON（不要多余文字）：{{"support": "…", "questions": ["…", "…", "…"]}}"""
+    text = lc.llm_generate(_ROLE_SYSTEM["viewer"], prompt, max_tokens=700)
+    if not text:
+        return None
+    import json
+    import re
+
+    # 优先解析 JSON
+    m = re.search(r"\{.*\}", text, re.DOTALL)
+    if m:
+        try:
+            data = json.loads(m.group(0))
+            support = str(data.get("support", "")).strip()
+            questions = [str(q).strip() for q in data.get("questions", []) if str(q).strip()]
+            if support or questions:
+                return {"support": support, "questions": questions[:4]}
+        except Exception:  # noqa: BLE001
+            pass
+    return None

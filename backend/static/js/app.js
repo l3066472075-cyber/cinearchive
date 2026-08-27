@@ -6,7 +6,6 @@
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   const API = "/api/v1";
-  let lastSearchLogId = null;
 
   // 海报渐变色板（暖调电影质感）
   const PALETTE = [
@@ -94,14 +93,6 @@
     });
   }
 
-  async function sendFeedback(payload) {
-    try {
-      await api("/feedback", { method: "POST", body: { search_log_id: lastSearchLogId, ...payload } });
-    } catch (e) {
-      console.warn("反馈失败", e);
-    }
-  }
-
   // ============ 详情弹层 ============
   const modal = $("#movie-modal");
   const modalBody = $("#modal-body");
@@ -112,14 +103,29 @@
   }
 
   function openMovie(m) {
-    const tags = (m.tags || []).map((t) => `<span class="chip chip--muted">${esc(t.name)}</span>`).join("");
     const da = m.deep_analysis || {};
     const warnings = (m.trigger_warnings || []).length
       ? `<div class="warning">${(m.trigger_warnings || []).map(esc).join("<br>")}</div>`
       : "";
-    const questions = (m.discussion_questions || []).length
-      ? `<ul>${(m.discussion_questions || []).map((q) => `<li>${esc(q)}</li>`).join("")}</ul>`
-      : "";
+
+    // 有 5 问答案 → 请求 AI 按「此刻的你」个性化解读；否则展示通用内容
+    const hasAnswers = !!lastGuideAnswers && Object.values(lastGuideAnswers).some((v) => v && String(v).trim());
+    const supportBox = hasAnswers
+      ? `<div class="detail-section">
+          <h4>这部影片如何支持你</h4>
+          <div id="personal-support" class="personal-box">
+            <p class="personal-loading">正在为你细细解读，稍等片刻…</p>
+          </div>
+        </div>`
+      : `<div class="detail-section">
+          <h4>这部影片如何支持你</h4>
+          <div class="tag-row">${(m.support_types || []).map((s) => `<span class="tag-pill">${esc(s)}</span>`).join("")}</div>
+          <p><strong style="color:var(--ink)">适合人群：</strong>${esc((m.support_audiences || []).join("、"))}</p>
+          <p>${esc(m.therapy_notes || "")}</p>
+        </div>
+        ${(m.discussion_questions || []).length
+          ? `<div class="detail-section"><h4>观影后的讨论问题</h4><ul>${(m.discussion_questions || []).map((q) => `<li>${esc(q)}</li>`).join("")}</ul></div>`
+          : ""}`;
 
     modalBody.innerHTML = `
       <div class="detail-hero">
@@ -155,76 +161,59 @@
         </div>
       </div>
 
-      <div class="detail-section">
-        <h4>这部影片如何支持你</h4>
-        <div class="tag-row">${(m.support_types || []).map((s) => `<span class="tag-pill">${esc(s)}</span>`).join("")}</div>
-        <p><strong style="color:var(--ink)">适合人群：</strong>${esc((m.support_audiences || []).join("、"))}</p>
-        <p>${esc(m.therapy_notes || "")}</p>
-      </div>
-
-      ${questions ? `<div class="detail-section"><h4>观影后的讨论问题</h4>${questions}</div>` : ""}
+      ${supportBox}
       ${warnings ? `<div class="detail-section"><h4>观看提醒</h4>${warnings}</div>` : ""}
 
-      <div class="detail-section">
-        <h4>相关标签</h4>
-        <div class="tag-row">${tags || '<span style="color:var(--ink-3);font-size:13px">暂无标签</span>'}</div>
-      </div>
-
       <div class="detail-section" style="border-top:1px solid var(--hairline-soft);padding-top:22px">
-        <h4>这部片子，帮到你了吗？</h4>
-        <div class="card-actions" style="margin-top:10px">
-          <button class="mini-btn" data-act="helpful">👍 帮到我了</button>
-          <button class="mini-btn" data-act="not-helpful">👎 没帮到</button>
-        </div>
-        <div class="ask-box" style="margin:16px 0 0;max-width:none;padding:6px 6px 6px 18px">
-          <input class="ask-box__input" id="tag-suggest" style="font-size:14px" placeholder="建议一个标签，比如：婆媳矛盾" />
-          <button class="ask-box__submit" id="tag-submit" style="padding:10px 20px;font-size:14px">提交标签</button>
-        </div>
-        <p id="feedback-hint" style="font-size:12.5px;color:var(--ink-3);margin:8px 2px 0"></p>
-      </div>
-
-      <div class="detail-section" style="border-top:1px solid var(--hairline-soft);padding-top:22px">
-        <h4>分享 · 观影感悟卡</h4>
-        <input id="share-note" placeholder="写一句你的感悟（可留空）" style="width:100%;margin:6px 0 12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
-        <button class="ask-box__submit" id="share-gen"><span>生成卡片 · 长按保存</span></button>
-        <div id="share-result" style="margin-top:14px"></div>
+        <h4>把这份触动，留下来</h4>
+        <p style="font-size:13.5px;color:var(--ink-2);margin:4px 0 14px">观影后的感受值得被写下。去「我的观心」写一篇「观电影法」笔记，档案馆会给你一份专属回应，帮你把这份触动留在生命里。</p>
+        <button class="ask-box__submit" id="to-notes-btn"><span>🪔 去我的观心 · 写下观影笔记</span></button>
       </div>`;
 
-    $$("[data-act]", modalBody).forEach((btn) =>
-      btn.addEventListener("click", async () => {
-        const helpful = btn.dataset.act === "helpful";
-        await sendFeedback({ movie_id: m.id, helpful });
-        btn.classList.add("is-on");
-        btn.textContent = helpful ? "✓ 已记录" : "✓ 已记录";
-        $("#feedback-hint").textContent = "感谢反馈，已记录，将帮助档案馆更懂你。";
-      })
-    );
-    $("#tag-submit").addEventListener("click", async () => {
-      const val = $("#tag-suggest").value.trim();
-      if (!val) return;
-      const res = await api("/feedback", {
-        method: "POST",
-        body: { movie_id: m.id, suggested_tag: val },
-      });
-      $("#feedback-hint").textContent = res.message;
-      $("#tag-suggest").value = "";
-    });
+    // 按 5 问答案请求个性化解读（异步，不阻塞弹层）
+    if (hasAnswers) {
+      (async () => {
+        const box = $("#personal-support");
+        try {
+          const res = await api(`/movies/${m.id}/personal`, {
+            method: "POST",
+            body: { answers: lastGuideAnswers },
+          });
+          if (!box) return;
+          const qs = (res.questions || []).length
+            ? `<div class="detail-section" style="margin-top:18px">
+                <h4>观影观己 · 带着问题去看</h4>
+                <ul class="personal-questions">${res.questions.map((q) => `<li>${esc(q)}</li>`).join("")}</ul>
+              </div>`
+            : "";
+          box.innerHTML = `
+            <div class="personal-support">${esc(res.support || "这部影片如何支持你，留给你在观影中去体会。")}</div>
+            ${qs}`;
+        } catch (e) {
+          if (!box) return;
+          box.innerHTML = `
+            <div class="tag-row">${(m.support_types || []).map((s) => `<span class="tag-pill">${esc(s)}</span>`).join("")}</div>
+            <p>${esc(m.therapy_notes || "")}</p>
+            <p style="font-size:12.5px;color:var(--ink-3);margin-top:8px">个性化解读暂时不可用，先看看这份通用指引。</p>`;
+        }
+      })();
+    }
 
-    // —— 分享卡片 ——
-    const BOOK_QUOTES = ["生命是条长河，最终渡你的还是自己"];
-    $("#share-gen").addEventListener("click", () => {
-      const note = $("#share-note").value.trim();
-      const quote = BOOK_QUOTES[Math.floor(Math.random() * BOOK_QUOTES.length)];
-      const da = m.deep_analysis || {};
-      $("#share-result").innerHTML = `
-        <div class="share-card" style="background:${gradientFor(m.title)}">
-          <span class="share-card__brand">影境档案 · 观电影法</span>
-          <h3 class="share-card__movie">《${esc(m.title)}》</h3>
-          <p class="share-card__quote">「${esc(quote)}」</p>
-          ${note ? `<p class="share-card__note">—— ${esc(note)}</p>` : ""}
-          <span class="share-card__theme">${esc(da.theme || "借电影，观自己")}</span>
-        </div>`;
-    });
+    // 引导去「我的观心」写笔记（自动带上这部影片）
+    const toNotes = $("#to-notes-btn");
+    if (toNotes) {
+      toNotes.addEventListener("click", () => {
+        closeModal();
+        openGrowth().then(() => {
+          const nm = $("#note-movie");
+          if (nm) nm.value = m.title;
+          const wrap = $("#note-wrap");
+          if (wrap) wrap.style.display = "block";
+          const top = $("#note-role");
+          if (top) top.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+      });
+    }
 
     modal.hidden = false;
     document.body.style.overflow = "hidden";
@@ -500,7 +489,7 @@
   const GUIDE_CONFIG = {
     viewer: [
       { key: "emotion", q: "此刻的你，心情如何？（可多选）", type: "tags" },
-      { key: "situation", q: "你正处在什么样的境遇里？（可多选）", type: "tags" },
+      { key: "situation", q: "你正处在什么样的境遇里？", type: "free", ph: "如：刚换了工作、孩子升学、独自在外打拼、家人需要照顾…" },
       { key: "value", q: "你渴望从电影里获得什么？（可多选）", type: "tags" },
       { key: "audience", q: "你现在的角色是？（自己填写）", type: "free" },
       { key: "theme", q: "你想看什么主题？（可多选或自己填写）", type: "tags+free" },
@@ -607,11 +596,11 @@
     const submit = $("#wizard-next");
     submit.classList.add("is-loading");
     try {
+      lastGuideAnswers = buildGuideAnswers(); // 记住本次 5 问答案，供影片详情个性化解读
       const data = await api("/recommend/guided", {
         method: "POST",
-        body: { role: guideRole, answers: buildGuideAnswers() },
+        body: { role: guideRole, answers: lastGuideAnswers },
       });
-      lastSearchLogId = data.search_log_id;
       renderGuidedResults(data);
     } catch (e) {
       alert("推荐失败：" + e.message);
@@ -622,6 +611,7 @@
 
   let lastGuidedItems = [];
   let lastGuidedRole = "viewer";
+  let lastGuideAnswers = null; // 最近一次 5 问答案，供影片详情做个性化解读
 
   function renderGuidedResults(data) {
     resultsSection.hidden = false;
