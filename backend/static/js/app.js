@@ -324,7 +324,29 @@
           { key: "是否愿意分享PPT", ph: "愿意分享给他人吗（他人喜欢可打赏）？", select: ["愿意分享（可被打赏）", "暂不分享"] },
         ],
       };
-      let noteRole = "viewer";
+      // 按「本次登录选择的身份」锁定笔记类型
+      const userRole = (() => { try { return localStorage.getItem("cine_role"); } catch (e) { return null; } })() || "viewer";
+      let noteRole = userRole;
+
+      // 只保留当前身份的按钮，另一个锁定（置灰、不可点）
+      $$("#note-role button").forEach((b) => {
+        if (b.dataset.nrole !== userRole) {
+          b.disabled = true;
+          b.style.opacity = "0.4";
+          b.style.cursor = "not-allowed";
+        } else {
+          b.classList.add("is-on");
+        }
+      });
+      // 身份锁定提示
+      const roleHint = $("#note-role");
+      if (roleHint) {
+        roleHint.insertAdjacentHTML(
+          "afterend",
+          `<p style="font-size:12px;color:var(--gold-soft);margin:0 0 12px">已锁定为「${userRole === "facilitator" ? "影领家" : "寻影者"}」身份 · 如要切换请在首页重选身份</p>`
+        );
+      }
+
       // 拉取影片列表（用于按名称匹配 movie_id）
       let allMovies = [];
       try {
@@ -347,6 +369,7 @@
       }
       $$("#note-role button").forEach((b) =>
         b.addEventListener("click", () => {
+          if (b.disabled) return;
           noteRole = b.dataset.nrole;
           $$("#note-role button").forEach((x) => x.classList.toggle("is-on", x === b));
           renderNoteFields();
@@ -500,6 +523,7 @@
 
   function startGuide(role) {
     guideRole = role;
+    try { localStorage.setItem("cine_role", role); } catch (e) {} // 记住本次身份，笔记区按身份锁定
     guideStep = 0;
     guideSelections = {};
     guideFree = {};
