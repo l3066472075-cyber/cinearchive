@@ -250,12 +250,6 @@ class MatchResponse(BaseModel):
     resonance: list[dict[str, Any]] = []
 
 
-# ---------- 导出 PPT ----------
-class PptExportRequest(BaseModel):
-    answers: dict[str, str] = {}
-    movies: list[dict[str, Any]] = []
-
-
 # ---------- 个性化影片解读（按5问） ----------
 class PersonalRequest(BaseModel):
     answers: dict[str, str] = {}
