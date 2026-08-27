@@ -1076,12 +1076,19 @@ body[data-brand="yingling"] {
   border: 1px solid var(--hairline-soft);
   border-radius: 18px;
   cursor: pointer;
+  color: var(--ink); /* 关键：button 默认是深色文字，必须显式设为亮色 */
   transition: all 0.3s var(--ease);
 }
 .role-card:hover { transform: translateY(-3px); border-color: var(--gold-deep); box-shadow: 0 14px 30px -16px rgba(0,0,0,.5); }
 .role-card__icon { font-size: 30px; }
-.role-card__name { font-family: var(--font-serif); font-weight: 600; font-size: 18px; }
-.role-card__desc { font-size: 12.5px; color: var(--ink-3); }
+.role-card__name {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--gold-soft); /* 明亮金色，深底高对比 */
+  letter-spacing: 0.08em;
+}
+.role-card__desc { font-size: 12.5px; color: var(--ink-2); }
 .wizard { max-width: 560px; margin: 30px auto 0; }
 .wizard__progress { height: 4px; background: var(--surface-2); border-radius: 999px; overflow: hidden; margin-bottom: 16px; }
 .wizard__progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--gold-soft), var(--gold)); transition: width 0.3s var(--ease); }
