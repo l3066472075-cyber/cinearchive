@@ -849,7 +849,31 @@ body {
   letter-spacing: 0.06em;
   color: var(--ink-3);
 }
-@media (max-width: 720px) { .brand__tagline { display: none; } }
+@media (max-width: 720px) {
+  /* 手机端顶栏：品牌在左、按钮在右、副标题第二行居中 */
+  .site-header {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 10px 14px;
+  }
+  .brand { gap: 5px; }
+  .brand__mark { display: none; } /* 手机上隐藏 CineArchive，省空间 */
+  .brand__cn { font-size: 13px; letter-spacing: 0.05em; }
+  .brand__dot { font-size: 11px; transform: none; }
+  #growth-btn { margin-left: auto; } /* 把两个按钮推到右侧 */
+  .api-link { font-size: 12px; }
+  #growth-btn, #login-btn { padding: 5px 8px; }
+  .brand__tagline {
+    display: block;
+    order: 3;
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+  }
+}
 
 /* ============ Hero AI note ============ */
 .hero__ai-note {
