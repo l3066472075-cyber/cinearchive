@@ -1,78 +1,55 @@
-"""LangChain 集成：ChatOpenAI 与 OpenAIEmbeddings（可插拔，离线回退由调用方处理）。
+"""LLM / 嵌入接入层：直接调用 OpenAI 兼容接口（httpx，稳定可靠）。
 
-统一走 OpenAI 兼容接口，可接 OpenAI / 通义 / 智谱 / DeepSeek / 本地 vLLM 等。
-未配置 key 时 get_* 返回 None，调用方回退到离线方案。
+说明：早期用 langchain-openai 的 ChatOpenAI/OpenAIEmbeddings，但该版本存在
+「http_client_kwargs 被错误传入 model_kwargs」的 bug，导致部分调用静默失败。
+改为 httpx 直连后彻底规避；LangGraph 推荐图（langgraph）仍为编排核心。
 """
 from __future__ import annotations
 
-import os
-from functools import lru_cache
-
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+import httpx
 
 from ..config import settings
 
-# 禁用代理以避免SOCKS代理问题
-os.environ["NO_PROXY"] = "*"
-os.environ["http_proxy"] = ""
-os.environ["https_proxy"] = ""
-os.environ["HTTP_PROXY"] = ""
-os.environ["HTTPS_PROXY"] = ""
-os.environ["ALL_PROXY"] = ""
-os.environ["all_proxy"] = ""
-
-
-@lru_cache(maxsize=1)
-def get_chat_model() -> ChatOpenAI | None:
-    if not settings.llm_enabled:
-        return None
-    return ChatOpenAI(
-        model=settings.llm_model,
-        api_key=settings.llm_api_key,
-        base_url=settings.llm_base_url,
-        temperature=0.7,
-        max_tokens=400,
-        timeout=30.0,
-        http_client_kwargs={"trust_env": False},  # 禁用环境变量代理
-    )
-
-
-@lru_cache(maxsize=1)
-def get_embeddings_model() -> OpenAIEmbeddings | None:
-    if not settings.embedding_enabled:
-        return None
-    return OpenAIEmbeddings(
-        model=settings.embedding_model,
-        api_key=settings.embedding_api_key,
-        base_url=settings.embedding_base_url,
-        timeout=30.0,
-        http_client_kwargs={"trust_env": False},  # 禁用环境变量代理
-    )
+_client = httpx.Client(timeout=90.0)
 
 
 def llm_generate(system: str, human: str, max_tokens: int = 400) -> str | None:
-    """用 LangChain ChatOpenAI 生成文本；失败/未配置返回 None。"""
-    model = get_chat_model()
-    if model is None:
+    """调用 OpenAI 兼容 chat/completions。失败返回 None（调用方回退模板）。"""
+    if not settings.llm_enabled:
         return None
     try:
-        resp = model.invoke(
-            [SystemMessage(content=system), HumanMessage(content=human)],
-            max_tokens=max_tokens,
+        resp = _client.post(
+            f"{settings.llm_base_url.rstrip('/')}/chat/completions",
+            headers={"Authorization": f"Bearer {settings.llm_api_key}"},
+            json={
+                "model": settings.llm_model,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": human},
+                ],
+                "max_tokens": max_tokens,
+                "temperature": 0.7,
+            },
         )
-        content = resp.content if isinstance(resp.content, str) else str(resp.content)
-        return content.strip() or None
+        resp.raise_for_status()
+        data = resp.json()
+        return data["choices"][0]["message"]["content"].strip()
     except Exception:  # noqa: BLE001
         return None
 
 
 def embed_documents(texts: list[str]) -> list[list[float]] | None:
-    """用 LangChain OpenAIEmbeddings 批量嵌入；失败/未配置返回 None。"""
-    model = get_embeddings_model()
-    if model is None:
+    """调用 OpenAI 兼容 embeddings 接口。失败返回 None（调用方回退哈希）。"""
+    if not settings.embedding_enabled:
         return None
     try:
-        return model.embed_documents(texts)
+        resp = _client.post(
+            f"{settings.embedding_base_url.rstrip('/')}/embeddings",
+            headers={"Authorization": f"Bearer {settings.embedding_api_key}"},
+            json={"model": settings.embedding_model, "input": texts},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return [item["embedding"] for item in data["data"]]
     except Exception:  # noqa: BLE001
         return None
