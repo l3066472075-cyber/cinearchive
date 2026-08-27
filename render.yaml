@@ -9,13 +9,22 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
     envVars:
-      # 免费大模型（智谱 GLM-4-Flash，完全免费；也可换成 DeepSeek/通义等）
+      # —— 对话/生成：DeepSeek（快；测试期用个人 key，正式上线后把 LLM_API_KEY 换成平台 key 即可，无需改代码）——
       - key: LLM_BASE_URL
-        value: https://open.bigmodel.cn/api/paas/v4
+        value: https://api.deepseek.com/v1
       - key: LLM_MODEL
-        value: glm-4-flash
-      # 下面两个 key 需要在 Render 界面里手动填（或用 .env）
+        value: deepseek-chat
+      # —— 嵌入/向量：继续走智谱（免费；DeepSeek 无 embeddings 接口）——
+      - key: EMBEDDING_BASE_URL
+        value: https://open.bigmodel.cn/api/paas/v4
+      - key: EMBEDDING_MODEL
+        value: embedding-3
+      # 下面几个 key 需要在 Render 界面里手动填（或用 .env），不进 git：
+      # LLM_API_KEY       = DeepSeek key（sk-...）
+      # EMBEDDING_API_KEY = 智谱 key（原 LLM_API_KEY 里那个）
       - key: LLM_API_KEY
+        sync: false
+      - key: EMBEDDING_API_KEY
         sync: false
       - key: CINELIB_DATABASE_URL
         sync: false
