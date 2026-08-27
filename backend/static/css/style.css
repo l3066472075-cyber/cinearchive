@@ -839,7 +839,7 @@ body {
   .hero { padding-top: 24px; padding-bottom: 20px; }
   .hero__title { font-size: 32px; line-height: 1.3; }
   .hero__sub { font-size: 13.5px; margin-top: 14px; }
-  .hero__eyebrow { letter-spacing: 0.3em; font-size: 11px; }
+  .hero__eyebrow { letter-spacing: 0.3em; font-size: 14px; }
   .guide-section { padding-top: 0; }
   .role-cards { margin-top: 16px; gap: 10px; }
   .tags-section__title, .section-title { font-size: 17px; line-height: 1.5; }
@@ -873,11 +873,11 @@ body {
   }
   .brand { gap: 3px; min-width: 0; }
   .brand__mark { display: none; }
-  .brand__cn { font-size: 11px; letter-spacing: 0.02em; white-space: nowrap; }
-  .brand__dot { font-size: 9px; transform: none; }
+  .brand__cn { font-size: 13px; letter-spacing: 0.02em; white-space: nowrap; }
+  .brand__dot { font-size: 11px; transform: none; }
   .brand__tagline { display: none; }
   #growth-btn { margin-left: auto; }
-  .api-link { font-size: 11px; }
+  .api-link { font-size: 13px; }
   #growth-btn, #login-btn {
     padding: 4px 9px;
     white-space: nowrap;
