@@ -65,7 +65,9 @@ def guided_recommend(
     items, intent, _engine = graph.recommend(
         db, query, limit=req.limit,
         audience=req.answers.get("audience"),
-        with_explanation=True,
+        # 引导流程不逐卡生成解释：解读里已自然带出每部候选片的推荐理由，
+        # 卡片解释用模板即可（避免解释+解读两次串行 LLM 调用拖慢响应）
+        with_explanation=False,
     )
     matched_ids = [it.movie.id for it in items]
     log = growth.log_search(

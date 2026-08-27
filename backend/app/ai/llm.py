@@ -132,8 +132,10 @@ _ROLE_SYSTEM = {
 }
 
 _ROLE_FOCUS = {
-    "viewer": "写一段 120~180 字的「观影陪伴指引」：这部片子如何呼应他的心情与处境，"
-              "他可能会在哪里被触动，看完可以做点什么来照顾自己。像朋友一样说话，不贴标签、不夸大疗效。",
+    "viewer": "写一段 180~260 字的「观影陪伴指引」：先自然带出 2~3 部候选影片各自的推荐理由"
+              "（每部一两句，说明为什么适合此刻的他，不要罗列式介绍剧情），"
+              "再写他可能会在哪里被触动、看完可以做点什么来照顾自己。"
+              "像朋友一样说话，不贴标签、不夸大疗效。",
     "facilitator": (
         "请给出简明扼要的「引导思路与大致流程」（不用写完整带领方案，更不要写 PPT 大纲），包含：\n"
         "一、选片思路：首选 1 部 + 备选 1~2 部，各用一句话说明为什么贴合服务对象的需求与目标。\n"
@@ -184,7 +186,7 @@ def guided_interpretation(
         return lc.llm_generate(_ROLE_SYSTEM[role], prompt, max_tokens=600)
 
     prompt += f"\n\n{_HUMAN_TOUCH}"
-    return lc.llm_generate(_ROLE_SYSTEM[role], prompt)
+    return lc.llm_generate(_ROLE_SYSTEM[role], prompt, max_tokens=700)
 
 
 def template_guided_interpretation(
