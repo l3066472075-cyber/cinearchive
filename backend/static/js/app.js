@@ -463,6 +463,8 @@
 
   // ============ 公众号 H5 静默登录 ============
   function handleMpLogin() {
+    // 只处理「登录回调带回来的 token」，不再自动跳转微信登录
+    // （避免微信内置浏览器里自动跳转导致黑屏/服务错误；登录改为点按钮触发）
     try {
       const params = new URLSearchParams(location.search);
       const token = params.get("token");
@@ -471,21 +473,9 @@
         params.delete("token");
         const qs = params.toString();
         history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
-        return;
-      }
-      const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-      // 只在微信中且没有token时才自动跳转登录
-      if (isWeChat && !getToken() && !params.has('skip_wx_login')) {
-        try {
-          const back = encodeURIComponent(location.href + (location.href.includes('?') ? '&' : '?') + 'skip_wx_login=1');
-          location.replace(`/api/v1/auth/mp/authorize?redirect_uri=${back}&scope=snsapi_base`);
-        } catch (e) {
-          console.warn("微信登录跳转失败", e);
-          // 失败后继续使用访客模式
-        }
       }
     } catch (e) {
-      console.warn("微信登录处理失败", e);
+      console.warn("登录回调处理失败", e);
     }
   }
 
