@@ -12,6 +12,7 @@ LangGraph 让推荐流程的每一步都成为可观测、可扩展、可替换�
 """
 from __future__ import annotations
 
+import concurrent.futures
 from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -84,8 +85,9 @@ def rerank(state: RecState) -> dict:
 
 def explain(state: RecState) -> dict:
     use_llm = bool(state["with_explanation"] and settings.llm_enabled)
-    candidates = []
-    for c in state["candidates"]:
+    cands = state["candidates"]
+
+    def gen(c: dict) -> dict:
         entry = state["movies"][c["movie_id"]]
         detail = entry["detail"]
         explanation = ""
@@ -106,8 +108,16 @@ def explain(state: RecState) -> dict:
                     c["matched_tags"],
                     entry["support_audiences"] or [],
                 )
-        c["explanation"] = explanation
-        candidates.append(c)
+        return {**c, "explanation": explanation}
+
+    # 多条推荐理由并行生成（DeepSeek 单次 5~10s，串行 5 条会到 50s；并行只等最慢一条）
+    if use_llm and len(cands) > 1:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=min(len(cands), 5)
+        ) as ex:
+            candidates = list(ex.map(gen, cands))
+    else:
+        candidates = [gen(c) for c in cands]
     return {"candidates": candidates, "engine": "llm" if use_llm else "offline"}
 
 
