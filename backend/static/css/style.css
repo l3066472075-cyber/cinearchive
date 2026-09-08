@@ -1163,6 +1163,23 @@ body[data-brand="yingling"] {
   border-color: var(--gold);
 }
 
+/* 观己观心表单 */
+.life-form__tip { margin: 0 0 18px; font-size: 13.5px; color: var(--ink-3); }
+.life-q { margin-bottom: 18px; }
+.life-q__label { display: block; margin-bottom: 8px; font-family: var(--font-serif); font-size: 15.5px; line-height: 1.6; color: var(--gold-soft); }
+.life-q textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline-soft);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  resize: vertical;
+  line-height: 1.7;
+}
+
 /* LLM 直接推荐的 top3 卡片 */
 .top3-card {
   position: relative;

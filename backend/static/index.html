@@ -48,7 +48,7 @@
         <div class="section-head">
           <h2 class="board-title">看别人的电影</h2>
           <p class="board-sub">此刻的你，需要哪部电影？</p>
-          <p class="section-sub">回答几个问题，从好电影档案馆里，为你挑一部懂你此刻的电影。</p>
+          <p class="section-sub">回答几个问题，从电影档案馆里，为你挑一部懂你此刻的电影。</p>
           <button class="board-enter" id="guide-enter"><span>开始选片 →</span></button>
         </div>
 
@@ -62,48 +62,10 @@
             <button class="ask-box__submit" id="wizard-next"><span>下一步 →</span></button>
           </div>
         </div>
-        <button class="mini-btn" id="guide-back" hidden style="margin-top:16px">← 返回首页</button>
       </div>
     </section>
 
-    <!-- ============ 看自己的人生电影 ============ -->
-    <section class="life-section" id="life">
-      <div class="container">
-        <div class="section-head">
-          <h2 class="board-title">看自己的人生电影</h2>
-          <p class="board-sub">你的人生电影</p>
-          <p class="section-sub">像看电影一样，看自己的人生——被看见，也被欣赏。</p>
-          <button class="board-enter" id="life-enter"><span>开始放映 →</span></button>
-        </div>
-
-        <!-- 人生电影 · 5 问向导 -->
-        <div class="life-wizard" id="life-wizard" hidden>
-          <div class="wizard__progress"><span id="life-progress"></span></div>
-          <p class="wizard__step" id="life-step">第 1 / 5 问</p>
-          <h2 class="wizard__question" id="life-question"></h2>
-          <div class="wizard__chips" id="life-chips"></div>
-          <div class="wizard__nav">
-            <button class="mini-btn" id="life-back" hidden>← 上一步</button>
-            <button class="ask-box__submit" id="life-next"><span>下一步 →</span></button>
-          </div>
-        </div>
-
-        <!-- 人生电影结果（含可分享海报） -->
-        <div class="life-result" id="life-result" hidden></div>
-
-        <!-- 每日剧情复盘 -->
-        <div class="life-daily" id="life-daily" hidden>
-          <h3 class="life-daily__title">🎬 今天，你的人生电影上演了哪一幕？</h3>
-          <p class="life-daily__sub">把今天生活里的一段「剧情」写下来，像回看一帧镜头那样复盘。</p>
-          <textarea id="daily-story" rows="3" placeholder="比如：今天在会议上第一次说出了自己的不同意见…"></textarea>
-          <div style="margin-top:12px"><button class="ask-box__submit" id="daily-submit"><span>回看这一幕 · 得到回应</span></button></div>
-          <div id="daily-result" class="interpretation" style="margin-top:14px;display:none"></div>
-        </div>
-        <button class="mini-btn" id="life-back2" hidden style="margin-top:16px">← 返回首页</button>
-      </div>
-    </section>
-
-    <!-- ============ 推荐结果 ============ -->
+    <!-- ============ 为你挑选（推荐结果） ============ -->
     <section class="results" id="results" hidden>
       <div class="container">
         <header class="results__head">
@@ -115,6 +77,39 @@
         </header>
         <div class="results__note" id="results-note"></div>
         <div class="results__grid" id="results-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ 看自己的人生电影 ============ -->
+    <section class="life-section" id="life">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="board-title">看自己的人生电影</h2>
+          <p class="board-sub">你的人生电影</p>
+          <p class="section-sub">像看电影一样，看自己的人生——被看见，也被欣赏。</p>
+          <button class="board-enter" id="life-enter"><span>开始观己 →</span></button>
+        </div>
+
+        <!-- 观己观心 · 今日人生电影表单 -->
+        <div id="life-form" hidden>
+          <p class="life-form__tip">每天花几分钟，像回看一帧镜头那样，陪自己看今天这一幕。</p>
+          <div class="life-q">
+            <label class="life-q__label">🎬 今天，你的人生电影上演了哪一幕？</label>
+            <textarea id="life-scene" rows="3" placeholder="比如：今天在会议上第一次说出了自己的不同意见…"></textarea>
+          </div>
+          <div class="life-q">
+            <label class="life-q__label">💭 你的感受和看见是什么？</label>
+            <textarea id="life-feeling" rows="2" placeholder="那一幕发生时你的情绪、心里冒出来的话…"></textarea>
+          </div>
+          <div class="life-q">
+            <label class="life-q__label">🪞 观电影法 · 借这一幕观自己：如果这一幕是电影里的一场戏，你希望镜头外的人（或未来的你），看见你的什么？</label>
+            <textarea id="life-insight" rows="2" placeholder="也可以写下：这一幕里，你照见了自己怎样的特质、渴望或不易…"></textarea>
+          </div>
+          <div style="margin-top:14px"><button class="ask-box__submit" id="life-submit"><span>观己观心</span></button></div>
+        </div>
+
+        <!-- 观己观心结果（含可保存海报） -->
+        <div class="life-result" id="life-result" hidden></div>
       </div>
     </section>
 

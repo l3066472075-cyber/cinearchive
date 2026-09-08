@@ -614,36 +614,7 @@
     }
   });
 
-  // ============ 你的人生电影 ============
-  const LIFE_CONFIG = [
-    { key: "name", q: "你叫什么名字？（或希望被怎样称呼）", ph: "你的名字 / 昵称" },
-    { key: "roles", q: "生活中，你扮演着哪些角色？", ph: "如：妈妈、设计师、女儿、创业者…" },
-    { key: "script_2026", q: "如果「2026」是一部电影，你希望它的剧本怎么演？", ph: "你期待发生的事、想成为的样子…" },
-    { key: "born_script", q: "你的「出生剧本」是怎样的？", ph: "你的出身、来处、原生家庭…（简要即可）" },
-    { key: "extra", q: "此刻，你最想被看见的一句话是？", ph: "可留空" },
-  ];
-  let lifeStep = 0;
-  let lifeFree = {};
-
-  function renderLifeStep() {
-    const step = LIFE_CONFIG[lifeStep];
-    $("#life-step").textContent = `第 ${lifeStep + 1} / ${LIFE_CONFIG.length} 问`;
-    $("#life-progress").style.width = `${((lifeStep + 1) / LIFE_CONFIG.length) * 100}%`;
-    $("#life-question").textContent = step.q;
-    $("#life-chips").innerHTML = `<input id="life-free" placeholder="${esc(step.ph)}" value="${esc(lifeFree[step.key] || "")}" style="width:100%;margin:2px 0 0;padding:11px 14px;border-radius:999px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />`;
-    const input = $("#life-free");
-    if (input) input.addEventListener("input", () => { lifeFree[step.key] = input.value; });
-    $("#life-back").hidden = lifeStep === 0;
-    $("#life-next").querySelector("span").textContent =
-      lifeStep === LIFE_CONFIG.length - 1 ? "放映我的人生电影" : "下一步 →";
-  }
-
-  function buildLifeProfile() {
-    const p = {};
-    for (const s of LIFE_CONFIG) p[s.key] = (lifeFree[s.key] || "").trim();
-    return p;
-  }
-
+  // ============ 你的人生电影 · 观己观心 ============
   function lifePosterColors(title) {
     let h = 0;
     for (const c of title || "") h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -684,17 +655,17 @@
     ctx.fillStyle = "rgba(229,201,143,0.85)";
     ctx.font = "600 24px 'Songti SC', 'Noto Serif SC', serif";
     ctx.textAlign = "center";
-    ctx.fillText("你 的 人 生 电 影", W / 2, 120);
+    ctx.fillText("今 日 人 生 电 影", W / 2, 120);
     // 片名
     ctx.fillStyle = "rgba(255,255,255,0.97)";
-    ctx.font = "700 64px 'Songti SC', 'Noto Serif SC', serif";
+    ctx.font = "700 60px 'Songti SC', 'Noto Serif SC', serif";
     const titleLines = wrapText(ctx, `《${data.title}》`, W - 160);
     let ty = 300;
-    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += 88; }
+    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += 84; }
     // 类型
     ctx.fillStyle = "rgba(229,201,143,0.95)";
     ctx.font = "500 30px 'Songti SC', serif";
-    ctx.fillText(data.genre || "人生", W / 2, ty + 20);
+    ctx.fillText(data.genre || "今日一幕", W / 2, ty + 20);
     // 海报文案
     ctx.fillStyle = "rgba(255,255,255,0.92)";
     ctx.font = "400 32px 'Songti SC', serif";
@@ -712,111 +683,81 @@
     return canvas.toDataURL("image/png");
   }
 
-  function renderLifeResult(data, name) {
-    const poster = drawLifePoster(data, name);
+  function resetLifeForm() {
+    ["life-scene", "life-feeling", "life-insight"].forEach((id) => {
+      const el = $("#" + id);
+      if (el) el.value = "";
+    });
+    $("#life-result").hidden = true;
+    $("#life-form").hidden = false;
+    $("#life").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function renderLifeResult(data) {
+    const poster = drawLifePoster(data, "你");
     $("#life-result").hidden = false;
     $("#life-result").innerHTML = `
       <div class="life-film">
         <img class="life-poster" src="${poster}" alt="${esc(data.title)} 海报" />
         <p class="life-poster-tip">👆 长按上方海报，可保存分享</p>
         <div class="life-film__meta">
-          <span class="life-film__genre">${esc(data.genre || "人生")}</span>
+          <span class="life-film__genre">${esc(data.genre || "今日一幕")}</span>
           <span class="life-film__tagline">「${esc(data.tagline || "")}」</span>
         </div>
         <p class="life-film__review">${esc(data.review || "")}</p>
-        <button class="mini-btn" id="life-again" style="margin-top:14px">↻ 再放映一次（重新填写）</button>
+        <button class="mini-btn" id="life-again" style="margin-top:14px">↻ 再观一幕（重新填写）</button>
       </div>`;
-    $("#life-again").addEventListener("click", () => {
-      lifeStep = 0; lifeFree = {};
-      $("#life-result").hidden = true;
-      $("#life-wizard").hidden = false;
-      renderLifeStep();
-      $("#life").scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+    $("#life-again").addEventListener("click", resetLifeForm);
   }
 
-  $("#life-next").addEventListener("click", async () => {
-    if (lifeStep < LIFE_CONFIG.length - 1) {
-      lifeStep++;
-      renderLifeStep();
-      return;
-    }
-    const btn = $("#life-next");
+  // 观己观心：提交「今日一幕 + 感受 + 观电影法反思」
+  $("#life-submit").addEventListener("click", async () => {
+    const scene = $("#life-scene").value.trim();
+    if (!scene) { alert("先写下今天上演的一幕吧"); return; }
+    const btn = $("#life-submit");
     btn.classList.add("is-loading");
-    btn.querySelector("span").textContent = "正在放映…";
+    btn.querySelector("span").textContent = "正在观己…";
     try {
-      const data = await api("/life/movie", { method: "POST", body: { profile: buildLifeProfile() } });
-      $("#life-wizard").hidden = true;
-      renderLifeResult(data, buildLifeProfile().name);
+      const data = await api("/life/movie", {
+        method: "POST",
+        body: {
+          profile: {
+            scene,
+            feeling: $("#life-feeling").value.trim(),
+            insight: $("#life-insight").value.trim(),
+          },
+        },
+      });
+      $("#life-form").hidden = true;
+      renderLifeResult(data);
     } catch (e) {
       alert("生成失败：" + e.message);
     } finally {
       btn.classList.remove("is-loading");
-      btn.querySelector("span").textContent = "放映我的人生电影";
-    }
-  });
-  $("#life-back").addEventListener("click", () => {
-    if (lifeStep > 0) { lifeStep--; renderLifeStep(); }
-  });
-
-  // 每日剧情复盘
-  $("#daily-submit").addEventListener("click", async () => {
-    const story = $("#daily-story").value.trim();
-    if (!story) { alert("先写下一段今天的「剧情」吧"); return; }
-    const btn = $("#daily-submit");
-    btn.classList.add("is-loading");
-    btn.querySelector("span").textContent = "正在回看…";
-    try {
-      const data = await api("/life/daily", { method: "POST", body: { story } });
-      const r = $("#daily-result");
-      r.style.display = "block";
-      r.innerHTML = `<strong style="color:var(--gold-soft)">「${esc(data.title)}」</strong><br><br>${esc(data.review)}`;
-    } catch (e) {
-      const r = $("#daily-result");
-      r.style.display = "block";
-      r.textContent = "生成失败：" + e.message;
-    } finally {
-      btn.classList.remove("is-loading");
-      btn.querySelector("span").textContent = "回看这一幕 · 得到回应";
+      btn.querySelector("span").textContent = "观己观心";
     }
   });
 
   // ============ 首页双板块：进入式交互 ============
   function enterGuide() {
     $("#life").hidden = true;
+    $("#activity").hidden = true;
+    $("#extra").hidden = true;
     $("#wizard").hidden = false;
     $("#guide-enter").style.display = "none";
-    $("#guide-back").hidden = false;
     renderGuideStep();
     $("#guide").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function enterLife() {
     $("#guide").hidden = true;
-    $("#life-wizard").hidden = false;
-    $("#life-daily").hidden = false;
+    $("#activity").hidden = true;
+    $("#extra").hidden = true;
+    $("#life-form").hidden = false;
     $("#life-enter").style.display = "none";
-    $("#life-back2").hidden = false;
-    renderLifeStep();
     $("#life").scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-  function backHome() {
-    $("#guide").hidden = false;
-    $("#life").hidden = false;
-    $("#wizard").hidden = true;
-    $("#life-wizard").hidden = true;
-    $("#life-daily").hidden = true;
-    $("#life-result").hidden = true;
-    resultsSection.hidden = true;
-    $("#guide-enter").style.display = "";
-    $("#life-enter").style.display = "";
-    $("#guide-back").hidden = true;
-    $("#life-back2").hidden = true;
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
   $("#guide-enter").addEventListener("click", enterGuide);
   $("#life-enter").addEventListener("click", enterLife);
-  $("#guide-back").addEventListener("click", backHome);
-  $("#life-back2").addEventListener("click", backHome);
 
   // ============ 初始化 ============
   (async function init() {
