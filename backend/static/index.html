@@ -22,10 +22,6 @@
   <header class="site-header">
     <a class="brand" href="#top">
       <span class="brand__mark">CineArchive</span>
-      <span class="brand__cn">禅说电影</span>
-      <span class="brand__dot">·</span>
-      <span class="brand__cn">影领家</span>
-      <span class="brand__dot">·</span>
       <span class="brand__cn">影境档案</span>
     </a>
     <span class="brand__tagline">观电影法 · 借影观心</span>
@@ -50,28 +46,16 @@
       </div>
     </section>
 
-    <!-- ============ 双角色 · 5问引导 ============ -->
+    <!-- ============ 看别人的电影 · 5问选片 ============ -->
     <section class="guide-section" id="guide">
       <div class="container">
-        <div class="role-select" id="role-select">
-          <p class="section-kicker">Choose your role</p>
-          <h2 class="tags-section__title">你以什么身份，走进这座档案馆？</h2>
-          <div class="role-cards">
-            <button class="role-card" data-role="viewer">
-              <span class="role-card__icon">🎬</span>
-              <span class="role-card__name">寻影者</span>
-              <span class="role-card__desc">寻一部懂自己的电影</span>
-            </button>
-            <button class="role-card" data-role="facilitator">
-              <span class="role-card__icon">🧭</span>
-              <span class="role-card__name">影领家</span>
-              <span class="role-card__desc">为他人选片、带观影</span>
-            </button>
-          </div>
+        <div class="section-head">
+          <p class="section-kicker">看别人的电影</p>
+          <h2 class="tags-section__title">此刻的你，需要哪部电影？</h2>
+          <p class="section-sub">回答几个问题，从好电影档案馆里，为你挑一部懂你此刻的电影。</p>
         </div>
 
-        <div class="wizard" id="wizard" hidden>
-          <button class="mini-btn" id="wizard-switch" style="margin-bottom:14px">← 换个身份</button>
+        <div class="wizard" id="wizard">
           <div class="wizard__progress"><span id="wizard-progress"></span></div>
           <p class="wizard__step" id="wizard-step">第 1 / 5 问</p>
           <h2 class="wizard__question" id="wizard-question"></h2>
@@ -80,6 +64,41 @@
             <button class="mini-btn" id="wizard-back" hidden>← 上一步</button>
             <button class="ask-box__submit" id="wizard-next"><span>下一步 →</span></button>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 看自己的人生电影 ============ -->
+    <section class="life-section" id="life">
+      <div class="container">
+        <div class="section-head">
+          <p class="section-kicker">看自己的人生电影</p>
+          <h2 class="tags-section__title">你的人生电影</h2>
+          <p class="section-sub">像看电影一样，看自己的人生——被看见，也被欣赏。</p>
+        </div>
+
+        <!-- 人生电影 · 5 问向导 -->
+        <div class="life-wizard" id="life-wizard">
+          <div class="wizard__progress"><span id="life-progress"></span></div>
+          <p class="wizard__step" id="life-step">第 1 / 5 问</p>
+          <h2 class="wizard__question" id="life-question"></h2>
+          <div class="wizard__chips" id="life-chips"></div>
+          <div class="wizard__nav">
+            <button class="mini-btn" id="life-back" hidden>← 上一步</button>
+            <button class="ask-box__submit" id="life-next"><span>下一步 →</span></button>
+          </div>
+        </div>
+
+        <!-- 人生电影结果（含可分享海报） -->
+        <div class="life-result" id="life-result" hidden></div>
+
+        <!-- 每日剧情复盘 -->
+        <div class="life-daily" id="life-daily">
+          <h3 class="life-daily__title">🎬 今天，你的人生电影上演了哪一幕？</h3>
+          <p class="life-daily__sub">把今天生活里的一段「剧情」写下来，像回看一帧镜头那样复盘。</p>
+          <textarea id="daily-story" rows="3" placeholder="比如：今天在会议上第一次说出了自己的不同意见…"></textarea>
+          <div style="margin-top:12px"><button class="ask-box__submit" id="daily-submit"><span>回看这一幕 · 得到回应</span></button></div>
+          <div id="daily-result" class="interpretation" style="margin-top:14px;display:none"></div>
         </div>
       </div>
     </section>

@@ -208,9 +208,7 @@
           const nm = $("#note-movie");
           if (nm) nm.value = m.title;
           const wrap = $("#note-wrap");
-          if (wrap) wrap.style.display = "block";
-          const top = $("#note-role");
-          if (top) top.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (wrap) wrap.scrollIntoView({ behavior: "smooth", block: "center" });
         });
       });
     }
@@ -270,11 +268,7 @@
         </div>
         <div class="growth-section">
           <h4>「观电影法」笔记</h4>
-          <div class="note-role" id="note-role" style="display:flex;gap:8px;margin-bottom:12px">
-            <button class="mini-btn is-on" data-nrole="viewer">寻影者 · 观影笔记</button>
-            <button class="mini-btn" data-nrole="facilitator">影领家 · 复盘笔记</button>
-          </div>
-          <div id="note-wrap" style="display:none">
+          <div id="note-wrap">
             <input id="note-movie" placeholder="哪部电影（可留空，自己填写）" style="width:100%;margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
             <div id="note-fields"></div>
             <div style="margin-top:12px">
@@ -300,43 +294,12 @@
         setTimeout(openGrowth, 400);
       });
 
-      // 「观电影法」笔记：点击角色标签 → 展开对应填写区
-      const NOTE_FIELDS = {
-        viewer: [
-          { key: "内心触动的片段", ph: "哪个画面、哪段情节，最触动你？" },
-          { key: "喜欢的台词", ph: "有没有哪句台词，你想记下来？" },
-          { key: "电影带来的思考", ph: "这部电影让你想到了什么？内心的想法？" },
-        ],
-        facilitator: [
-          { key: "是否达成预期", ph: "对照开场前设的目标，整场观影会完成得如何？" },
-          { key: "带领收获", ph: "这次带领，你有哪些成长或新发现？" },
-          { key: "体验环节", ph: "从破冰→观影→引导→结尾，用了哪些技能或道具？哪个效果好？" },
-          { key: "PPT精彩处", ph: "带领PPT最打动人的部分是什么？" },
-          { key: "是否愿意分享PPT", ph: "愿意分享给他人吗（他人喜欢可打赏）？", select: ["愿意分享（可被打赏）", "暂不分享"] },
-        ],
-      };
-      // 按「本次登录选择的身份」锁定笔记类型
-      const userRole = (() => { try { return localStorage.getItem("cine_role"); } catch (e) { return null; } })() || "viewer";
-      let noteRole = userRole;
-
-      // 只保留当前身份的按钮，另一个锁定（置灰、不可点）
-      $$("#note-role button").forEach((b) => {
-        if (b.dataset.nrole !== userRole) {
-          b.disabled = true;
-          b.style.opacity = "0.4";
-          b.style.cursor = "not-allowed";
-        } else {
-          b.classList.add("is-on");
-        }
-      });
-      // 身份锁定提示
-      const roleHint = $("#note-role");
-      if (roleHint) {
-        roleHint.insertAdjacentHTML(
-          "afterend",
-          `<p style="font-size:12px;color:var(--gold-soft);margin:0 0 12px">已锁定为「${userRole === "facilitator" ? "影领家" : "寻影者"}」身份 · 如要切换请在首页重选身份</p>`
-        );
-      }
+      // 「观电影法」观影笔记字段
+      const NOTE_FIELDS = [
+        { key: "内心触动的片段", ph: "哪个画面、哪段情节，最触动你？" },
+        { key: "喜欢的台词", ph: "有没有哪句台词，你想记下来？" },
+        { key: "电影带来的思考", ph: "这部电影让你想到了什么？内心的想法？" },
+      ];
 
       // 拉取影片列表（用于按名称匹配 movie_id）
       let allMovies = [];
@@ -345,28 +308,14 @@
       } catch (e) {}
 
       function renderNoteFields() {
-        $("#note-fields").innerHTML = NOTE_FIELDS[noteRole]
-          .map((f) => {
-            if (f.select) {
-              return `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
-                <select class="note-input" data-key="${esc(f.key)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)">
-                  ${f.select.map((o) => `<option>${esc(o)}</option>`).join("")}
-                </select></div>`;
-            }
-            return `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
-              <textarea class="note-input" data-key="${esc(f.key)}" rows="2" placeholder="${esc(f.ph)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:14px;resize:vertical"></textarea></div>`;
-          })
+        $("#note-fields").innerHTML = NOTE_FIELDS
+          .map(
+            (f) =>
+              `<div style="margin-bottom:12px"><label style="font-size:13px;color:var(--ink-2)">${esc(f.key)}</label>
+              <textarea class="note-input" data-key="${esc(f.key)}" rows="2" placeholder="${esc(f.ph)}" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:14px;resize:vertical"></textarea></div>`
+          )
           .join("");
       }
-      $$("#note-role button").forEach((b) =>
-        b.addEventListener("click", () => {
-          if (b.disabled) return;
-          noteRole = b.dataset.nrole;
-          $$("#note-role button").forEach((x) => x.classList.toggle("is-on", x === b));
-          renderNoteFields();
-          $("#note-wrap").style.display = "block"; // 点击标签即展开填写区
-        })
-      );
       renderNoteFields();
       $("#note-submit").addEventListener("click", async () => {
         const content = {};
@@ -388,7 +337,7 @@
             if (hit) movieId = hit.id;
             else content["电影"] = movieName; // 没匹配到库内影片，就存进笔记内容
           }
-          const res = await api("/notes", { method: "POST", body: { role: noteRole, movie_id: movieId, content } });
+          const res = await api("/notes", { method: "POST", body: { role: "viewer", movie_id: movieId, content } });
           $("#note-result").style.display = "block";
           $("#note-result").textContent = res.llm_response;
           loadMyNotes();
@@ -411,7 +360,7 @@
           }
           $("#my-notes").innerHTML = notes.map((n) => `
             <div class="note-item">
-              <p class="note-item__meta">${n.role === "facilitator" ? "影领家 · 复盘" : "寻影者 · 观影"} · ${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
+              <p class="note-item__meta">寻影者 · 观影 · ${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
               <p class="note-item__resp">${esc(n.llm_response || "")}</p>
             </div>`).join("");
         } catch (e) {
@@ -485,25 +434,15 @@
     }
   }
 
-  // ============ 双角色 · 5问引导 ============
-  const GUIDE_CONFIG = {
-    viewer: [
-      { key: "emotion", q: "此刻的你，心情如何？（可多选）", type: "tags" },
-      { key: "situation", q: "你正处在什么样的境遇里？", type: "free", ph: "如：刚换了工作、孩子升学、独自在外打拼、家人需要照顾…" },
-      { key: "value", q: "你渴望从电影里获得什么？（可多选）", type: "tags" },
-      { key: "audience", q: "你现在的角色是？（自己填写）", type: "free" },
-      { key: "theme", q: "你想看什么主题？（可多选或自己填写）", type: "tags+free" },
-    ],
-    facilitator: [
-      { key: "emotion", q: "服务对象的需求是什么？", type: "free", ph: "描述服务对象的需求，如：想缓解焦虑、找回自信、走出低谷…" },
-      { key: "situation", q: "服务对象想达成的目标是什么？", type: "free", ph: "描述想达成的目标，如：希望成员之间更信任、更愿意表达…" },
-      { key: "value", q: "这次活动你的想法是什么？", type: "free", ph: "你打算怎么带这场活动？想用电影引发什么？" },
-      { key: "audience", q: "服务对象是谁？", type: "free", ph: "描述服务对象，如：30+ 职场妈妈、青春期学生、丧亲者…" },
-      { key: "theme", q: "想带大家走哪个主题方向？", type: "free", ph: "如：亲子关系、成长、丧失与哀伤、自我认同…" },
-    ],
-  };
+  // ============ 看别人的电影 · 5问选片 ============
+  const GUIDE_CONFIG = [
+    { key: "emotion", q: "此刻的你，心情如何？（可多选）", type: "tags" },
+    { key: "situation", q: "你正处在什么样的境遇里？", type: "free", ph: "如：刚换了工作、孩子升学、独自在外打拼、家人需要照顾…" },
+    { key: "value", q: "你渴望从电影里获得什么？（可多选）", type: "tags" },
+    { key: "audience", q: "你的专业 / 职业是？（现实中的身份标签，可多选或自己填写）", type: "tags+free", ph: "如：设计师、教师、全职妈妈、创业者、学生…" },
+    { key: "theme", q: "你想看什么主题？（可多选或自己填写）", type: "tags+free" },
+  ];
 
-  let guideRole = null;
   let guideStep = 0;
   let guideSelections = {}; // {key: [tag...]}
   let guideFree = {}; // {key: 自由填写文本}
@@ -513,27 +452,15 @@
     guideThemes = await api("/themes");
   }
 
-  function startGuide(role) {
-    guideRole = role;
-    try { localStorage.setItem("cine_role", role); } catch (e) {} // 记住本次身份，笔记区按身份锁定
+  function resetGuide() {
     guideStep = 0;
     guideSelections = {};
     guideFree = {};
-    $("#role-select").hidden = true;
-    $("#wizard").hidden = false;
     renderGuideStep();
   }
 
-  function backToRoleSelect() {
-    $("#wizard").hidden = true;
-    $("#role-select").hidden = false;
-    guideRole = null;
-    guideSelections = {};
-    guideFree = {};
-  }
-
   function renderGuideStep() {
-    const steps = GUIDE_CONFIG[guideRole];
+    const steps = GUIDE_CONFIG;
     const step = steps[guideStep];
     $("#wizard-step").textContent = `第 ${guideStep + 1} / ${steps.length} 问`;
     $("#wizard-progress").style.width = `${((guideStep + 1) / steps.length) * 100}%`;
@@ -584,7 +511,7 @@
 
   function buildGuideAnswers() {
     const answers = {};
-    for (const step of GUIDE_CONFIG[guideRole]) {
+    for (const step of GUIDE_CONFIG) {
       const sel = (guideSelections[step.key] || []).join(" ");
       const free = (guideFree[step.key] || "").trim();
       answers[step.key] = [sel, free].filter(Boolean).join(" ");
@@ -599,7 +526,7 @@
       lastGuideAnswers = buildGuideAnswers(); // 记住本次 5 问答案，供影片详情个性化解读
       const data = await api("/recommend/guided", {
         method: "POST",
-        body: { role: guideRole, answers: lastGuideAnswers },
+        body: { role: "viewer", answers: lastGuideAnswers },
       });
       renderGuidedResults(data);
     } catch (e) {
@@ -610,15 +537,12 @@
   }
 
   let lastGuidedItems = [];
-  let lastGuidedRole = "viewer";
   let lastGuideAnswers = null; // 最近一次 5 问答案，供影片详情做个性化解读
 
   function renderGuidedResults(data) {
     resultsSection.hidden = false;
     lastGuidedItems = data.items;
-    lastGuidedRole = data.role;
-    $("#echo-query").textContent =
-      data.role === "facilitator" ? "影领家 · 五问选片" : "寻影者 · 五问选片";
+    $("#echo-query").textContent = "寻影者 · 五问选片";
     $("#intent-tags").innerHTML = (data.intent_labels || [])
       .map((t) => `<span class="chip chip--gold">${esc(t)}</span>`)
       .join("");
@@ -634,11 +558,8 @@
     observeReveal(grid);
   }
 
-  $$(".role-card").forEach((c) =>
-    c.addEventListener("click", () => startGuide(c.dataset.role))
-  );
   $("#wizard-next").addEventListener("click", () => {
-    const steps = GUIDE_CONFIG[guideRole];
+    const steps = GUIDE_CONFIG;
     if (guideStep < steps.length - 1) {
       guideStep++;
       renderGuideStep();
@@ -652,7 +573,6 @@
       renderGuideStep();
     }
   });
-  $("#wizard-switch").addEventListener("click", backToRoleSelect);
 
   // ============ 登录（微信 / 手机号） ============
   const loginModal = $("#login-modal");
@@ -690,6 +610,173 @@
     }
   });
 
+  // ============ 你的人生电影 ============
+  const LIFE_CONFIG = [
+    { key: "name", q: "你叫什么名字？（或希望被怎样称呼）", ph: "你的名字 / 昵称" },
+    { key: "roles", q: "生活中，你扮演着哪些角色？", ph: "如：妈妈、设计师、女儿、创业者…" },
+    { key: "script_2026", q: "如果「2026」是一部电影，你希望它的剧本怎么演？", ph: "你期待发生的事、想成为的样子…" },
+    { key: "born_script", q: "你的「出生剧本」是怎样的？", ph: "你的出身、来处、原生家庭…（简要即可）" },
+    { key: "extra", q: "此刻，你最想被看见的一句话是？", ph: "可留空" },
+  ];
+  let lifeStep = 0;
+  let lifeFree = {};
+
+  function renderLifeStep() {
+    const step = LIFE_CONFIG[lifeStep];
+    $("#life-step").textContent = `第 ${lifeStep + 1} / ${LIFE_CONFIG.length} 问`;
+    $("#life-progress").style.width = `${((lifeStep + 1) / LIFE_CONFIG.length) * 100}%`;
+    $("#life-question").textContent = step.q;
+    $("#life-chips").innerHTML = `<input id="life-free" placeholder="${esc(step.ph)}" value="${esc(lifeFree[step.key] || "")}" style="width:100%;margin:2px 0 0;padding:11px 14px;border-radius:999px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />`;
+    const input = $("#life-free");
+    if (input) input.addEventListener("input", () => { lifeFree[step.key] = input.value; });
+    $("#life-back").hidden = lifeStep === 0;
+    $("#life-next").querySelector("span").textContent =
+      lifeStep === LIFE_CONFIG.length - 1 ? "放映我的人生电影" : "下一步 →";
+  }
+
+  function buildLifeProfile() {
+    const p = {};
+    for (const s of LIFE_CONFIG) p[s.key] = (lifeFree[s.key] || "").trim();
+    return p;
+  }
+
+  function lifePosterColors(title) {
+    let h = 0;
+    for (const c of title || "") h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return PALETTE[h % PALETTE.length];
+  }
+
+  function wrapText(ctx, text, maxWidth) {
+    const chars = [...String(text)];
+    const lines = [];
+    let line = "";
+    for (const ch of chars) {
+      if (ctx.measureText(line + ch).width > maxWidth && line) {
+        lines.push(line);
+        line = ch;
+      } else {
+        line += ch;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  function drawLifePoster(data, name) {
+    const W = 750, H = 1000;
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const [c1, c2] = lifePosterColors(data.title);
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, c1); g.addColorStop(1, c2);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    // 边框
+    ctx.strokeStyle = "rgba(229,201,143,0.5)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(34, 34, W - 68, H - 68);
+    // 顶部小字
+    ctx.fillStyle = "rgba(229,201,143,0.85)";
+    ctx.font = "600 24px 'Songti SC', 'Noto Serif SC', serif";
+    ctx.textAlign = "center";
+    ctx.fillText("你 的 人 生 电 影", W / 2, 120);
+    // 片名
+    ctx.fillStyle = "rgba(255,255,255,0.97)";
+    ctx.font = "700 64px 'Songti SC', 'Noto Serif SC', serif";
+    const titleLines = wrapText(ctx, `《${data.title}》`, W - 160);
+    let ty = 300;
+    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += 88; }
+    // 类型
+    ctx.fillStyle = "rgba(229,201,143,0.95)";
+    ctx.font = "500 30px 'Songti SC', serif";
+    ctx.fillText(data.genre || "人生", W / 2, ty + 20);
+    // 海报文案
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "400 32px 'Songti SC', serif";
+    const tagLines = wrapText(ctx, data.tagline || "", W - 200);
+    let yy = 620;
+    for (const ln of tagLines.slice(0, 3)) { ctx.fillText(ln, W / 2, yy); yy += 52; }
+    // 主演
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.font = "400 26px 'Songti SC', serif";
+    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 150);
+    // 品牌
+    ctx.fillStyle = "rgba(229,201,143,0.7)";
+    ctx.font = "400 22px 'Songti SC', serif";
+    ctx.fillText("影境档案 · 观电影法", W / 2, H - 90);
+    return canvas.toDataURL("image/png");
+  }
+
+  function renderLifeResult(data, name) {
+    const poster = drawLifePoster(data, name);
+    $("#life-result").hidden = false;
+    $("#life-result").innerHTML = `
+      <div class="life-film">
+        <img class="life-poster" src="${poster}" alt="${esc(data.title)} 海报" />
+        <p class="life-poster-tip">👆 长按上方海报，可保存分享</p>
+        <div class="life-film__meta">
+          <span class="life-film__genre">${esc(data.genre || "人生")}</span>
+          <span class="life-film__tagline">「${esc(data.tagline || "")}」</span>
+        </div>
+        <p class="life-film__review">${esc(data.review || "")}</p>
+        <button class="mini-btn" id="life-again" style="margin-top:14px">↻ 再放映一次（重新填写）</button>
+      </div>`;
+    $("#life-again").addEventListener("click", () => {
+      lifeStep = 0; lifeFree = {};
+      $("#life-result").hidden = true;
+      $("#life-wizard").hidden = false;
+      renderLifeStep();
+      $("#life").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  $("#life-next").addEventListener("click", async () => {
+    if (lifeStep < LIFE_CONFIG.length - 1) {
+      lifeStep++;
+      renderLifeStep();
+      return;
+    }
+    const btn = $("#life-next");
+    btn.classList.add("is-loading");
+    btn.querySelector("span").textContent = "正在放映…";
+    try {
+      const data = await api("/life/movie", { method: "POST", body: { profile: buildLifeProfile() } });
+      $("#life-wizard").hidden = true;
+      renderLifeResult(data, buildLifeProfile().name);
+    } catch (e) {
+      alert("生成失败：" + e.message);
+    } finally {
+      btn.classList.remove("is-loading");
+      btn.querySelector("span").textContent = "放映我的人生电影";
+    }
+  });
+  $("#life-back").addEventListener("click", () => {
+    if (lifeStep > 0) { lifeStep--; renderLifeStep(); }
+  });
+
+  // 每日剧情复盘
+  $("#daily-submit").addEventListener("click", async () => {
+    const story = $("#daily-story").value.trim();
+    if (!story) { alert("先写下一段今天的「剧情」吧"); return; }
+    const btn = $("#daily-submit");
+    btn.classList.add("is-loading");
+    btn.querySelector("span").textContent = "正在回看…";
+    try {
+      const data = await api("/life/daily", { method: "POST", body: { story } });
+      const r = $("#daily-result");
+      r.style.display = "block";
+      r.innerHTML = `<strong style="color:var(--gold-soft)">「${esc(data.title)}」</strong><br><br>${esc(data.review)}`;
+    } catch (e) {
+      const r = $("#daily-result");
+      r.style.display = "block";
+      r.textContent = "生成失败：" + e.message;
+    } finally {
+      btn.classList.remove("is-loading");
+      btn.querySelector("span").textContent = "回看这一幕 · 得到回应";
+    }
+  });
+
   // ============ 初始化 ============
   (async function init() {
     try {
@@ -701,6 +788,8 @@
         console.warn("加载主题失败", e);
         // 主题加载失败不影响其他功能，继续运行
       }
+      renderGuideStep();   // 首页直接展示「看别人的电影」第 1 问
+      renderLifeStep();    // 「你的人生电影」第 1 问
       // 延迟执行访客登录，避免阻塞页面渲染
       setTimeout(() => {
         ensureGuestLogin();

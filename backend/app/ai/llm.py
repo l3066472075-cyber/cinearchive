@@ -127,8 +127,6 @@ _GUAN_DIAN_YING_FA = (
 
 _ROLE_SYSTEM = {
     "viewer": "你是「影境档案」的观影陪伴者。你温暖、真诚、不评判，像一位懂电影也懂人的朋友，陪伴寻影者用电影照见自己。",
-    "facilitator": "你是「影境档案」的影视心理分析师/影领家督导。你面对的是专业的带领者，"
-                  "输出的是「如何带领这场观影」的引导思路与大致流程——不是给带领者本人做情绪抚慰，而是帮他理清怎么带别人。",
 }
 
 _ROLE_FOCUS = {
@@ -136,14 +134,6 @@ _ROLE_FOCUS = {
               "（每部一两句，说明为什么适合此刻的他，不要罗列式介绍剧情），"
               "再写他可能会在哪里被触动、看完可以做点什么来照顾自己。"
               "像朋友一样说话，不贴标签、不夸大疗效。",
-    "facilitator": (
-        "请给出简明扼要的「引导思路与大致流程」（不用写完整带领方案，更不要写 PPT 大纲），包含：\n"
-        "一、选片思路：首选 1 部 + 备选 1~2 部，各用一句话说明为什么贴合服务对象的需求与目标。\n"
-        "二、引导角度：这次观影最该抓住的 1 个核心切入角度（结合需求/目标，一句话点透）。\n"
-        "三、大致流程：按「破冰 → 观影 → 讨论引导 → 收尾」四步，每步一两句话说明怎么做即可，不用精确到时长。\n"
-        "四、讨论问题：给出 2~3 个可以直接抛给成员的讨论问题。\n"
-        "要求：专业、克制、可落地；要点式表达，总共 300 字以内；不写空话、不出现「希望对你有帮助」。"
-    ),
 }
 
 
@@ -168,7 +158,7 @@ def guided_interpretation(
 
     memory_block = f"\n\n【这位用户的过往记忆】\n{memory}" if memory else ""
 
-    prompt = f"""请基于以下 5 问答案，为这位{'寻影者' if role == 'viewer' else '影领家'}提供回应。
+    prompt = f"""请基于以下 5 问答案，为这位寻影者提供回应。
 
 5 问答案（需求/目标/想法/对象/主题）：
 {answered}
@@ -180,10 +170,6 @@ def guided_interpretation(
 {_ROLE_FOCUS[role]}
 
 {_GUAN_DIAN_YING_FA}"""
-
-    if role == "facilitator":
-        prompt += "\n\n（注意：你是在给专业的影领家写「引导思路与大致流程」，不是安慰他本人；影片细节必须以上面简介为准。）"
-        return lc.llm_generate(_ROLE_SYSTEM[role], prompt, max_tokens=600)
 
     prompt += f"\n\n{_HUMAN_TOUCH}"
     return lc.llm_generate(_ROLE_SYSTEM[role], prompt, max_tokens=700)
@@ -198,12 +184,6 @@ def template_guided_interpretation(
     titles = "、".join(movie_titles[:3]) if movie_titles else "（暂无匹配）"
     emotion = answers.get("emotion") or "此刻"
     situation = answers.get("situation") or "当下"
-    if role == "facilitator":
-        return (
-            f"【影领家 · 带领建议】围绕「{emotion} + {situation}」这个案例，为你匹配了：{titles}。"
-            f"建议从情绪最贴近的一部先看，观影后引导大家分享「哪个瞬间最触动你」，"
-            f"并留意影片触发预警，为情绪敏感的成员预留支持空间。"
-        )
     return (
         f"【寻影者 · 观影陪伴】此刻的「{emotion}」与「{situation}」，为你挑选了：{titles}。"
         f"建议在安静不被打扰的时候观看，不必急着「看懂」，允许自己被某个画面、某句台词轻轻接住；"
@@ -218,30 +198,21 @@ def respond_to_note(
     movie_title: str,
     memory: str = "",
 ) -> str | None:
-    """针对用户的观影笔记/复盘笔记，生成深度专属回应。返回 None 表示走模板。"""
+    """针对用户的观影笔记，生成深度专属回应。返回 None 表示走模板。"""
     if role not in _ROLE_SYSTEM:
         role = "viewer"
     fields = "\n".join(f"- {k}: {v}" for k, v in content.items() if v) or "（空白）"
 
-    if role == "viewer":
-        focus = (
-            "请以温暖、真诚、不评判的口吻，回应这位寻影者的观影笔记。"
-            "① 先接住他最触动的那一点，帮他看见这份触动背后可能照见的内在；"
-            "② 围绕他记下的台词与思考，给 2~3 句延展，像朋友一样陪他多走一步；"
-            "③ 最后给一个小小的、可操作的观影后自我照顾建议。共 150~220 字，不要说教、不贴标签。"
-        )
-    else:
-        focus = (
-            "请以资深影领家督导的口吻，回应这份带电影复盘笔记。"
-            "① 肯定其中做得好的体验环节，点出它为什么有效；"
-            "② 针对「是否达成预期」和「带领收获」，给 2~3 条可落地的精进建议（如提问技巧、环节节奏、道具运用）；"
-            "③ 结合他的分享意愿，鼓励沉淀可复用的带领经验。共 150~220 字，专业、克制、可执行。"
-        )
+    focus = (
+        "请以温暖、真诚、不评判的口吻，回应这位寻影者的观影笔记。"
+        "① 先接住他最触动的那一点，帮他看见这份触动背后可能照见的内在；"
+        "② 围绕他记下的台词与思考，给 2~3 句延展，像朋友一样陪他多走一步；"
+        "③ 最后给一个小小的、可操作的观影后自我照顾建议。共 150~220 字，不要说教、不贴标签。"
+    )
 
     memory_block = f"\n\n【这位用户的过往笔记】\n{memory}" if memory else ""
 
     prompt = f"""影片：《{movie_title or '（未指定）'}》
-角色：{'寻影者' if role == 'viewer' else '影领家'}
 笔记内容：
 {fields}
 {memory_block}
@@ -257,13 +228,6 @@ def respond_to_note(
 def template_note_response(role: str, content: dict, movie_title: str) -> str:
     """离线笔记回应（无 LLM 时的回退）。"""
     title = movie_title or "这部影片"
-    if role == "facilitator":
-        gains = content.get("gains") or content.get("收获") or "带领过程"
-        return (
-            f"【影领家 · 复盘回应】感谢你记录这次《{title}》的带领复盘。"
-            f"关于「{gains[:30]}」的收获，值得被沉淀下来——建议下次把最有效的那个体验环节固定成流程，"
-            f"并留意成员的反馈节奏，持续打磨破冰与收尾的设计。每一次复盘，都在让你成为更稳的带领者。"
-        )
     touched = content.get("touched_scene") or content.get("内心触动的片段") or "那个让你心动的片段"
     quote = content.get("favorite_quote") or content.get("喜欢的台词") or ""
     q = f"那句「{quote}」也值得被反复咀嚼。" if quote else ""
@@ -309,6 +273,101 @@ def personalize_movie(movie: dict, answers: dict) -> dict | None:
             questions = [str(q).strip() for q in data.get("questions", []) if str(q).strip()]
             if support or questions:
                 return {"support": support, "questions": questions[:4]}
+        except Exception:  # noqa: BLE001
+            pass
+    return None
+
+
+# —— 「你的人生电影」：像看电影一样看自己的人生 ——
+_LIFE_SYSTEM = (
+    "你是「影境档案」的人生电影放映员。你温和、笃定、有诗意，"
+    "像一位坐在放映厅里陪他看「他自己这部人生电影」的老朋友，"
+    "看见他、鼓励他、欣赏他，但不评判、不诊断、不替他下结论。"
+)
+
+
+def life_movie(profile: dict) -> dict | None:
+    """根据用户的人生档案（名字/角色/2026剧本/出生剧本等），生成一部「人生电影」。
+    返回 {"title": 片名, "genre": 类型, "tagline": 一句海报文案, "review": 影评式叙事}；失败返回 None。
+    """
+    name = profile.get("name") or "你"
+    roles = profile.get("roles") or "（未填）"
+    script_2026 = profile.get("script_2026") or "（未填）"
+    born_script = profile.get("born_script") or "（未填）"
+    extra = profile.get("extra") or ""
+
+    prompt = f"""请把眼前这个人，看成一部正在上映的人生电影，为他写一份「观影档案」。
+
+他提供的素材：
+- 他的名字/昵称：{name}
+- 生活中扮演的角色：{roles}
+- 他希望的 2026 人生剧本：{script_2026}
+- 他的出生剧本（出身/来处）：{born_script}
+- 他补充的一句话：{extra or '（无）'}
+
+请像一位懂他也懂电影的老朋友，为他写 4 段（总约 400 字，温暖、真诚、有电影感、不油腻不煽情）：
+1. 片名：为「他的人生电影」起一个贴切的片名（中文，8 字以内，有诗意）。
+2. 类型：用 1~2 个电影类型词描述他的故事气质（如：成长/公路/家庭/治愈/悬疑…）。
+3. 海报文案：一句 15~25 字的海报标语，像电影海报上的那句话，看见并欣赏他。
+4. 影评：像写影评一样，用「镜头」的眼光回看他的来处与角色，看见他的不容易与了不起，并望向 2026 的剧本，给他鼓励——是欣赏，不是说教。
+
+严格输出 JSON（不要多余文字）：
+{{"title": "…", "genre": "…", "tagline": "…", "review": "…"}}"""
+    text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=900)
+    if not text:
+        return None
+    import json
+    import re
+
+    m = re.search(r"\{.*\}", text, re.DOTALL)
+    if m:
+        try:
+            data = json.loads(m.group(0))
+            out = {
+                "title": str(data.get("title", "")).strip() or f"{name}的人生电影",
+                "genre": str(data.get("genre", "")).strip() or "人生",
+                "tagline": str(data.get("tagline", "")).strip(),
+                "review": str(data.get("review", "")).strip(),
+            }
+            if out["tagline"] or out["review"]:
+                return out
+        except Exception:  # noqa: BLE001
+            pass
+    return None
+
+
+def life_daily(story: str, name: str = "") -> dict | None:
+    """针对用户当天经历的一段「剧情」，用电影视角复盘回应。
+    返回 {"title": 今日片名, "review": 影评式回应}；失败返回 None。
+    """
+    name_block = f"他叫{name}。" if name else ""
+    prompt = f"""{name_block}他刚把今天生活里发生的一段「剧情」写了下来：
+
+「{story}」
+
+请你像一位懂他人生这部电影的老朋友，把今天这段经历当成他「人生电影」里的一幕，给他一段 150~220 字的回应：
+- 先看见：用一两句点出这段「剧情」里他真实的心情或选择（不评判）；
+- 再欣赏：欣赏他在这幕里的一个闪光处（哪怕很小）；
+- 后回味：把这段剧情放进他人生的长镜头里，给他一句温柔又有力的鼓励。
+不要说教、不贴标签、不出现「希望对你有帮助」。
+
+严格输出 JSON（不要多余文字）：{{"title": "为这一幕起个片名（10字内）", "review": "…"}}"""
+    text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=600)
+    if not text:
+        return None
+    import json
+    import re
+
+    m = re.search(r"\{.*\}", text, re.DOTALL)
+    if m:
+        try:
+            data = json.loads(m.group(0))
+            out = {
+                "title": str(data.get("title", "")).strip() or "今日这一幕",
+                "review": str(data.get("review", "")).strip(),
+            }
+            if out["review"]:
+                return out
         except Exception:  # noqa: BLE001
             pass
     return None

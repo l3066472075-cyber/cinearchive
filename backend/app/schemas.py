@@ -258,3 +258,25 @@ class PersonalRequest(BaseModel):
 class PersonalResponse(BaseModel):
     support: str = ""
     questions: list[str] = []
+
+
+# ---------- 你的人生电影 ----------
+class LifeMovieRequest(BaseModel):
+    profile: dict[str, str] = {}  # name/roles/script_2026/born_script/extra
+
+
+class LifeDailyRequest(BaseModel):
+    story: str = ""
+    name: str = ""
+
+
+class LifeMovieResponse(BaseModel):
+    title: str = ""
+    genre: str = ""
+    tagline: str = ""
+    review: str = ""
+
+
+class LifeDailyResponse(BaseModel):
+    title: str = ""
+    review: str = ""
