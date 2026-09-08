@@ -280,3 +280,17 @@ class LifeMovieResponse(BaseModel):
 class LifeDailyResponse(BaseModel):
     title: str = ""
     review: str = ""
+
+
+# ---------- LLM 直接推荐（不限影片库，top3） ----------
+class Top3Item(BaseModel):
+    title: str = ""
+    year: str = ""
+    director: str = ""
+    genre: str = ""
+    synopsis: str = ""
+    reason: str = ""
+
+
+class Top3Response(BaseModel):
+    movies: list[Top3Item] = []

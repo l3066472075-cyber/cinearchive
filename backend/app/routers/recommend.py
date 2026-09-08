@@ -11,7 +11,13 @@ from .. import auth, models
 from ..ai import graph, llm
 from ..config import settings
 from ..db import get_db
-from ..schemas import GuidedRequest, GuidedResponse, RecommendRequest, RecommendResponse
+from ..schemas import (
+    GuidedRequest,
+    GuidedResponse,
+    RecommendRequest,
+    RecommendResponse,
+    Top3Response,
+)
 from ..services import growth
 
 router = APIRouter(prefix="/api/v1", tags=["recommend"])
@@ -103,3 +109,10 @@ def guided_recommend(
         engine="llm" if settings.llm_enabled else "offline",
         search_log_id=log.id,
     )
+
+
+@router.post("/recommend/top3", response_model=Top3Response)
+def recommend_top3(req: GuidedRequest):
+    """LLM 直接推荐：不限影片库，根据 5 问答案给出最合适的 3 部电影。"""
+    movies = llm.recommend_top3(req.answers)
+    return Top3Response(movies=movies or [])

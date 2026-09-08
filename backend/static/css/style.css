@@ -84,10 +84,10 @@ body {
   color: var(--ink);
 }
 .brand__mark {
-  font-family: var(--font-display);
-  font-size: 23px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   color: var(--gold-soft);
 }
 .brand__cn {
@@ -1128,6 +1128,79 @@ body[data-brand="yingling"] {
 .wizard__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
 .wizard__chips .chip--tag.is-selected { background: rgba(201,161,92,0.22); border-color: var(--gold-deep); color: var(--gold-soft); }
 .wizard__nav { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
+
+/* 首页两大板块统一大标题 */
+.board-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(30px, 5vw, 46px);
+  letter-spacing: 0.05em;
+  color: var(--gold-soft);
+  line-height: 1.25;
+}
+.board-sub {
+  margin: 12px 0 0;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  color: var(--ink);
+}
+.board-enter {
+  margin-top: 22px;
+  padding: 12px 28px;
+  border: 1px solid rgba(201, 161, 92, 0.55);
+  border-radius: 999px;
+  background: rgba(201, 161, 92, 0.12);
+  color: var(--gold-soft);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+.board-enter:hover {
+  background: rgba(201, 161, 92, 0.22);
+  border-color: var(--gold);
+}
+
+/* LLM 直接推荐的 top3 卡片 */
+.top3-card {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  padding: 22px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--hairline-soft);
+  background: var(--surface);
+  margin-bottom: 14px;
+}
+.top3-card__rank {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 161, 92, 0.5);
+  color: var(--gold-soft);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+}
+.top3-card__title { margin: 0 0 6px; font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--ink); }
+.top3-card__meta { margin: 0 0 10px; font-size: 13px; color: var(--ink-3); }
+.top3-card__synopsis { margin: 0 0 12px; font-size: 14px; line-height: 1.9; color: var(--ink-2); font-weight: 300; }
+.top3-card__reason {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(201, 161, 92, 0.08);
+  border-left: 2px solid var(--gold-soft);
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--ink-2);
+  font-weight: 300;
+}
 
 /* ============ 看别人的电影 / 你的人生电影（首页两大板块） ============ */
 .section-sub { max-width: 480px; margin: 12px 0 0; color: var(--ink-2); font-size: 15px; font-weight: 300; }

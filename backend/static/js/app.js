@@ -438,7 +438,7 @@
   const GUIDE_CONFIG = [
     { key: "emotion", q: "此刻的你，心情如何？（可多选）", type: "tags" },
     { key: "situation", q: "你正处在什么样的境遇里？", type: "free", ph: "如：刚换了工作、孩子升学、独自在外打拼、家人需要照顾…" },
-    { key: "value", q: "你渴望从电影里获得什么？（可多选）", type: "tags" },
+    { key: "value", q: "你希望从电影中获得什么？（可多选或自己填写）", type: "tags+free", ph: "如：获得力量、被理解、找回方向…" },
     { key: "audience", q: "你的专业 / 职业是？（现实中的身份标签，可多选或自己填写）", type: "tags+free", ph: "如：设计师、教师、全职妈妈、创业者、学生…" },
     { key: "theme", q: "你想看什么主题？（可多选或自己填写）", type: "tags+free" },
   ];
@@ -523,12 +523,12 @@
     const submit = $("#wizard-next");
     submit.classList.add("is-loading");
     try {
-      lastGuideAnswers = buildGuideAnswers(); // 记住本次 5 问答案，供影片详情个性化解读
-      const data = await api("/recommend/guided", {
+      lastGuideAnswers = buildGuideAnswers(); // 记住本次 5 问答案
+      const data = await api("/recommend/top3", {
         method: "POST",
         body: { role: "viewer", answers: lastGuideAnswers },
       });
-      renderGuidedResults(data);
+      renderTop3Results(data);
     } catch (e) {
       alert("推荐失败：" + e.message);
     } finally {
@@ -536,24 +536,28 @@
     }
   }
 
-  let lastGuidedItems = [];
-  let lastGuideAnswers = null; // 最近一次 5 问答案，供影片详情做个性化解读
+  let lastGuideAnswers = null; // 最近一次 5 问答案
 
-  function renderGuidedResults(data) {
+  function top3CardHTML(mv, i) {
+    return `
+      <article class="top3-card reveal">
+        <span class="top3-card__rank">${i + 1}</span>
+        <div class="top3-card__main">
+          <h3 class="top3-card__title">《${esc(mv.title)}》</h3>
+          <p class="top3-card__meta">${esc(mv.year || "—")} · ${esc(mv.director || "佚名")} 执导 · ${esc(mv.genre || "")}</p>
+          <p class="top3-card__synopsis">${esc(mv.synopsis || "")}</p>
+          <p class="top3-card__reason">${esc(mv.reason || "")}</p>
+        </div>
+      </article>`;
+  }
+
+  function renderTop3Results(data) {
     resultsSection.hidden = false;
-    lastGuidedItems = data.items;
-    $("#echo-query").textContent = "寻影者 · 五问选片";
-    $("#intent-tags").innerHTML = (data.intent_labels || [])
-      .map((t) => `<span class="chip chip--gold">${esc(t)}</span>`)
-      .join("");
+    $("#echo-query").textContent = "为你挑选的三部电影";
+    $("#intent-tags").innerHTML = "";
     $("#results-note").textContent = "";
     const grid = $("#results-grid");
-    const max = Math.max(...data.items.map((i) => i.score), 0.0001);
-    const interp = data.interpretation
-      ? `<div class="interpretation">${esc(data.interpretation)}</div>`
-      : "";
-    grid.innerHTML = interp + data.items.map((item) => cardHTML(item, max)).join("");
-    bindCards(grid);
+    grid.innerHTML = (data.movies || []).map((mv, i) => top3CardHTML(mv, i)).join("");
     resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     observeReveal(grid);
   }
@@ -777,6 +781,43 @@
     }
   });
 
+  // ============ 首页双板块：进入式交互 ============
+  function enterGuide() {
+    $("#life").hidden = true;
+    $("#wizard").hidden = false;
+    $("#guide-enter").style.display = "none";
+    $("#guide-back").hidden = false;
+    renderGuideStep();
+    $("#guide").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function enterLife() {
+    $("#guide").hidden = true;
+    $("#life-wizard").hidden = false;
+    $("#life-daily").hidden = false;
+    $("#life-enter").style.display = "none";
+    $("#life-back2").hidden = false;
+    renderLifeStep();
+    $("#life").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function backHome() {
+    $("#guide").hidden = false;
+    $("#life").hidden = false;
+    $("#wizard").hidden = true;
+    $("#life-wizard").hidden = true;
+    $("#life-daily").hidden = true;
+    $("#life-result").hidden = true;
+    resultsSection.hidden = true;
+    $("#guide-enter").style.display = "";
+    $("#life-enter").style.display = "";
+    $("#guide-back").hidden = true;
+    $("#life-back2").hidden = true;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  $("#guide-enter").addEventListener("click", enterGuide);
+  $("#life-enter").addEventListener("click", enterLife);
+  $("#guide-back").addEventListener("click", backHome);
+  $("#life-back2").addEventListener("click", backHome);
+
   // ============ 初始化 ============
   (async function init() {
     try {
@@ -788,8 +829,7 @@
         console.warn("加载主题失败", e);
         // 主题加载失败不影响其他功能，继续运行
       }
-      renderGuideStep();   // 首页直接展示「看别人的电影」第 1 问
-      renderLifeStep();    // 「你的人生电影」第 1 问
+      // 首页先展示两个板块入口，用户点击「开始」后进入对应向导
       // 延迟执行访客登录，避免阻塞页面渲染
       setTimeout(() => {
         ensureGuestLogin();

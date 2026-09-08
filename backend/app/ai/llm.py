@@ -305,15 +305,15 @@ def life_movie(profile: dict) -> dict | None:
 - 他的出生剧本（出身/来处）：{born_script}
 - 他补充的一句话：{extra or '（无）'}
 
-请像一位懂他也懂电影的老朋友，为他写 4 段（总约 400 字，温暖、真诚、有电影感、不油腻不煽情）：
+请像一位懂他也懂电影的老朋友，为他写 4 段（总约 450 字，温暖、真诚、有电影感、不油腻不煽情）：
 1. 片名：为「他的人生电影」起一个贴切的片名（中文，8 字以内，有诗意）。
 2. 类型：用 1~2 个电影类型词描述他的故事气质（如：成长/公路/家庭/治愈/悬疑…）。
 3. 海报文案：一句 15~25 字的海报标语，像电影海报上的那句话，看见并欣赏他。
-4. 影评：像写影评一样，用「镜头」的眼光回看他的来处与角色，看见他的不容易与了不起，并望向 2026 的剧本，给他鼓励——是欣赏，不是说教。
+4. 影评：像写影评一样，用「镜头」的眼光回看他的来处与角色——试着从不同视角去看见他（旁观者的视角、未来回望的视角、以及他身边重要之人可能的视角）；真心欣赏他身上哪怕很小的闪光；并引导他看见自己「人生剧本」里已经写下的力量与可能，鼓励他去相信并出演 2026 那一幕。是欣赏与鼓励，不是说教、不贴标签。
 
 严格输出 JSON（不要多余文字）：
 {{"title": "…", "genre": "…", "tagline": "…", "review": "…"}}"""
-    text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=900)
+    text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=1000)
     if not text:
         return None
     import json
@@ -371,3 +371,58 @@ def life_daily(story: str, name: str = "") -> dict | None:
         except Exception:  # noqa: BLE001
             pass
     return None
+
+
+def recommend_top3(answers: dict) -> list[dict] | None:
+    """LLM 直接根据用户 5 问答案，从海量电影中推荐最合适的 3 部（不限影片库）。
+
+    返回 [{title, year, director, genre, synopsis, reason}...]；失败返回 None。
+    """
+    prompt = f"""请根据这位观众的真实情况，从你了解的所有电影里，为他挑选 3 部最适合他现在看的电影。
+
+他的 5 个回答：
+- 此刻的心情/需求：{answers.get('emotion') or '未填'}
+- 正处的境遇：{answers.get('situation') or '未填'}
+- 渴望获得：{answers.get('value') or '未填'}
+- 专业/职业（现实身份）：{answers.get('audience') or '未填'}
+- 想看的主题：{answers.get('theme') or '未填'}
+
+要求：
+1. 3 部电影，按契合度从高到低；可以是任何国家、任何年代的经典或当代电影，不要只挑大众爆款，要真的贴合他此刻的处境与心情。
+2. 每部给：片名（中文）、年份、导演、类型（2~3 个词）、一句话简介（真实剧情，不编造）、以及一段 60~90 字的推荐理由——推荐理由必须紧扣他上面填的具体情况（他的心情、境遇、职业、渴望），让他感到「这真的懂我」。
+3. 语气像一位懂电影也懂人的老朋友，不说教、不贴标签、不夸大疗效。
+
+严格输出 JSON（不要多余文字）：
+{{"movies": [{{"title":"…","year":"…","director":"…","genre":"…","synopsis":"…","reason":"…"}}]}}"""
+    text = lc.llm_generate(_ROLE_SYSTEM["viewer"], prompt, max_tokens=1200)
+    if not text:
+        return None
+    import json
+    import re
+
+    m = re.search(r"\{.*\}", text, re.DOTALL)
+    if not m:
+        return None
+    try:
+        data = json.loads(m.group(0))
+        movies = data.get("movies") or []
+        out = []
+        for mv in movies:
+            if not isinstance(mv, dict):
+                continue
+            title = str(mv.get("title", "")).strip()
+            if not title:
+                continue
+            out.append(
+                {
+                    "title": title,
+                    "year": str(mv.get("year", "")).strip(),
+                    "director": str(mv.get("director", "")).strip(),
+                    "genre": str(mv.get("genre", "")).strip(),
+                    "synopsis": str(mv.get("synopsis", "")).strip(),
+                    "reason": str(mv.get("reason", "")).strip(),
+                }
+            )
+        return out[:3] or None
+    except Exception:  # noqa: BLE001
+        return None
