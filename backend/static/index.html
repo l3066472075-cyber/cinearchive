@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>影境档案 · 好电影的深度档案馆</title>
+  <title>影境档案 · 人生电影的深度档案馆</title>
   <meta name="description" content="从多部经典电影中，为您挑选适合当下心境的影片——影视教育 × 艺术治疗。" />
   <meta name="theme-color" content="#100e0c" />
   <!-- 分享卡片（Open Graph / 微信 / 微博） -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="影境档案 · 好电影的深度档案馆" />
+  <meta property="og:title" content="影境档案 · 人生电影的深度档案馆" />
   <meta property="og:description" content="从多部经典电影中，为您挑选适合当下心境的影片。" />
   <meta property="og:image" content="/static/share.png" />
   <meta property="og:site_name" content="禅说电影 · 影境档案" />
-  <meta itemprop="name" content="影境档案 · 好电影的深度档案馆" />
+  <meta itemprop="name" content="影境档案 · 人生电影的深度档案馆" />
   <meta itemprop="description" content="从多部经典电影中，为您挑选适合当下心境的影片。" />
   <meta itemprop="image" content="/static/share.png" />
   <link rel="stylesheet" href="/static/css/style.css" />
@@ -26,7 +26,6 @@
     </a>
     <span class="brand__tagline">观电影法 · 借影观心</span>
     <button class="api-link" id="growth-btn">🪔 我的观心</button>
-    <button class="api-link" id="login-btn">登录</button>
   </header>
 
   <main id="top">
@@ -48,7 +47,6 @@
         <div class="section-head">
           <h2 class="board-title">看别人的电影</h2>
           <p class="board-sub">此刻的你，需要哪部电影？</p>
-          <p class="section-sub">回答几个问题，从电影档案馆里，为你挑一部懂你此刻的电影。</p>
           <button class="board-enter" id="guide-enter"><span>开始选片 →</span></button>
         </div>
 
@@ -85,30 +83,37 @@
       <div class="container">
         <div class="section-head">
           <h2 class="board-title">看自己的人生电影</h2>
-          <p class="board-sub">你的人生电影</p>
-          <p class="section-sub">像看电影一样，看自己的人生。</p>
-          <button class="board-enter" id="life-enter"><span>开始观己 →</span></button>
+          <p class="section-sub">每个人的人生都是一部电影。</p>
+          <button class="board-enter" id="life-enter"><span>建立我的角色档案 →</span></button>
         </div>
 
-        <!-- 观己观心 · 今日人生电影表单 -->
+        <!-- 角色档案表单 -->
         <div id="life-form" hidden>
-          <p class="life-form__tip">每天花几分钟，像回看一帧镜头那样，陪自己看今天这一幕。</p>
+          <p class="life-form__tip">角色档案 · 初步体验，像看电影般看自己的人生</p>
           <div class="life-q">
-            <label class="life-q__label">🎬 今天，你的人生电影上演了哪一幕？（此刻还在心中涌动的画面）</label>
-            <textarea id="life-scene" rows="3" placeholder="比如：今天在会议上第一次说出了自己的不同意见…"></textarea>
+            <label class="life-q__label">🎭 角色名</label>
+            <input id="life-role-name" placeholder="你在人生这部电影里，叫什么名字？" />
           </div>
           <div class="life-q">
-            <label class="life-q__label">💭 你的感受和看见是什么？</label>
-            <textarea id="life-feeling" rows="2" placeholder="那一幕发生时你的情绪、心里冒出来的话…"></textarea>
+            <label class="life-q__label">🎬 你的人生电影名</label>
+            <input id="life-movie-name" placeholder="为你的人生电影，起一个片名" />
           </div>
           <div class="life-q">
-            <label class="life-q__label">🪞 观电影法 · 借这一幕观自己：你会如何编导接下来的人生剧情？你的 2026 年人生剧情，你要如何去演？</label>
-            <textarea id="life-insight" rows="2" placeholder="也可以写下：这一幕里，你照见了自己怎样的特质、渴望或不易…"></textarea>
+            <label class="life-q__label">🌱 你的出生故事（0-6 岁）</label>
+            <textarea id="life-born" rows="3" placeholder="你从哪里来？最早的记忆、家庭、来处…"></textarea>
           </div>
-          <div style="margin-top:14px"><button class="ask-box__submit" id="life-submit"><span>观己观心</span></button></div>
+          <div class="life-q">
+            <label class="life-q__label">🌊 你的转折（重要）故事</label>
+            <textarea id="life-turning" rows="3" placeholder="人生中重要的转折点、改变了你的事…"></textarea>
+          </div>
+          <div class="life-q">
+            <label class="life-q__label">🎥 你正在经历的故事（2026）</label>
+            <textarea id="life-2026" rows="3" placeholder="现在正在上演的，以及你期待接下来怎么演…"></textarea>
+          </div>
+          <div style="margin-top:14px"><button class="ask-box__submit" id="life-submit"><span>放映我的人生电影</span></button></div>
         </div>
 
-        <!-- 观己观心结果（含可保存海报） -->
+        <!-- 人生电影结果（含可保存海报） -->
         <div class="life-result" id="life-result" hidden></div>
       </div>
     </section>

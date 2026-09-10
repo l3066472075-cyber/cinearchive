@@ -620,7 +620,6 @@
       }
     });
   }
-  $("#login-btn").addEventListener("click", openLogin);
   loginModal.addEventListener("click", (e) => {
     if (e.target.closest("[data-close]")) {
       loginModal.hidden = true;
@@ -734,7 +733,7 @@
   }
 
   function resetLifeForm() {
-    ["life-scene", "life-feeling", "life-insight"].forEach((id) => {
+    ["life-role-name", "life-movie-name", "life-born", "life-turning", "life-2026"].forEach((id) => {
       const el = $("#" + id);
       if (el) el.value = "";
     });
@@ -744,26 +743,27 @@
   }
 
   function renderLifeResult(data) {
-    const poster = drawLifePoster(data, "你");
+    const roleName = $("#life-role-name").value.trim() || "你";
+    const poster = drawLifePoster(data, roleName);
     $("#life-result").hidden = false;
     $("#life-result").innerHTML = `
       <div class="life-film">
         <img class="life-poster" src="${poster}" alt="${esc(data.title)} 海报" />
         <p class="life-poster-tip">👆 长按上方海报，可保存分享</p>
         <div class="life-film__meta">
-          <span class="life-film__genre">${esc(data.genre || "今日一幕")}</span>
+          <span class="life-film__genre">${esc(data.genre || "人生电影")}</span>
           <span class="life-film__tagline">「${esc(data.tagline || "")}」</span>
         </div>
         <p class="life-film__review">${esc(data.review || "")}</p>
-        <button class="board-enter" id="life-again" style="margin-top:14px"><span>↻ 再观一幕（重新填写）</span></button>
+        <button class="board-enter" id="life-again" style="margin-top:14px"><span>↻ 重新建立角色档案</span></button>
       </div>`;
     $("#life-again").addEventListener("click", resetLifeForm);
   }
 
-  // 观己观心：提交「今日一幕 + 感受 + 观电影法反思」
+  // 建立角色档案 → 生成「你的人生电影」
   $("#life-submit").addEventListener("click", async () => {
-    const scene = $("#life-scene").value.trim();
-    if (!scene) { alert("先写下今天上演的一幕吧"); return; }
+    const roleName = $("#life-role-name").value.trim();
+    if (!roleName) { alert("先写下你的角色名吧"); return; }
     const btn = $("#life-submit");
     btn.classList.add("is-loading");
     btn.querySelector("span").textContent = "一切为你而来";
@@ -772,9 +772,11 @@
         method: "POST",
         body: {
           profile: {
-            scene,
-            feeling: $("#life-feeling").value.trim(),
-            insight: $("#life-insight").value.trim(),
+            role_name: roleName,
+            movie_name: $("#life-movie-name").value.trim(),
+            born_story: $("#life-born").value.trim(),
+            turning_story: $("#life-turning").value.trim(),
+            story_2026: $("#life-2026").value.trim(),
           },
         },
       });
@@ -784,7 +786,7 @@
       alert("生成失败：" + e.message);
     } finally {
       btn.classList.remove("is-loading");
-      btn.querySelector("span").textContent = "观己观心";
+      btn.querySelector("span").textContent = "放映我的人生电影";
     }
   });
 

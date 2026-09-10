@@ -287,31 +287,35 @@ _LIFE_SYSTEM = (
 
 
 def life_movie(profile: dict) -> dict | None:
-    """观己观心 · 今日人生电影：根据今天的一幕 / 感受与看见 / 观电影法反思，生成电影式回应。
-    返回 {"title": 今日片名, "genre": 类型, "tagline": 海报文案, "review": 影评式看见}；失败返回 None。
+    """角色档案 · 你的人生电影：根据角色名 / 电影名 / 出生故事 / 转折故事 / 2026 故事，生成一部人生电影。
+    返回 {"title": 片名, "genre": 类型, "tagline": 海报文案, "review": 影评式看见}；失败返回 None。
     """
-    scene = profile.get("scene") or "（未写）"
-    feeling = profile.get("feeling") or "（未写）"
-    insight = profile.get("insight") or "（未写）"
+    role_name = profile.get("role_name") or "你"
+    movie_name = profile.get("movie_name") or "（未起名）"
+    born_story = profile.get("born_story") or "（未写）"
+    turning_story = profile.get("turning_story") or "（未写）"
+    story_2026 = profile.get("story_2026") or "（未写）"
 
-    prompt = f"""一位朋友刚记录下他今天生活里的「一幕」，并写下了他的感受与看见。请像「观电影法」说的「借电影观自己」那样，陪他把今天这一幕，当作他自己人生电影里的一场戏来观看，给他一份温暖、有电影感的回应。
+    prompt = f"""眼前这个人，把自己看成一部正在上映的人生电影，建立了一份「角色档案」。请像观电影法说的「借电影观自己」那样，陪他把自己的来处、转折与正在经历的故事，串成一部完整而温暖的人生电影。
 
-他写的：
-- 今天上演的一幕：{scene}
-- 他的感受和看见：{feeling}
-- 他对这一幕的观照（借这一幕看自己）：{insight}
+他的角色档案：
+- 角色名：{role_name}
+- 他给自己的人生电影起的名字：{movie_name}
+- 出生故事（0-6 岁）：{born_story}
+- 转折（重要）故事：{turning_story}
+- 正在经历的故事（2026）：{story_2026}
 
-请为他写 4 段（总约 400 字，温暖、真诚、不油腻不煽情、不说教、不贴标签）：
-1. 片名：为「今天这一幕」起一个贴切的片名（中文，8 字以内）。
-2. 类型：用 1~2 个词描述这一幕的气质（如：成长/转折/日常/和解/勇气…）。
-3. 海报文案：一句 15~25 字的海报标语，看见并欣赏今天这一幕里他真实的模样。
-4. 影评：像写影评一样回看他今天的这一幕，把「角色 / 观者 / 导演 / 编剧」这几种眼光自然揉进去——他作为人生主角的表演、台下观者的回望、导演对这场戏的调度、编剧早埋下的伏笔……灵活运用、点到即止，不要每段都套「旁观者看这一幕」的刻板句式；多依据他写下的具体事实去看见、鼓励、欣赏他，少讲道理、不喊口号。是欣赏与鼓励，不是说教。
+请为他写 4 段（总约 420 字，温暖、真诚、不油腻不煽情、不说教、不贴标签）：
+1. 片名：为「他的人生电影」定一个贴切的片名（中文，8 字以内；若他起的名字很好，可以沿用或略作升华）。
+2. 类型：用 1~2 个词描述他人生故事的气质（如：成长/公路/家庭/治愈/传记…）。
+3. 海报文案：一句 15~25 字的海报标语，像电影海报上的那句话，看见并欣赏他。
+4. 影评：像写影评一样回看他的人生——把他的出生故事、转折故事与 2026 正在经历的故事串成一条线，把「角色 / 观者 / 导演 / 编剧」这几种眼光自然揉进去（他作为人生主角的表演、台下观者的回望、导演对这场戏的调度、编剧早埋下的伏笔……），灵活运用、点到即止，不要每段都套刻板句式；多依据他写下的具体事实去看见、鼓励、欣赏他，并望向他正在经历的 2026，鼓励他出演自己想要的剧情。是欣赏与鼓励，不是说教。
 
 {_HUMAN_TOUCH}
 
 严格输出 JSON（不要多余文字）：
 {{"title": "…", "genre": "…", "tagline": "…", "review": "…"}}"""
-    text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=1000)
+    text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=1100)
     if not text:
         return None
     import json
@@ -322,8 +326,8 @@ def life_movie(profile: dict) -> dict | None:
         try:
             data = json.loads(m.group(0))
             out = {
-                "title": str(data.get("title", "")).strip() or "今日这一幕",
-                "genre": str(data.get("genre", "")).strip() or "今日一幕",
+                "title": str(data.get("title", "")).strip() or (movie_name or f"{role_name}的人生电影"),
+                "genre": str(data.get("genre", "")).strip() or "人生电影",
                 "tagline": str(data.get("tagline", "")).strip(),
                 "review": str(data.get("review", "")).strip(),
             }
