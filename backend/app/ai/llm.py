@@ -307,6 +307,8 @@ def life_movie(profile: dict) -> dict | None:
 3. 海报文案：一句 15~25 字的海报标语，看见并欣赏今天这一幕里他真实的模样。
 4. 影评：像写影评一样回看他今天的这一幕——试着从不同视角看见他（旁观者的视角、未来回望的视角、以及他身边重要之人可能的视角）；真心欣赏他这一幕里的一个闪光点（哪怕很小）；并用观电影法的语言（借电影观自己、生命是条长河最终渡你的还是自己）轻轻点醒他这一幕里照见的力量与渴望。是欣赏与鼓励，不是说教。
 
+{_HUMAN_TOUCH}
+
 严格输出 JSON（不要多余文字）：
 {{"title": "…", "genre": "…", "tagline": "…", "review": "…"}}"""
     text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=1000)
@@ -346,6 +348,8 @@ def life_daily(story: str, name: str = "") -> dict | None:
 - 再欣赏：欣赏他在这幕里的一个闪光处（哪怕很小）；
 - 后回味：把这段剧情放进他人生的长镜头里，给他一句温柔又有力的鼓励。
 不要说教、不贴标签、不出现「希望对你有帮助」。
+
+{_HUMAN_TOUCH}
 
 严格输出 JSON（不要多余文字）：{{"title": "为这一幕起个片名（10字内）", "review": "…"}}"""
     text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=600)
