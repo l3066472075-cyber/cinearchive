@@ -287,7 +287,9 @@ class Top3Item(BaseModel):
     title: str = ""
     year: str = ""
     director: str = ""
+    country: str = ""
     genre: str = ""
+    rating: str = ""
     synopsis: str = ""
     reason: str = ""
 

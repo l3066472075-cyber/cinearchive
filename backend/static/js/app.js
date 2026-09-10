@@ -436,12 +436,13 @@
 
   // ============ 看别人的电影 · 5问选片 ============
   const GUIDE_CONFIG = [
-    { key: "emotion", q: "此刻的你，心情如何？（可多选）", type: "tags" },
+    { key: "emotion", q: "此刻的你，心情如何？", type: "free", ph: "如：焦虑、迷茫、疲惫、期待、平静…" },
     { key: "situation", q: "你正处在什么样的境遇里？", type: "free", ph: "如：刚换了工作、孩子升学、独自在外打拼、家人需要照顾…" },
     { key: "value", q: "你希望从电影中获得什么？（可多选或自己填写）", type: "tags+free", ph: "如：获得力量、被理解、找回方向…" },
     { key: "audience", q: "你的专业 / 职业是？（现实中的身份标签，可多选或自己填写）", type: "tags+free", ph: "如：设计师、教师、全职妈妈、创业者、学生…" },
     { key: "theme", q: "你想看什么主题？（可多选或自己填写）", type: "tags+free" },
   ];
+  const EXTRA_AUDIENCE_TAGS = ["影领家", "影视心理分析师", "HR"];
 
   let guideStep = 0;
   let guideSelections = {}; // {key: [tag...]}
@@ -468,7 +469,10 @@
 
     let html = "";
     if (step.type !== "free") {
-      const tags = guideThemes[step.key] || [];
+      let tags = guideThemes[step.key] || [];
+      if (step.key === "audience") {
+        tags = tags.concat(EXTRA_AUDIENCE_TAGS.map((n) => ({ name: n })));
+      }
       const sel = guideSelections[step.key] || [];
       html += `<div class="wizard__chips">${tags
         .map((t) => {
@@ -544,7 +548,8 @@
         <span class="top3-card__rank">${i + 1}</span>
         <div class="top3-card__main">
           <h3 class="top3-card__title">《${esc(mv.title)}》</h3>
-          <p class="top3-card__meta">${esc(mv.year || "—")} · ${esc(mv.director || "佚名")} 执导 · ${esc(mv.genre || "")}</p>
+          <p class="top3-card__meta">${esc(mv.year || "—")} · ${esc(mv.country || "")} · ${esc(mv.director || "佚名")} 执导 · ${esc(mv.genre || "")}</p>
+          ${mv.rating ? `<span class="top3-card__rating">豆瓣 ${esc(mv.rating)}</span>` : ""}
           <p class="top3-card__synopsis">${esc(mv.synopsis || "")}</p>
           <p class="top3-card__reason">${esc(mv.reason || "")}</p>
         </div>
@@ -552,12 +557,21 @@
   }
 
   function renderTop3Results(data) {
+    // 提交后进入「结果视图」：隐藏向导，只展示结果 + 返回首页
+    $("#wizard").hidden = true;
     resultsSection.hidden = false;
     $("#echo-query").textContent = "为你挑选的三部电影";
     $("#intent-tags").innerHTML = "";
     $("#results-note").textContent = "";
     const grid = $("#results-grid");
-    grid.innerHTML = (data.movies || []).map((mv, i) => top3CardHTML(mv, i)).join("");
+    grid.innerHTML =
+      (data.movies || []).map((mv, i) => top3CardHTML(mv, i)).join("") +
+      `<div style="text-align:center;margin-top:22px">
+         <button class="board-enter" id="back-home-btn"><span>← 返回首页</span></button>
+       </div>`;
+    const bh = $("#back-home-btn");
+    if (bh) bh.addEventListener("click", backHome);
+    window.scrollTo({ top: 0, behavior: "smooth" });
     resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     observeReveal(grid);
   }
@@ -638,7 +652,7 @@
   }
 
   function drawLifePoster(data, name) {
-    const W = 750, H = 1000;
+    const W = 750, H = 1050;
     const canvas = document.createElement("canvas");
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d");
@@ -647,39 +661,75 @@
     g.addColorStop(0, c1); g.addColorStop(1, c2);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
-    // 边框
-    ctx.strokeStyle = "rgba(229,201,143,0.5)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(34, 34, W - 68, H - 68);
-    // 顶部小字
-    ctx.fillStyle = "rgba(229,201,143,0.85)";
-    ctx.font = "600 24px 'Songti SC', 'Noto Serif SC', serif";
+    // 轻微暗化增加质感
+    ctx.fillStyle = "rgba(0,0,0,0.14)";
+    ctx.fillRect(0, 0, W, H);
+
+    const GOLD = "rgba(229,201,143,";
     ctx.textAlign = "center";
-    ctx.fillText("今 日 人 生 电 影", W / 2, 120);
+
+    // 双层边框
+    ctx.strokeStyle = GOLD + "0.45)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(30, 30, W - 60, H - 60);
+    ctx.strokeStyle = GOLD + "0.22)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(46, 46, W - 92, H - 92);
+
+    // 顶部品牌
+    ctx.fillStyle = GOLD + "0.9)";
+    ctx.font = "600 26px 'Songti SC','Noto Serif SC',serif";
+    ctx.fillText("禅说电影 · 影境档案", W / 2, 122);
+    ctx.fillStyle = GOLD + "0.5)";
+    ctx.font = "400 20px 'Songti SC',serif";
+    ctx.fillText("观电影法 · 借影观心", W / 2, 160);
+
+    // 中部小标
+    ctx.strokeStyle = GOLD + "0.4)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 56, 222); ctx.lineTo(W / 2 + 56, 222);
+    ctx.stroke();
+    ctx.fillStyle = GOLD + "0.75)";
+    ctx.font = "500 22px 'Songti SC',serif";
+    ctx.fillText("今 日 人 生 电 影", W / 2, 264);
+
     // 片名
     ctx.fillStyle = "rgba(255,255,255,0.97)";
-    ctx.font = "700 60px 'Songti SC', 'Noto Serif SC', serif";
-    const titleLines = wrapText(ctx, `《${data.title}》`, W - 160);
-    let ty = 300;
-    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += 84; }
+    ctx.font = "700 64px 'Songti SC','Noto Serif SC',serif";
+    const titleLines = wrapText(ctx, `《${data.title}》`, W - 180);
+    let ty = 396;
+    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += 88; }
+
     // 类型
-    ctx.fillStyle = "rgba(229,201,143,0.95)";
-    ctx.font = "500 30px 'Songti SC', serif";
-    ctx.fillText(data.genre || "今日一幕", W / 2, ty + 20);
+    ctx.fillStyle = GOLD + "0.95)";
+    ctx.font = "500 28px 'Songti SC',serif";
+    ctx.fillText(data.genre || "今日一幕", W / 2, ty + 14);
+
+    // 分隔线
+    ctx.strokeStyle = GOLD + "0.35)";
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 40, ty + 54); ctx.lineTo(W / 2 + 40, ty + 54);
+    ctx.stroke();
+
     // 海报文案
-    ctx.fillStyle = "rgba(255,255,255,0.92)";
-    ctx.font = "400 32px 'Songti SC', serif";
-    const tagLines = wrapText(ctx, data.tagline || "", W - 200);
-    let yy = 620;
-    for (const ln of tagLines.slice(0, 3)) { ctx.fillText(ln, W / 2, yy); yy += 52; }
-    // 主演
-    ctx.fillStyle = "rgba(255,255,255,0.75)";
-    ctx.font = "400 26px 'Songti SC', serif";
-    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 150);
-    // 品牌
-    ctx.fillStyle = "rgba(229,201,143,0.7)";
-    ctx.font = "400 22px 'Songti SC', serif";
-    ctx.fillText("影境档案 · 观电影法", W / 2, H - 90);
+    ctx.fillStyle = "rgba(255,255,255,0.93)";
+    ctx.font = "400 34px 'Songti SC',serif";
+    const tagLines = wrapText(ctx, data.tagline || "", W - 220);
+    let yy = ty + 118;
+    for (const ln of tagLines.slice(0, 3)) { ctx.fillText(ln, W / 2, yy); yy += 56; }
+
+    // 底部
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.font = "400 26px 'Songti SC',serif";
+    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 172);
+    ctx.fillStyle = GOLD + "0.8)";
+    ctx.font = "400 24px 'Songti SC',serif";
+    ctx.fillText("生命是条长河，最终渡你的还是自己", W / 2, H - 130);
+    ctx.fillStyle = GOLD + "0.6)";
+    ctx.font = "400 20px 'Songti SC',serif";
+    ctx.fillText("禅说电影 · 影境档案", W / 2, H - 82);
+
     return canvas.toDataURL("image/png");
   }
 
@@ -705,7 +755,7 @@
           <span class="life-film__tagline">「${esc(data.tagline || "")}」</span>
         </div>
         <p class="life-film__review">${esc(data.review || "")}</p>
-        <button class="mini-btn" id="life-again" style="margin-top:14px">↻ 再观一幕（重新填写）</button>
+        <button class="board-enter" id="life-again" style="margin-top:14px"><span>↻ 再观一幕（重新填写）</span></button>
       </div>`;
     $("#life-again").addEventListener("click", resetLifeForm);
   }
@@ -716,7 +766,7 @@
     if (!scene) { alert("先写下今天上演的一幕吧"); return; }
     const btn = $("#life-submit");
     btn.classList.add("is-loading");
-    btn.querySelector("span").textContent = "正在观己…";
+    btn.querySelector("span").textContent = "一切为你而来";
     try {
       const data = await api("/life/movie", {
         method: "POST",
@@ -739,6 +789,19 @@
   });
 
   // ============ 首页双板块：进入式交互 ============
+  function backHome() {
+    $("#guide").hidden = false;
+    $("#life").hidden = false;
+    $("#activity").hidden = false;
+    $("#extra").hidden = false;
+    $("#wizard").hidden = true;
+    $("#life-form").hidden = true;
+    $("#life-result").hidden = true;
+    resultsSection.hidden = true;
+    $("#guide-enter").style.display = "";
+    $("#life-enter").style.display = "";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
   function enterGuide() {
     $("#life").hidden = true;
     $("#activity").hidden = true;
