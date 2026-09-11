@@ -1289,6 +1289,17 @@ body[data-brand="yingling"] {
   font-weight: 600;
 }
 .top3-card__synopsis { margin: 0 0 12px; font-size: 14px; line-height: 1.9; color: var(--ink-2); font-weight: 300; }
+.top3-card__angle {
+  margin: 0 0 12px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: rgba(201, 161, 92, 0.08);
+  border-left: 2px solid rgba(201, 161, 92, 0.55);
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--ink-2);
+}
+.top3-card__angle strong { color: var(--gold-soft); font-weight: 600; }
 .top3-card__reason {
   margin: 0;
   padding: 12px 14px;
@@ -1400,6 +1411,12 @@ body[data-brand="yingling"] {
 .growth-stats strong { display: block; font-family: var(--font-display); font-size: 22px; color: var(--gold-soft); line-height: 1; }
 .growth-stats span { font-size: 11.5px; color: var(--ink-3); }
 .growth-section { margin-bottom: 22px; }
+.note-guide {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--gold-soft);
+}
 .growth-section h4 { margin: 0 0 10px; font-family: var(--font-serif); font-size: 14px; font-weight: 600; letter-spacing: .1em; color: var(--gold); }
 .lights { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .light-dot { font-size: 18px; color: var(--ink-faint); transition: all .3s; }

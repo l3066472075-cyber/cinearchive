@@ -301,6 +301,7 @@ class Top3Item(BaseModel):
     genre: str = ""
     rating: str = ""
     synopsis: str = ""
+    angle: str = ""
     reason: str = ""
 
 

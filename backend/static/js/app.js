@@ -268,6 +268,7 @@
         </div>
         <div class="growth-section">
           <h4>「观电影法」笔记</h4>
+          <p class="note-guide">🪞 这个故事里，有哪一点像你的人生脚本？</p>
           <div id="note-wrap">
             <input id="note-movie" placeholder="哪部电影（可留空，自己填写）" style="width:100%;margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid var(--hairline-soft);background:var(--surface);color:var(--ink)" />
             <div id="note-fields"></div>
@@ -294,10 +295,11 @@
         setTimeout(openGrowth, 400);
       });
 
-      // 「观电影法」观影笔记字段
+      // 「观电影法」观影笔记字段（第三项对应「看别人的故事 ↔ 自己的人生」联动）
       const NOTE_FIELDS = [
         { key: "内心触动的片段", ph: "哪个画面、哪段情节，最触动你？" },
         { key: "喜欢的台词", ph: "有没有哪句台词，你想记下来？" },
+        { key: "像你人生脚本的地方", ph: "这个故事、这个角色，有哪一点像你自己的人生脚本？" },
         { key: "电影带来的思考", ph: "这部电影让你想到了什么？内心的想法？" },
       ];
 
@@ -556,6 +558,7 @@
           <p class="top3-card__meta">${esc(mv.year || "—")} · ${esc(mv.country || "")} · ${esc(mv.director || "佚名")} 执导 · ${esc(mv.genre || "")}</p>
           ${mv.rating ? `<span class="top3-card__rating">豆瓣 ${esc(mv.rating)}</span>` : ""}
           <p class="top3-card__synopsis">${esc(mv.synopsis || "")}</p>
+          ${mv.angle ? `<p class="top3-card__angle">🎬 <strong>建议切入角度</strong>：${esc(mv.angle)}</p>` : ""}
           <p class="top3-card__reason">${esc(mv.reason || "")}</p>
         </div>
       </article>`;
