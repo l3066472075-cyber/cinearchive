@@ -1131,6 +1131,14 @@ body[data-brand="yingling"] {
   margin-top: 18px;
 }
 .life-actions .board-enter { margin-top: 0; }
+.life-again-tip {
+  margin: 20px auto 0;
+  max-width: 460px;
+  font-size: 13px;
+  line-height: 2;
+  color: var(--ink-3);
+  text-align: center;
+}
 
 /* 观己观心表单 */
 .life-form__tip { margin: 0 0 18px; font-size: 13.5px; color: var(--ink-3); }

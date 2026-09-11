@@ -879,6 +879,8 @@
           <button class="board-enter" id="life-again"><span>↻ 重新建立角色档案</span></button>
           <button class="board-enter board-enter--ghost" id="life-home-btn"><span>回到首页</span></button>
         </div>
+
+        <p class="life-again-tip">🌱 人生还有很多幕——下次回来，可以换一段人生故事（另一段转折、另一个当下的困惑）再观一次自己。<br />每一幕，都会给你新的看见。</p>
       </div>`;
     $("#life-again").addEventListener("click", resetLifeForm);
     $("#life-home-btn").addEventListener("click", backHome);
