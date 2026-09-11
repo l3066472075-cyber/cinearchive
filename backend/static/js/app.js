@@ -858,9 +858,13 @@
           </div>
         </div>
 
-        <button class="board-enter" id="life-again" style="margin-top:18px"><span>↻ 重新建立角色档案</span></button>
+        <div class="life-actions">
+          <button class="board-enter" id="life-again"><span>↻ 重新建立角色档案</span></button>
+          <button class="board-enter board-enter--ghost" id="life-home-btn"><span>回到首页</span></button>
+        </div>
       </div>`;
     $("#life-again").addEventListener("click", resetLifeForm);
+    $("#life-home-btn").addEventListener("click", backHome);
     $("#life-chat-send").addEventListener("click", sendLifeChat);
     $("#life-chat-input").addEventListener("keydown", (e) => {
       if (e.key === "Enter") sendLifeChat();

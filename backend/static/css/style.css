@@ -1113,6 +1113,24 @@ body[data-brand="yingling"] {
   background: rgba(201, 161, 92, 0.22);
   border-color: var(--gold);
 }
+.board-enter--ghost {
+  background: transparent;
+  border-color: var(--hairline-soft);
+  color: var(--ink-2);
+}
+.board-enter--ghost:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--gold-deep);
+  color: var(--gold-soft);
+}
+.life-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 18px;
+}
+.life-actions .board-enter { margin-top: 0; }
 
 /* 观己观心表单 */
 .life-form__tip { margin: 0 0 18px; font-size: 13.5px; color: var(--ink-3); }
