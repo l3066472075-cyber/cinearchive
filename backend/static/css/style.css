@@ -1015,31 +1015,6 @@ body {
   .movie-pill__score { min-width: 38px; font-size: 15px; }
 }
 
-/* ============ 全国观影联动（活动区） ============ */
-.activity-section { position: relative; z-index: 1; padding: 10px 0 50px; }
-.activity-list { display: flex; flex-direction: column; gap: 12px; }
-.activity-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 18px 20px;
-  background: linear-gradient(180deg, var(--surface), var(--surface-2));
-  border: 1px solid var(--hairline-soft);
-  border-radius: 16px;
-}
-.activity-card__badge {
-  flex-shrink: 0;
-  margin-top: 2px;
-  padding: 3px 11px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 500;
-  color: #1c1408;
-  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-}
-.activity-card__title { margin: 0; font-family: var(--font-serif); font-weight: 600; font-size: 16px; }
-.activity-card__desc { margin: 4px 0 0; font-size: 13px; color: var(--ink-3); }
-
 /* ============ 品牌切换（禅说电影 / 影领圈） ============ */
 body[data-brand="yingling"] {
   --gold: #7b9bd6;
@@ -1071,22 +1046,6 @@ body[data-brand="yingling"] {
   background: linear-gradient(135deg, var(--gold-soft), var(--gold));
   color: #1c1408;
 }
-
-/* ============ 延伸阅读 · 工具包 ============ */
-.extra-section { position: relative; z-index: 1; padding: 10px 0 50px; }
-.extra-list { display: flex; flex-direction: column; gap: 10px; }
-.extra-card {
-  display: block;
-  padding: 14px 18px;
-  background: var(--surface);
-  border: 1px solid var(--hairline-soft);
-  border-radius: 14px;
-  color: var(--ink-2);
-  text-decoration: none;
-  font-size: 14px;
-  transition: all 0.25s var(--ease);
-}
-.extra-card:hover { border-color: var(--gold-deep); color: var(--gold-soft); }
 
 /* ============ 双角色 · 5问引导 ============ */
 .guide-section { position: relative; z-index: 1; padding: 8px 0 30px; }

@@ -794,8 +794,6 @@
   function backHome() {
     $("#guide").hidden = false;
     $("#life").hidden = false;
-    $("#activity").hidden = false;
-    $("#extra").hidden = false;
     $("#wizard").hidden = true;
     $("#life-form").hidden = true;
     $("#life-result").hidden = true;
@@ -806,8 +804,6 @@
   }
   function enterGuide() {
     $("#life").hidden = true;
-    $("#activity").hidden = true;
-    $("#extra").hidden = true;
     $("#wizard").hidden = false;
     $("#guide-enter").style.display = "none";
     renderGuideStep();
@@ -815,8 +811,6 @@
   }
   function enterLife() {
     $("#guide").hidden = true;
-    $("#activity").hidden = true;
-    $("#extra").hidden = true;
     $("#life-form").hidden = false;
     $("#life-enter").style.display = "none";
     $("#life").scrollIntoView({ behavior: "smooth", block: "start" });
