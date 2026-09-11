@@ -1131,6 +1131,8 @@ body[data-brand="yingling"] {
   line-height: 1.7;
 }
 .life-q input { resize: none; }
+.life-q textarea { min-height: 110px; }
+#life-born { min-height: 150px; }
 
 /* 未填完的草稿提示条 */
 .life-draft {

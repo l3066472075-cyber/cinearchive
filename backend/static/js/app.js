@@ -525,7 +525,10 @@
 
   async function submitGuide() {
     const submit = $("#wizard-next");
+    const label = submit.querySelector("span");
     submit.classList.add("is-loading");
+    submit.disabled = true;
+    if (label) label.textContent = "专属回应为你而来……";
     try {
       lastGuideAnswers = buildGuideAnswers(); // 记住本次 5 问答案
       const data = await api("/recommend/top3", {
@@ -537,6 +540,8 @@
       alert("推荐失败：" + e.message);
     } finally {
       submit.classList.remove("is-loading");
+      submit.disabled = false;
+      if (label) label.textContent = "为你推荐";
     }
   }
 
@@ -900,6 +905,7 @@
     if (!roleName) { alert("先写下你的角色名吧"); return; }
     const btn = $("#life-submit");
     btn.classList.add("is-loading");
+    btn.disabled = true;
     btn.querySelector("span").textContent = "专属回应正在为你而来……";
     try {
       lifeProfile = {
@@ -917,6 +923,7 @@
       alert("生成失败：" + e.message);
     } finally {
       btn.classList.remove("is-loading");
+      btn.disabled = false;
       btn.querySelector("span").textContent = "放映我的人生电影";
     }
   });
