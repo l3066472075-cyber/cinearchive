@@ -1132,6 +1132,34 @@ body[data-brand="yingling"] {
 }
 .life-q input { resize: none; }
 
+/* 未填完的草稿提示条 */
+.life-draft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 161, 92, 0.35);
+  background: rgba(201, 161, 92, 0.1);
+  font-size: 13.5px;
+  color: var(--ink-2);
+  text-align: left;
+}
+.life-draft button {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 161, 92, 0.5);
+  background: transparent;
+  color: var(--gold-soft);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#life-draft-restart { border-color: var(--hairline-soft); color: var(--ink-3); font-weight: 400; }
+
 /* 人生电影 · 对话模式 */
 .life-chat {
   margin-top: 26px;

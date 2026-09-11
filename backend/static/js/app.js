@@ -727,7 +727,7 @@
     ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 172);
     ctx.fillStyle = GOLD + "0.8)";
     ctx.font = "400 24px 'Songti SC',serif";
-    ctx.fillText("生命是条长河，最终渡你的还是自己", W / 2, H - 130);
+    ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, H - 130);
     ctx.fillStyle = GOLD + "0.6)";
     ctx.font = "400 20px 'Songti SC',serif";
     ctx.fillText("禅说电影 · 寻影者", W / 2, H - 82);
@@ -735,14 +735,97 @@
     return canvas.toDataURL("image/png");
   }
 
+  // —— 角色档案草稿：未填完退出后，5 分钟内回来可继续 ——
+  const LIFE_DRAFT_KEY = "life_draft";
+  const LIFE_DRAFT_TTL = 5 * 60 * 1000;
+  const LIFE_FIELD_IDS = ["life-role-name", "life-movie-name", "life-born", "life-turning", "life-2026"];
+
+  function lifeFieldValues() {
+    return LIFE_FIELD_IDS.map((id) => ($("#" + id) ? $("#" + id).value : ""));
+  }
+
+  function saveLifeDraft() {
+    try {
+      const vals = lifeFieldValues();
+      if (!vals.some((v) => v && v.trim())) {
+        localStorage.removeItem(LIFE_DRAFT_KEY);
+        return;
+      }
+      localStorage.setItem(
+        LIFE_DRAFT_KEY,
+        JSON.stringify({
+          role_name: vals[0], movie_name: vals[1], born_story: vals[2],
+          turning_story: vals[3], story_2026: vals[4], ts: Date.now(),
+        })
+      );
+    } catch (e) {}
+  }
+
+  function readLifeDraft() {
+    try {
+      const raw = localStorage.getItem(LIFE_DRAFT_KEY);
+      if (!raw) return null;
+      const d = JSON.parse(raw);
+      if (!d || !d.ts || Date.now() - d.ts > LIFE_DRAFT_TTL) {
+        localStorage.removeItem(LIFE_DRAFT_KEY);
+        return null;
+      }
+      const filled = [d.role_name, d.movie_name, d.born_story, d.turning_story, d.story_2026]
+        .some((v) => v && String(v).trim());
+      return filled ? d : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function clearLifeDraft() {
+    try { localStorage.removeItem(LIFE_DRAFT_KEY); } catch (e) {}
+  }
+
+  function applyLifeDraft(d) {
+    const vals = [d.role_name, d.movie_name, d.born_story, d.turning_story, d.story_2026];
+    LIFE_FIELD_IDS.forEach((id, i) => {
+      const el = $("#" + id);
+      if (el) el.value = vals[i] || "";
+    });
+  }
+
+  function showLifeDraftPrompt(d) {
+    const old = $("#life-draft-prompt");
+    if (old) old.remove();
+    const div = document.createElement("div");
+    div.id = "life-draft-prompt";
+    div.className = "life-draft";
+    div.innerHTML = `
+      <span>上次你填到一半，是否继续？</span>
+      <button id="life-draft-resume">继续填写</button>
+      <button id="life-draft-restart">重新开始</button>`;
+    const form = $("#life-form");
+    if (!form) return;
+    form.prepend(div);
+    $("#life-draft-resume").addEventListener("click", () => {
+      applyLifeDraft(d);
+      saveLifeDraft();
+      div.remove();
+    });
+    $("#life-draft-restart").addEventListener("click", () => {
+      clearLifeDraft();
+      LIFE_FIELD_IDS.forEach((id) => { const el = $("#" + id); if (el) el.value = ""; });
+      div.remove();
+    });
+  }
+
   function resetLifeForm() {
-    ["life-role-name", "life-movie-name", "life-born", "life-turning", "life-2026"].forEach((id) => {
+    clearLifeDraft();
+    LIFE_FIELD_IDS.forEach((id) => {
       const el = $("#" + id);
       if (el) el.value = "";
     });
+    const prompt = $("#life-draft-prompt");
+    if (prompt) prompt.remove();
     $("#life-result").hidden = true;
     $("#life-form").hidden = false;
-    $("#life").scrollIntoView({ behavior: "smooth", block: "start" });
+    $("#life-form").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function renderLifeResult(data) {
@@ -817,7 +900,7 @@
     if (!roleName) { alert("先写下你的角色名吧"); return; }
     const btn = $("#life-submit");
     btn.classList.add("is-loading");
-    btn.querySelector("span").textContent = "一切为你而来";
+    btn.querySelector("span").textContent = "专属回应正在为你而来……";
     try {
       lifeProfile = {
         role_name: roleName,
@@ -827,6 +910,7 @@
         story_2026: $("#life-2026").value.trim(),
       };
       const data = await api("/life/movie", { method: "POST", body: { profile: lifeProfile } });
+      clearLifeDraft(); // 已生成，草稿使命完成
       $("#life-form").hidden = true;
       renderLifeResult(data);
     } catch (e) {
@@ -861,11 +945,23 @@
     $("#guide").hidden = true;
     $("#life-form").hidden = false;
     $("#life-enter").style.display = "none";
+    // 若 5 分钟内填过一半就退出，询问是否继续（避免用户反复填写）
+    const draft = readLifeDraft();
+    if (draft) {
+      showLifeDraftPrompt(draft);
+      applyLifeDraft(draft);
+    }
     // 直接滚到角色档案问答内容
     $("#life-form").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   $("#guide-enter").addEventListener("click", enterGuide);
   $("#life-enter").addEventListener("click", enterLife);
+  // 实时保存草稿，用户中途退出也不丢
+  LIFE_FIELD_IDS.forEach((id) => {
+    const el = $("#" + id);
+    if (el) el.addEventListener("input", saveLifeDraft);
+    if (el) el.addEventListener("change", saveLifeDraft);
+  });
 
   // ============ 初始化 ============
   (async function init() {
