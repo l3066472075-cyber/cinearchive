@@ -658,84 +658,101 @@
     return lines;
   }
 
+  // 手绘感线条：在平滑路径上加轻微抖动，模拟笔触
+  function handStroke(ctx, pts, jitter) {
+    if (!pts || pts.length < 2) return;
+    const j = jitter || 1.6;
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0] + (Math.random() - 0.5) * j, pts[0][1] + (Math.random() - 0.5) * j);
+    for (let i = 1; i < pts.length; i++) {
+      ctx.lineTo(pts[i][0] + (Math.random() - 0.5) * j, pts[i][1] + (Math.random() - 0.5) * j);
+    }
+    ctx.stroke();
+  }
+
   function drawLifePoster(data, name) {
-    const W = 750, H = 1050;
+    const W = 750, H = 1000;
     const canvas = document.createElement("canvas");
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d");
-    const [c1, c2] = lifePosterColors(data.title);
-    const g = ctx.createLinearGradient(0, 0, W, H);
-    g.addColorStop(0, c1); g.addColorStop(1, c2);
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
-    // 轻微暗化增加质感
-    ctx.fillStyle = "rgba(0,0,0,0.14)";
-    ctx.fillRect(0, 0, W, H);
 
-    const GOLD = "rgba(229,201,143,";
+    // —— 纸感底色 + 极淡纸纹 ——
+    ctx.fillStyle = "#F6F1E6";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(120,105,85,0.05)";
+    for (let i = 0; i < 1100; i++) {
+      ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+    }
+
+    const INK = "rgba(46,42,36,0.92)";
+    const LINE = "rgba(107,95,78,0.8)";
+    const GOLD = "rgba(176,140,72,0.95)";
+    const GREY = "rgba(96,88,76,0.7)";
     ctx.textAlign = "center";
-
-    // 双层边框
-    ctx.strokeStyle = GOLD + "0.45)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(30, 30, W - 60, H - 60);
-    ctx.strokeStyle = GOLD + "0.22)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(46, 46, W - 92, H - 92);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
     // 顶部品牌
-    ctx.fillStyle = GOLD + "0.9)";
-    ctx.font = "600 26px 'Songti SC','Noto Serif SC',serif";
-    ctx.fillText("禅说电影 · 寻影者", W / 2, 122);
-    ctx.fillStyle = GOLD + "0.5)";
-    ctx.font = "400 20px 'Songti SC',serif";
-    ctx.fillText("观电影法 · 借影观心", W / 2, 160);
+    ctx.fillStyle = GREY;
+    ctx.font = "500 21px 'Songti SC','Noto Serif SC',serif";
+    ctx.fillText("禅 说 电 影 · 寻 影 者", W / 2, 92);
 
-    // 中部小标
-    ctx.strokeStyle = GOLD + "0.4)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(W / 2 - 56, 222); ctx.lineTo(W / 2 + 56, 222);
-    ctx.stroke();
-    ctx.fillStyle = GOLD + "0.75)";
-    ctx.font = "500 22px 'Songti SC',serif";
-    ctx.fillText("今 日 人 生 电 影", W / 2, 264);
+    // —— 手绘简笔画：一条起伏的长线（路／长河）+ 一个小人影 + 一盏灯 ——
+    ctx.strokeStyle = LINE;
+    ctx.lineWidth = 2;
 
-    // 片名
-    ctx.fillStyle = "rgba(255,255,255,0.97)";
-    ctx.font = "700 64px 'Songti SC','Noto Serif SC',serif";
+    const river = [];
+    for (let i = 0; i <= 48; i++) {
+      const t = i / 48;
+      const x = 78 + (W - 156) * t;
+      const y = 470 - t * 54 + Math.sin(t * Math.PI * 1.7) * 26;
+      river.push([x, y]);
+    }
+    handStroke(ctx, river, 1.8);
+
+    // 人影（站在长线上）
+    const rp = river[Math.round(48 * 0.4)];
+    const px = rp[0], py = rp[1];
+    ctx.beginPath(); ctx.arc(px, py - 48, 9, 0, Math.PI * 2); ctx.stroke();
+    handStroke(ctx, [[px, py - 39], [px, py - 8]], 1.1);
+    handStroke(ctx, [[px - 14, py - 27], [px + 14, py - 27]], 1.1);
+    handStroke(ctx, [[px, py - 8], [px - 11, py + 15]], 1.1);
+    handStroke(ctx, [[px, py - 8], [px + 11, py + 15]], 1.1);
+
+    // 灯（右上留白处）
+    const lx = W - 176, ly = 286;
+    ctx.beginPath(); ctx.arc(lx, ly, 12, 0, Math.PI * 2); ctx.stroke();
+    for (let a = 0; a < 8; a++) {
+      const ang = (Math.PI * 2 * a) / 8;
+      handStroke(ctx, [
+        [lx + Math.cos(ang) * 21, ly + Math.sin(ang) * 21],
+        [lx + Math.cos(ang) * 33, ly + Math.sin(ang) * 33],
+      ], 0.9);
+    }
+
+    // —— 文字区 ——
+    let ty = 648;
+    ctx.fillStyle = INK;
+    ctx.font = "700 60px 'Songti SC','Noto Serif SC',serif";
     const titleLines = wrapText(ctx, `《${data.title}》`, W - 180);
-    let ty = 396;
-    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += 88; }
+    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += 74; }
 
-    // 类型
-    ctx.fillStyle = GOLD + "0.95)";
-    ctx.font = "500 28px 'Songti SC',serif";
-    ctx.fillText(data.genre || "今日一幕", W / 2, ty + 14);
+    ctx.fillStyle = GOLD;
+    ctx.font = "500 23px 'Songti SC',serif";
+    ctx.fillText((data.genre || "人生电影").replace(/\s*\/\s*/g, " · "), W / 2, ty + 4);
+    ty += 46;
 
-    // 分隔线
-    ctx.strokeStyle = GOLD + "0.35)";
-    ctx.beginPath();
-    ctx.moveTo(W / 2 - 40, ty + 54); ctx.lineTo(W / 2 + 40, ty + 54);
-    ctx.stroke();
+    ctx.fillStyle = INK;
+    ctx.font = "400 29px 'Songti SC',serif";
+    const tagLines = wrapText(ctx, data.tagline || "", W - 210);
+    for (const ln of tagLines.slice(0, 2)) { ctx.fillText(ln, W / 2, ty + 26); ty += 42; }
 
-    // 海报文案
-    ctx.fillStyle = "rgba(255,255,255,0.93)";
-    ctx.font = "400 34px 'Songti SC',serif";
-    const tagLines = wrapText(ctx, data.tagline || "", W - 220);
-    let yy = ty + 118;
-    for (const ln of tagLines.slice(0, 3)) { ctx.fillText(ln, W / 2, yy); yy += 56; }
-
-    // 底部
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.font = "400 26px 'Songti SC',serif";
-    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 172);
-    ctx.fillStyle = GOLD + "0.8)";
-    ctx.font = "400 24px 'Songti SC',serif";
-    ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, H - 130);
-    ctx.fillStyle = GOLD + "0.6)";
+    ctx.fillStyle = GREY;
+    ctx.font = "400 22px 'Songti SC',serif";
+    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 118);
+    ctx.fillStyle = "rgba(176,140,72,0.85)";
     ctx.font = "400 20px 'Songti SC',serif";
-    ctx.fillText("禅说电影 · 寻影者", W / 2, H - 82);
+    ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, H - 74);
 
     return canvas.toDataURL("image/png");
   }
