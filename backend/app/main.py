@@ -6,11 +6,12 @@
 """
 from __future__ import annotations
 
+import time as _time
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
@@ -52,10 +53,19 @@ app.include_router(meta.router)
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+# 静态资源版本号：随进程启动（即每次部署）自动变化，
+# 让浏览器/微信自动丢掉旧版 CSS/JS 缓存，用户无需手动清缓存。
+ASSET_VERSION = str(int(_time.time()))
+
 
 @app.get("/", include_in_schema=False)
-def index() -> FileResponse:
-    return FileResponse(STATIC_DIR / "index.html")
+def index() -> HTMLResponse:
+    html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    html = html.replace("__ASSET_VERSION__", ASSET_VERSION)
+    return HTMLResponse(
+        content=html,
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 @app.on_event("startup")
