@@ -628,6 +628,9 @@
   });
 
   // ============ 你的人生电影 · 观己观心 ============
+  let lifeProfile = {}; // 当前角色档案（供对话使用）
+  let lifeChatHistory = []; // 人生电影对话历史 [{role, content}]
+
   function lifePosterColors(title) {
     let h = 0;
     for (const c of title || "") h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -745,6 +748,7 @@
   function renderLifeResult(data) {
     const roleName = $("#life-role-name").value.trim() || "你";
     const poster = drawLifePoster(data, roleName);
+    lifeChatHistory = [];
     $("#life-result").hidden = false;
     $("#life-result").innerHTML = `
       <div class="life-film">
@@ -755,9 +759,56 @@
           <span class="life-film__tagline">「${esc(data.tagline || "")}」</span>
         </div>
         <p class="life-film__review">${esc(data.review || "")}</p>
-        <button class="board-enter" id="life-again" style="margin-top:14px"><span>↻ 重新建立角色档案</span></button>
+
+        <div class="life-chat">
+          <h4 class="life-chat__title">🪞 看完这一幕，你想说点什么？</h4>
+          <p class="life-chat__tip">写下你的感受、想法或疑问，我陪你继续看这场戏。</p>
+          <div class="life-chat__log" id="life-chat-log"></div>
+          <div class="life-chat__bar">
+            <input id="life-chat-input" placeholder="写下你的感受或想法…" />
+            <button id="life-chat-send">发送</button>
+          </div>
+        </div>
+
+        <button class="board-enter" id="life-again" style="margin-top:18px"><span>↻ 重新建立角色档案</span></button>
       </div>`;
     $("#life-again").addEventListener("click", resetLifeForm);
+    $("#life-chat-send").addEventListener("click", sendLifeChat);
+    $("#life-chat-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendLifeChat();
+    });
+  }
+
+  function appendChatBubble(kind, text) {
+    const log = $("#life-chat-log");
+    if (!log) return null;
+    const div = document.createElement("div");
+    div.className = `chat-bubble chat-bubble--${kind}`;
+    div.textContent = text;
+    log.appendChild(div);
+    div.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return div;
+  }
+
+  async function sendLifeChat() {
+    const input = $("#life-chat-input");
+    if (!input) return;
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = "";
+    appendChatBubble("user", msg);
+    const loading = appendChatBubble("ai", "……");
+    try {
+      const res = await api("/life/chat", {
+        method: "POST",
+        body: { profile: lifeProfile, history: lifeChatHistory.slice(), message: msg },
+      });
+      lifeChatHistory.push({ role: "user", content: msg });
+      lifeChatHistory.push({ role: "assistant", content: res.reply });
+      if (loading) loading.textContent = res.reply;
+    } catch (e) {
+      if (loading) loading.textContent = "回应失败：" + e.message;
+    }
   }
 
   // 建立角色档案 → 生成「你的人生电影」
@@ -768,18 +819,14 @@
     btn.classList.add("is-loading");
     btn.querySelector("span").textContent = "一切为你而来";
     try {
-      const data = await api("/life/movie", {
-        method: "POST",
-        body: {
-          profile: {
-            role_name: roleName,
-            movie_name: $("#life-movie-name").value.trim(),
-            born_story: $("#life-born").value.trim(),
-            turning_story: $("#life-turning").value.trim(),
-            story_2026: $("#life-2026").value.trim(),
-          },
-        },
-      });
+      lifeProfile = {
+        role_name: roleName,
+        movie_name: $("#life-movie-name").value.trim(),
+        born_story: $("#life-born").value.trim(),
+        turning_story: $("#life-turning").value.trim(),
+        story_2026: $("#life-2026").value.trim(),
+      };
+      const data = await api("/life/movie", { method: "POST", body: { profile: lifeProfile } });
       $("#life-form").hidden = true;
       renderLifeResult(data);
     } catch (e) {

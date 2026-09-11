@@ -1132,6 +1132,70 @@ body[data-brand="yingling"] {
 }
 .life-q input { resize: none; }
 
+/* 人生电影 · 对话模式 */
+.life-chat {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--hairline-soft);
+  text-align: left;
+}
+.life-chat__title {
+  margin: 0 0 6px;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--gold-soft);
+  letter-spacing: 0.04em;
+}
+.life-chat__tip { margin: 0 0 14px; font-size: 13px; color: var(--ink-3); }
+.life-chat__log { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.chat-bubble {
+  max-width: 88%;
+  padding: 12px 15px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+.chat-bubble--user {
+  align-self: flex-end;
+  background: rgba(201, 161, 92, 0.16);
+  border: 1px solid rgba(201, 161, 92, 0.32);
+  color: var(--ink);
+}
+.chat-bubble--ai {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--hairline-soft);
+  color: var(--ink-2);
+  font-weight: 300;
+}
+.life-chat__bar { display: flex; gap: 8px; align-items: center; }
+#life-chat-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline-soft);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+#life-chat-send {
+  flex: none;
+  padding: 11px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 161, 92, 0.55);
+  background: rgba(201, 161, 92, 0.12);
+  color: var(--gold-soft);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+#life-chat-send:hover { background: rgba(201, 161, 92, 0.22); border-color: var(--gold); }
+
 /* LLM 直接推荐的 top3 卡片 */
 .top3-card {
   position: relative;

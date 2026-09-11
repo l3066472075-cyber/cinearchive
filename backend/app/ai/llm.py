@@ -339,6 +339,42 @@ def life_movie(profile: dict) -> dict | None:
     return None
 
 
+def life_chat(profile: dict, history: list[dict], message: str) -> str | None:
+    """人生电影 · 对话模式：接住用户的感受与想法，进一步互动，并可抛出觉察问题。
+
+    history: [{"role": "user"/"assistant", "content": "..."}]
+    返回回应文本；失败返回 None。
+    """
+    role_name = profile.get("role_name") or "你"
+    born = profile.get("born_story") or "（未写）"
+    turning = profile.get("turning_story") or "（未写）"
+    s2026 = profile.get("story_2026") or "（未写）"
+
+    hist_block = "\n".join(
+        f"{'他' if h.get('role') == 'user' else '你'}：{str(h.get('content') or '').strip()}"
+        for h in (history or [])[-6:]
+        if str(h.get("content") or "").strip()
+    ) or "（这是你们的第一轮对话）"
+
+    prompt = f"""你正在陪「{role_name}」一起看他的人生电影，并和他对话。他的角色档案：
+- 出生故事（第一幕）：{born}
+- 转折故事（第二幕）：{turning}
+- 正在经历的故事（2026，第三幕）：{s2026}
+
+你们刚才的对话：
+{hist_block}
+
+他刚刚说：{message}
+
+请像一位懂电影也懂人的老朋友那样回应他（120~200 字）：
+① 先接住他这句话里最真实的那个点（他的情绪、他用的某个词），让他感到你真的在听；
+② 用「观电影法」的眼光轻轻陪他多看一眼——可以呼应他档案里的某一幕，或那条反复出现的线（轮回的模式），但不硬塞、不武断、不下结论；
+③ 如果自然，就在结尾抛 1 个温柔的觉察问题，帮他自己往里看（如「这一幕里，你真正想要的是什么？」）；不要每次都问，也不要连珠炮式发问。
+
+{_HUMAN_TOUCH}"""
+    return lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=600)
+
+
 def life_daily(story: str, name: str = "") -> dict | None:
     """针对用户当天经历的一段「剧情」，用电影视角复盘回应。
     返回 {"title": 今日片名, "review": 影评式回应}；失败返回 None。

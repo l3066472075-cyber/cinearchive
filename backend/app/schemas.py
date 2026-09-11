@@ -282,6 +282,16 @@ class LifeDailyResponse(BaseModel):
     review: str = ""
 
 
+class LifeChatRequest(BaseModel):
+    profile: dict[str, str] = {}
+    history: list[dict[str, str]] = []
+    message: str = ""
+
+
+class LifeChatResponse(BaseModel):
+    reply: str = ""
+
+
 # ---------- LLM 直接推荐（不限影片库，top3） ----------
 class Top3Item(BaseModel):
     title: str = ""
