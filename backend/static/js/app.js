@@ -1,4 +1,4 @@
-/* 影境档案 · 前端交互 */
+/* 寻影者 · 前端交互 */
 (() => {
   "use strict";
 
@@ -681,7 +681,7 @@
     // 顶部品牌
     ctx.fillStyle = GOLD + "0.9)";
     ctx.font = "600 26px 'Songti SC','Noto Serif SC',serif";
-    ctx.fillText("禅说电影 · 影境档案", W / 2, 122);
+    ctx.fillText("禅说电影 · 寻影者", W / 2, 122);
     ctx.fillStyle = GOLD + "0.5)";
     ctx.font = "400 20px 'Songti SC',serif";
     ctx.fillText("观电影法 · 借影观心", W / 2, 160);
@@ -730,7 +730,7 @@
     ctx.fillText("生命是条长河，最终渡你的还是自己", W / 2, H - 130);
     ctx.fillStyle = GOLD + "0.6)";
     ctx.font = "400 20px 'Songti SC',serif";
-    ctx.fillText("禅说电影 · 影境档案", W / 2, H - 82);
+    ctx.fillText("禅说电影 · 寻影者", W / 2, H - 82);
 
     return canvas.toDataURL("image/png");
   }
@@ -854,13 +854,15 @@
     $("#wizard").hidden = false;
     $("#guide-enter").style.display = "none";
     renderGuideStep();
-    $("#guide").scrollIntoView({ behavior: "smooth", block: "start" });
+    // 直接滚到问答题，点一次就能开始回答
+    $("#wizard").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function enterLife() {
     $("#guide").hidden = true;
     $("#life-form").hidden = false;
     $("#life-enter").style.display = "none";
-    $("#life").scrollIntoView({ behavior: "smooth", block: "start" });
+    // 直接滚到角色档案问答内容
+    $("#life-form").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   $("#guide-enter").addEventListener("click", enterGuide);
   $("#life-enter").addEventListener("click", enterLife);

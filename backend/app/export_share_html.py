@@ -56,7 +56,7 @@ HTML = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>影境档案 · 好电影的深度档案馆</title>
+<title>寻影者 · 好电影的深度档案馆</title>
 <meta name="description" content="从多部经典电影中，为您挑选适合当下心境的影片——影视教育 × 艺术治疗。" />
 <meta name="theme-color" content="#100e0c" />
 <style>
@@ -181,7 +181,7 @@ body{margin:0;background:var(--bg);background:radial-gradient(1400px 800px at 50
 </head>
 <body>
 <header class="site-header">
-  <a class="brand" href="#top"><span class="brand__mark" id="brand-name">禅说电影</span><span class="brand__cn">影境档案</span></a>
+  <a class="brand" href="#top"><span class="brand__mark" id="brand-name">禅说电影</span><span class="brand__cn">寻影者</span></a>
   <span class="brand__tagline" id="brand-tagline">以影入道 · 借影观心</span>
   <div class="brand-switch" id="brand-switch">
     <button data-brand="chanshuo" class="is-active">禅说电影</button>
@@ -297,7 +297,7 @@ body{margin:0;background:var(--bg);background:radial-gradient(1400px 800px at 50
 
 <footer class="site-footer">
   <div class="container">
-    <span class="brand__mark">CineArchive</span> <span class="brand__cn">影境档案</span>
+    <span class="brand__mark">CineArchive</span> <span class="brand__cn">寻影者</span>
     <p>影视教育 · 艺术治疗 · 一座会生长的好电影档案馆</p>
   </div>
 </footer>
