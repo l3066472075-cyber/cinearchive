@@ -1059,6 +1059,39 @@
     if (el) el.addEventListener("change", saveLifeDraft);
   });
 
+  // ============ 项目二维码（页脚 · 扫码进入 / 可保存转发）============
+  function initSiteQR() {
+    const img = $("#site-qr-img");
+    const save = $("#site-qr-save");
+    if (!img || typeof qrcode !== "function") return;
+    try {
+      const qr = qrcode(0, "M");
+      qr.addData(location.origin + "/");
+      qr.make();
+      const n = qr.getModuleCount();
+      const size = 480, pad = 36;
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = size + pad * 2;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const cell = size / n;
+      ctx.fillStyle = "#100E0C";
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          if (qr.isDark(r, c)) {
+            ctx.fillRect(pad + c * cell, pad + r * cell, Math.ceil(cell), Math.ceil(cell));
+          }
+        }
+      }
+      const url = canvas.toDataURL("image/png");
+      img.src = url;
+      if (save) save.href = url;
+    } catch (e) {
+      console.warn("生成二维码失败", e);
+    }
+  }
+
   // ============ 初始化 ============
   (async function init() {
     try {
@@ -1070,6 +1103,7 @@
         console.warn("加载主题失败", e);
         // 主题加载失败不影响其他功能，继续运行
       }
+      initSiteQR(); // 页脚项目二维码
       // 首页先展示两个板块入口，用户点击「开始」后进入对应向导
       // 延迟执行访客登录，避免阻塞页面渲染
       setTimeout(() => {
