@@ -112,7 +112,7 @@ def list_life_logs(
     db: Session = Depends(get_db),
     user: models.User | None = Depends(auth.get_current_user_optional),
 ):
-    """我的人生电影片单（按时间倒序）。"""
+    """我的人生电影片单（按时间倒序，同一份档案去重只保留最新一次）。"""
     if user is None:
         return []
     logs = (
@@ -122,6 +122,15 @@ def list_life_logs(
         .limit(max(1, min(limit, 100)))
         .all()
     )
+    # 按「片名 + 档案内容」去重（兼容历史遗留的重复数据）
+    seen: set[str] = set()
+    unique = []
+    for lg in logs:
+        key = f"{lg.title or ''}|{_profile_key(lg.profile)}"
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(lg)
     return [
         LifeLogItem(
             id=lg.id,
@@ -133,7 +142,7 @@ def list_life_logs(
             pattern=lg.pattern or "",
             created_at=lg.created_at,
         )
-        for lg in logs
+        for lg in unique
     ]
 
 
