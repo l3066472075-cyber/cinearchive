@@ -707,30 +707,30 @@
     const river = [];
     for (let i = 0; i <= 48; i++) {
       const t = i / 48;
-      const x = 78 + (W - 156) * t;
-      const y = 470 - t * 54 + Math.sin(t * Math.PI * 1.7) * 26;
+      const x = 132 + (W - 264) * t;
+      const y = 356 - t * 40 + Math.sin(t * Math.PI * 1.7) * 19;
       river.push([x, y]);
     }
-    handStroke(ctx, river, 1.8);
+    handStroke(ctx, river, 1.5);
 
-    // 人影（站在长线上）
+    // 人影（站在长线上，比原来小一号）
     const rp = river[Math.round(48 * 0.4)];
     const px = rp[0], py = rp[1];
-    ctx.beginPath(); ctx.arc(px, py - 48, 9, 0, Math.PI * 2); ctx.stroke();
-    handStroke(ctx, [[px, py - 39], [px, py - 8]], 1.1);
-    handStroke(ctx, [[px - 14, py - 27], [px + 14, py - 27]], 1.1);
-    handStroke(ctx, [[px, py - 8], [px - 11, py + 15]], 1.1);
-    handStroke(ctx, [[px, py - 8], [px + 11, py + 15]], 1.1);
+    ctx.beginPath(); ctx.arc(px, py - 37, 7, 0, Math.PI * 2); ctx.stroke();
+    handStroke(ctx, [[px, py - 30], [px, py - 6]], 0.9);
+    handStroke(ctx, [[px - 11, py - 21], [px + 11, py - 21]], 0.9);
+    handStroke(ctx, [[px, py - 6], [px - 8.5, py + 12]], 0.9);
+    handStroke(ctx, [[px, py - 6], [px + 8.5, py + 12]], 0.9);
 
-    // 灯（右上留白处）
-    const lx = W - 176, ly = 286;
-    ctx.beginPath(); ctx.arc(lx, ly, 12, 0, Math.PI * 2); ctx.stroke();
+    // 灯（右上留白处，上移并缩小）
+    const lx = W - 196, ly = 208;
+    ctx.beginPath(); ctx.arc(lx, ly, 9.5, 0, Math.PI * 2); ctx.stroke();
     for (let a = 0; a < 8; a++) {
       const ang = (Math.PI * 2 * a) / 8;
       handStroke(ctx, [
-        [lx + Math.cos(ang) * 21, ly + Math.sin(ang) * 21],
-        [lx + Math.cos(ang) * 33, ly + Math.sin(ang) * 33],
-      ], 0.9);
+        [lx + Math.cos(ang) * 17, ly + Math.sin(ang) * 17],
+        [lx + Math.cos(ang) * 26, ly + Math.sin(ang) * 26],
+      ], 0.8);
     }
 
     // —— 文字区 ——
@@ -915,7 +915,12 @@
     try {
       const res = await api("/life/chat", {
         method: "POST",
-        body: { profile: lifeProfile, history: lifeChatHistory.slice(), message: msg },
+        body: {
+          profile: lifeProfile,
+          context: lastGuideAnswers || {},
+          history: lifeChatHistory.slice(),
+          message: msg,
+        },
       });
       lifeChatHistory.push({ role: "user", content: msg });
       lifeChatHistory.push({ role: "assistant", content: res.reply });
@@ -941,7 +946,10 @@
         turning_story: $("#life-turning").value.trim(),
         story_2026: $("#life-2026").value.trim(),
       };
-      const data = await api("/life/movie", { method: "POST", body: { profile: lifeProfile } });
+      const data = await api("/life/movie", {
+        method: "POST",
+        body: { profile: lifeProfile, context: lastGuideAnswers || {} },
+      });
       clearLifeDraft(); // 已生成，草稿使命完成
       $("#life-form").hidden = true;
       renderLifeResult(data);

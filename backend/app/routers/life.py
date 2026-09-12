@@ -22,7 +22,7 @@ router = APIRouter(prefix="/api/v1/life", tags=["life"])
 @router.post("/movie", response_model=LifeMovieResponse)
 def life_movie(req: LifeMovieRequest):
     """按角色档案生成「你的人生电影」（片名/类型/海报文案/影评）。"""
-    result = llm.life_movie(req.profile)
+    result = llm.life_movie(req.profile, req.context)
     if result is None:
         role_name = req.profile.get("role_name") or "你"
         return LifeMovieResponse(
@@ -37,7 +37,7 @@ def life_movie(req: LifeMovieRequest):
 @router.post("/chat", response_model=LifeChatResponse)
 def life_chat(req: LifeChatRequest):
     """人生电影 · 对话模式：用户写下感受与想法，AI 进一步互动并可抛出觉察问题。"""
-    reply = llm.life_chat(req.profile, req.history, req.message)
+    reply = llm.life_chat(req.profile, req.history, req.message, req.context)
     if reply is None:
         return LifeChatResponse(reply="我在。慢慢说，我陪着你——你此刻想到的，往往正是最值得看一眼的那一处。")
     return LifeChatResponse(reply=reply)

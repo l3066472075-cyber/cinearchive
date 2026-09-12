@@ -263,6 +263,7 @@ class PersonalResponse(BaseModel):
 # ---------- 你的人生电影 ----------
 class LifeMovieRequest(BaseModel):
     profile: dict[str, str] = {}  # name/roles/script_2026/born_script/extra
+    context: dict[str, str] = {}  # 「看别人的电影」5 问答案，用于打通两部分的认知
 
 
 class LifeDailyRequest(BaseModel):
@@ -284,6 +285,7 @@ class LifeDailyResponse(BaseModel):
 
 class LifeChatRequest(BaseModel):
     profile: dict[str, str] = {}
+    context: dict[str, str] = {}  # 打通「看别人的电影」里填过的信息
     history: list[dict[str, str]] = []
     message: str = ""
 
