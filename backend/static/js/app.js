@@ -661,16 +661,32 @@
     return lines;
   }
 
-  // 手绘感线条：在平滑路径上加轻微抖动，模拟笔触
-  function handStroke(ctx, pts, jitter) {
-    if (!pts || pts.length < 2) return;
-    const j = jitter || 1.6;
-    ctx.beginPath();
-    ctx.moveTo(pts[0][0] + (Math.random() - 0.5) * j, pts[0][1] + (Math.random() - 0.5) * j);
-    for (let i = 1; i < pts.length; i++) {
-      ctx.lineTo(pts[i][0] + (Math.random() - 0.5) * j, pts[i][1] + (Math.random() - 0.5) * j);
+  // 电影元素：取景框四角
+  function frameCorners(ctx, W, H, m, len, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    const seg = [
+      [[m, m + len], [m, m], [m + len, m]],
+      [[W - m - len, m], [W - m, m], [W - m, m + len]],
+      [[m, H - m - len], [m, H - m], [m + len, H - m]],
+      [[W - m - len, H - m], [W - m, H - m], [W - m, H - m - len]],
+    ];
+    seg.forEach((pts) => {
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      ctx.lineTo(pts[1][0], pts[1][1]);
+      ctx.lineTo(pts[2][0], pts[2][1]);
+      ctx.stroke();
+    });
+  }
+
+  // 电影元素：一排胶片齿孔
+  function sprocketRow(ctx, cx, y, width, color) {
+    const n = 15, gap = width / n;
+    ctx.fillStyle = color;
+    for (let i = 0; i < n; i++) {
+      ctx.fillRect(cx - width / 2 + i * gap + 3, y, gap - 7, 9);
     }
-    ctx.stroke();
   }
 
   function drawLifePoster(data, name) {
@@ -680,82 +696,95 @@
     const ctx = canvas.getContext("2d");
 
     // —— 纸感底色 + 极淡纸纹 ——
-    ctx.fillStyle = "#F6F1E6";
+    ctx.fillStyle = "#F7F2E8";
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = "rgba(120,105,85,0.05)";
-    for (let i = 0; i < 1100; i++) {
+    ctx.fillStyle = "rgba(120,105,85,0.045)";
+    for (let i = 0; i < 1000; i++) {
       ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
     }
 
-    const INK = "rgba(46,42,36,0.92)";
-    const LINE = "rgba(107,95,78,0.8)";
-    const GOLD = "rgba(176,140,72,0.95)";
-    const GREY = "rgba(96,88,76,0.7)";
+    const INK = "rgba(46,42,36,0.94)";
+    const GOLD = "rgba(176,140,72,0.92)";
+    const GOLD_SOFT = "rgba(176,140,72,0.42)";
+    const GREY = "rgba(96,88,76,0.72)";
     ctx.textAlign = "center";
     ctx.lineCap = "round";
-    ctx.lineJoin = "round";
 
-    // 顶部品牌
+    // 取景框四角（不进入文字区）
+    frameCorners(ctx, W, H, 46, 44, GOLD_SOFT);
+
+    // 顶部品牌 + 齿孔装饰
     ctx.fillStyle = GREY;
     ctx.font = "500 21px 'Songti SC','Noto Serif SC',serif";
-    ctx.fillText("禅 说 电 影 · 寻 影 者", W / 2, 92);
+    ctx.fillText("禅 说 电 影 · 寻 影 者", W / 2, 106);
+    sprocketRow(ctx, W / 2, 134, 300, "rgba(176,140,72,0.30)");
 
-    // —— 手绘简笔画：一条起伏的长线（路／长河）+ 一个小人影 + 一盏灯 ——
-    ctx.strokeStyle = LINE;
-    ctx.lineWidth = 2;
+    // —— 中部留白处的电影元素：光圈（镜头）+ 柔和光晕，全部在文字区之上 ——
+    const cx = W / 2, cy = 392;
+    const halo = ctx.createRadialGradient(cx, cy, 10, cx, cy, 240);
+    halo.addColorStop(0, "rgba(176,140,72,0.10)");
+    halo.addColorStop(0.55, "rgba(176,140,72,0.045)");
+    halo.addColorStop(1, "rgba(176,140,72,0)");
+    ctx.fillStyle = halo;
+    ctx.fillRect(0, 150, W, 480);
 
-    const river = [];
-    for (let i = 0; i <= 48; i++) {
-      const t = i / 48;
-      const x = 132 + (W - 264) * t;
-      const y = 356 - t * 40 + Math.sin(t * Math.PI * 1.7) * 19;
-      river.push([x, y]);
-    }
-    handStroke(ctx, river, 1.5);
+    ctx.strokeStyle = "rgba(176,140,72,0.34)";
+    ctx.lineWidth = 1.6;
+    [58, 92, 126].forEach((r, i) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+      // 光圈叶片：每圈画 6 段短弧，做出镜头光圈的感觉
+      ctx.save();
+      ctx.strokeStyle = `rgba(176,140,72,${0.30 - i * 0.06})`;
+      for (let k = 0; k < 6; k++) {
+        const a0 = (Math.PI * 2 * k) / 6 + 0.35;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, a0, a0 + 0.5);
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+    ctx.fillStyle = "rgba(176,140,72,0.5)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
+    ctx.fill();
 
-    // 人影（站在长线上，比原来小一号）
-    const rp = river[Math.round(48 * 0.4)];
-    const px = rp[0], py = rp[1];
-    ctx.beginPath(); ctx.arc(px, py - 37, 7, 0, Math.PI * 2); ctx.stroke();
-    handStroke(ctx, [[px, py - 30], [px, py - 6]], 0.9);
-    handStroke(ctx, [[px - 11, py - 21], [px + 11, py - 21]], 0.9);
-    handStroke(ctx, [[px, py - 6], [px - 8.5, py + 12]], 0.9);
-    handStroke(ctx, [[px, py - 6], [px + 8.5, py + 12]], 0.9);
-
-    // 灯（右上留白处，上移并缩小）
-    const lx = W - 196, ly = 208;
-    ctx.beginPath(); ctx.arc(lx, ly, 9.5, 0, Math.PI * 2); ctx.stroke();
-    for (let a = 0; a < 8; a++) {
-      const ang = (Math.PI * 2 * a) / 8;
-      handStroke(ctx, [
-        [lx + Math.cos(ang) * 17, ly + Math.sin(ang) * 17],
-        [lx + Math.cos(ang) * 26, ly + Math.sin(ang) * 26],
-      ], 0.8);
-    }
-
-    // —— 文字区 ——
-    let ty = 648;
+    // —— 文字区（严格从 y=650 起，与上方元素互不重叠）——
+    let ty = 650;
     ctx.fillStyle = INK;
-    ctx.font = "700 60px 'Songti SC','Noto Serif SC',serif";
-    const titleLines = wrapText(ctx, `《${data.title}》`, W - 180);
-    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += 74; }
+    const rawTitle = `《${data.title}》`;
+    const fs = rawTitle.length <= 9 ? 60 : rawTitle.length <= 13 ? 50 : 42;
+    ctx.font = `700 ${fs}px 'Songti SC','Noto Serif SC',serif`;
+    const titleLines = wrapText(ctx, rawTitle, W - 170).slice(0, 2);
+    for (const ln of titleLines) { ctx.fillText(ln, W / 2, ty); ty += fs + 12; }
 
+    // 类型
     ctx.fillStyle = GOLD;
     ctx.font = "500 23px 'Songti SC',serif";
-    ctx.fillText((data.genre || "人生电影").replace(/\s*\/\s*/g, " · "), W / 2, ty + 4);
+    ctx.fillText((data.genre || "人生电影").replace(/\s*\/\s*/g, " · "), W / 2, ty + 6);
     ty += 46;
 
+    // 海报文案
     ctx.fillStyle = INK;
     ctx.font = "400 29px 'Songti SC',serif";
-    const tagLines = wrapText(ctx, data.tagline || "", W - 210);
-    for (const ln of tagLines.slice(0, 2)) { ctx.fillText(ln, W / 2, ty + 26); ty += 42; }
+    const tagLines = wrapText(ctx, data.tagline || "", W - 210).slice(0, 2);
+    for (const ln of tagLines) { ctx.fillText(ln, W / 2, ty + 26); ty += 42; }
 
+    // —— 底部：主演 / 金句 / 齿孔 + 品牌 ——
     ctx.fillStyle = GREY;
     ctx.font = "400 22px 'Songti SC',serif";
-    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 118);
-    ctx.fillStyle = "rgba(176,140,72,0.85)";
+    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 128);
+    ctx.strokeStyle = GOLD_SOFT;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 60, H - 104);
+    ctx.lineTo(W / 2 + 60, H - 104);
+    ctx.stroke();
+    ctx.fillStyle = GOLD;
     ctx.font = "400 20px 'Songti SC',serif";
     ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, H - 74);
+    sprocketRow(ctx, W / 2, H - 48, 300, "rgba(176,140,72,0.30)");
 
     return canvas.toDataURL("image/png");
   }
