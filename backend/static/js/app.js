@@ -403,7 +403,7 @@
           }
           $("#my-notes").innerHTML = notes.map((n) => `
             <div class="note-item">
-              <p class="note-item__meta">寻影者 · 观影 · ${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
+              <p class="note-item__meta">${n.role === "facilitator" ? "复盘笔记 · 历史" : "寻影者 · 观影"} · ${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
               <p class="note-item__resp">${esc(n.llm_response || "")}</p>
             </div>`).join("");
         } catch (e) {
