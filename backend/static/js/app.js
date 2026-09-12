@@ -329,8 +329,8 @@
           return;
         }
         const btn = $("#note-submit");
-        btn.classList.add("is-loading");
-        btn.querySelector("span").textContent = "正在回应…";
+        btn.classList.add("is-loading", "is-waiting");
+        btn.querySelector("span").textContent = "专属回应正在为你而来……";
         try {
           const movieName = $("#note-movie").value.trim();
           let movieId = null;
@@ -347,7 +347,7 @@
           $("#note-result").style.display = "block";
           $("#note-result").textContent = "提交失败：" + e.message;
         } finally {
-          btn.classList.remove("is-loading");
+          btn.classList.remove("is-loading", "is-waiting");
           btn.querySelector("span").textContent = "提交笔记 · 获得专属回应";
         }
       });
@@ -528,9 +528,9 @@
   async function submitGuide() {
     const submit = $("#wizard-next");
     const label = submit.querySelector("span");
-    submit.classList.add("is-loading");
+    submit.classList.add("is-loading", "is-waiting");
     submit.disabled = true;
-    if (label) label.textContent = "专属回应为你而来……";
+    if (label) label.textContent = "专属回应正在为你而来……";
     try {
       lastGuideAnswers = buildGuideAnswers(); // 记住本次 5 问答案
       const data = await api("/recommend/top3", {
@@ -541,7 +541,7 @@
     } catch (e) {
       alert("推荐失败：" + e.message);
     } finally {
-      submit.classList.remove("is-loading");
+      submit.classList.remove("is-loading", "is-waiting");
       submit.disabled = false;
       if (label) label.textContent = "为你推荐";
     }
@@ -990,7 +990,7 @@
     const roleName = $("#life-role-name").value.trim();
     if (!roleName) { alert("先写下你的角色名吧"); return; }
     const btn = $("#life-submit");
-    btn.classList.add("is-loading");
+    btn.classList.add("is-loading", "is-waiting");
     btn.disabled = true;
     btn.querySelector("span").textContent = "专属回应正在为你而来……";
     try {
@@ -1011,7 +1011,7 @@
     } catch (e) {
       alert("生成失败：" + e.message);
     } finally {
-      btn.classList.remove("is-loading");
+      btn.classList.remove("is-loading", "is-waiting");
       btn.disabled = false;
       btn.querySelector("span").textContent = "放映我的人生电影";
     }
