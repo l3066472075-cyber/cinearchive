@@ -378,7 +378,7 @@
               ${lg.pattern ? `<p class="life-log__pattern">那条线：${esc(lg.pattern)}</p>` : ""}
               <div class="life-log__btns">
                 <button class="mini-btn life-log__toggle" type="button">展开看这一次的回应</button>
-                <button class="mini-btn life-log__report" type="button" data-idx="${idx}">📄 观影报告</button>
+                <button class="mini-btn life-log__report" type="button" data-idx="${idx}">📄 人生电影报告</button>
               </div>
               <div class="life-log__review" hidden>${esc(lg.review || "")}</div>
             </div>`
@@ -920,7 +920,7 @@
     ctx.fillText("禅 说 电 影 · 寻 影 者", W / 2, 100);
     ctx.fillStyle = "rgba(96,88,76,0.55)";
     ctx.font = "400 18px 'Songti SC',serif";
-    ctx.fillText("我 的 人 生 电 影 · 观 影 报 告", W / 2, 132);
+    ctx.fillText("我 的 人 生 电 影 报 告", W / 2, 132);
     sprocketRow(ctx, W / 2, 152, 300, "rgba(176,140,72,0.28)");
 
     let y = headH + 78;
@@ -1038,10 +1038,10 @@
     const url = drawLifeReport(data, profile || {});
     const modal = $("#report-modal");
     $("#report-body").innerHTML = `
-      <h3 class="report-head">我的人生电影 · 观影报告</h3>
+      <h3 class="report-head">我的人生电影报告</h3>
       <img class="report-img" src="${url}" alt="观影报告" />
       <p class="report-tip">👆 长按上方报告图，可保存或转发</p>
-      <a class="board-enter" id="report-save" download="我的人生电影-观影报告.png"><span>⬇ 保存报告长图</span></a>`;
+      <a class="board-enter" id="report-save" download="我的人生电影报告.png"><span>⬇ 保存报告长图</span></a>`;
     const save = $("#report-save");
     if (save) save.href = url;
     modal.hidden = false;
@@ -1174,7 +1174,7 @@
         </div>
 
         <div class="life-actions">
-          <button class="board-enter" id="life-report-btn"><span>📄 生成观影报告（长图）</span></button>
+          <button class="board-enter" id="life-report-btn"><span>📄 生成人生电影报告</span></button>
           <button class="board-enter board-enter--ghost" id="life-again"><span>↻ 重新建立角色档案</span></button>
           <button class="board-enter board-enter--ghost" id="life-home-btn"><span>回到首页</span></button>
         </div>
