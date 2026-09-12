@@ -223,3 +223,23 @@ class Note(Base):
     content: Mapped[dict] = mapped_column(JSON, default=dict)  # 笔记各字段（结构化）
     llm_response: Mapped[str] = mapped_column(Text, default="")  # 大模型的深度专属回应
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+
+
+class LifeLog(Base):
+    """「我的人生电影」存档：每一次观己的结果都留存下来。
+
+    存全文（档案 + 回应），但喂给大模型时只取极短的摘要（片名 + 看见的模式），
+    既形成个人档案，又让 AI 成本可控。
+    """
+
+    __tablename__ = "life_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    profile: Mapped[dict] = mapped_column(JSON, default=dict)  # 角色档案（角色名/电影名/三幕故事）
+    title: Mapped[str] = mapped_column(String(120), default="")  # 生成的片名
+    genre: Mapped[str] = mapped_column(String(80), default="")  # 类型
+    tagline: Mapped[str] = mapped_column(String(200), default="")  # 海报文案
+    review: Mapped[str] = mapped_column(Text, default="")  # 整体回应全文
+    pattern: Mapped[str] = mapped_column(String(200), default="")  # 这一次看见的那条线（极短摘要，供下次喂 AI）
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)

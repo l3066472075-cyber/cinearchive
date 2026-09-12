@@ -279,6 +279,11 @@
           </div>
         </div>
         <div class="growth-section">
+          <h4>🎬 我的人生电影</h4>
+          <p class="life-log__tip">每一次观己都留在这里。同一条线出现了几次、哪一次松动了，回看时看得见。</p>
+          <div id="my-life-logs"><p style="font-size:13px;color:var(--ink-3)">加载中…</p></div>
+        </div>
+        <div class="growth-section">
           <h4>👣 我的印记</h4>
           <div class="badges">${badges}</div>
         </div>
@@ -351,6 +356,42 @@
           btn.querySelector("span").textContent = "提交笔记 · 获得专属回应";
         }
       });
+
+      // 我的人生电影（观己档案）
+      async function loadMyLifeLogs() {
+        try {
+          const logs = await api("/life/logs");
+          if (!logs.length) {
+            $("#my-life-logs").innerHTML = '<p style="font-size:13px;color:var(--ink-3)">还没有放映过自己的人生电影——去首页「看自己的人生电影」试试。</p>';
+            return;
+          }
+          $("#my-life-logs").innerHTML = logs
+            .map(
+              (lg) => `
+            <div class="life-log">
+              <div class="life-log__head">
+                <span class="life-log__title">《${esc(lg.title || "未命名")}》</span>
+                <span class="life-log__date">${esc(String(lg.created_at || "").slice(0, 10))}</span>
+              </div>
+              ${lg.tagline ? `<p class="life-log__tagline">「${esc(lg.tagline)}」</p>` : ""}
+              ${lg.pattern ? `<p class="life-log__pattern">那条线：${esc(lg.pattern)}</p>` : ""}
+              <button class="mini-btn life-log__toggle" type="button">展开看这一次的回应</button>
+              <div class="life-log__review" hidden>${esc(lg.review || "")}</div>
+            </div>`
+            )
+            .join("");
+          $$(".life-log__toggle").forEach((b) =>
+            b.addEventListener("click", () => {
+              const box = b.parentElement.querySelector(".life-log__review");
+              box.hidden = !box.hidden;
+              b.textContent = box.hidden ? "展开看这一次的回应" : "收起";
+            })
+          );
+        } catch (e) {
+          $("#my-life-logs").innerHTML = '<p style="font-size:13px;color:var(--ink-3)">人生电影档案加载失败</p>';
+        }
+      }
+      loadMyLifeLogs();
 
       // 我的笔记列表
       async function loadMyNotes() {
@@ -922,6 +963,7 @@
           <span class="life-film__tagline">「${esc(data.tagline || "")}」</span>
         </div>
         <p class="life-film__review">${esc(data.review || "")}</p>
+        ${data.id ? '<p class="life-saved">✅ 这一次已经存入「我的观心 · 我的人生电影」</p>' : ""}
 
         <div class="life-chat">
           <h4 class="life-chat__title">🪞 看完这一幕，你想说点什么？</h4>

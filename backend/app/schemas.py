@@ -272,10 +272,23 @@ class LifeDailyRequest(BaseModel):
 
 
 class LifeMovieResponse(BaseModel):
+    id: Optional[int] = None
     title: str = ""
     genre: str = ""
     tagline: str = ""
     review: str = ""
+    pattern: str = ""
+
+
+class LifeLogItem(BaseModel):
+    id: int
+    profile: dict[str, Any] = {}
+    title: str = ""
+    genre: str = ""
+    tagline: str = ""
+    review: str = ""
+    pattern: str = ""
+    created_at: Any = None
 
 
 class LifeDailyResponse(BaseModel):

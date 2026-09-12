@@ -315,7 +315,7 @@ def _context_block(context: dict | None) -> str:
     )
 
 
-def life_movie(profile: dict, context: dict | None = None) -> dict | None:
+def life_movie(profile: dict, context: dict | None = None, memory: str = "") -> dict | None:
     """角色档案 · 你的人生电影：根据角色名 / 电影名 / 出生故事 / 转折故事 / 2026 故事，生成一部人生电影。
     context 为他在「看别人的电影」里填过的信息（避免 AI 臆测性别/身份）。
     返回 {"title": 片名, "genre": 类型, "tagline": 海报文案, "review": 影评式看见}；失败返回 None。
@@ -326,6 +326,13 @@ def life_movie(profile: dict, context: dict | None = None) -> dict | None:
     turning_story = profile.get("turning_story") or "（未写）"
     story_2026 = profile.get("story_2026") or "（未写）"
 
+    memory_block = (
+        f"\n【他之前观过自己的电影，下面是那几次看见的「那条线」（可用于对照：这次是重复了，还是松动了？"
+        f"若与这次呼应，可以轻轻点一句；不要生硬罗列）】\n{memory}\n"
+        if memory
+        else ""
+    )
+
     prompt = f"""眼前这个人，把自己看成一部正在上映的人生电影，建立了一份「角色档案」。请像观电影法说的「借电影观自己」那样，陪他把自己的来处、转折与正在经历的故事，串成一部完整而温暖的人生电影。
 
 他的角色档案：
@@ -335,6 +342,7 @@ def life_movie(profile: dict, context: dict | None = None) -> dict | None:
 - 转折（重要）故事：{turning_story}
 - 正在经历的故事（2026）：{story_2026}
 {_context_block(context)}
+{memory_block}
 请为他写 4 段（片名/类型/海报文案要精炼，影评要完整有深度）：
 1. 片名：为「他的人生电影」定一个贴切的片名（中文，8 字以内；若他起的名字很好，可以沿用或略作升华）。
 2. 类型：用 1~2 个词描述他人生故事的气质（如：成长/公路/家庭/治愈/传记…）。
@@ -349,10 +357,12 @@ def life_movie(profile: dict, context: dict | None = None) -> dict | None:
 
    【第四层 · 落点与鼓励】看见剧本，才有机会改写剧本；跳出人生这场戏，带着觉知勇敢如戏——望向他正在经历的 2026，鼓励他演出自己想要的下一幕。收尾要温暖有力，不喊口号。
 
+5. pattern：用 12~20 个字，凝练地写下「这一次看见的那条线」（那个反复出现的模式）。这是留给以后回看对照用的，要准、要短，不要写成完整句子式的道理。
+
 {_HUMAN_TOUCH}
 
 严格输出 JSON（不要多余文字）：review 字段里用 \n\n 表示段落换行。
-{{"title": "…", "genre": "…", "tagline": "…", "review": "…"}}"""
+{{"title": "…", "genre": "…", "tagline": "…", "review": "…", "pattern": "…"}}"""
     text = lc.llm_generate(_LIFE_SYSTEM, prompt, max_tokens=2400)
     if not text:
         return None
@@ -368,6 +378,7 @@ def life_movie(profile: dict, context: dict | None = None) -> dict | None:
                 "genre": str(data.get("genre", "")).strip() or "人生电影",
                 "tagline": str(data.get("tagline", "")).strip(),
                 "review": str(data.get("review", "")).strip(),
+                "pattern": str(data.get("pattern", "")).strip(),
             }
             if out["tagline"] or out["review"]:
                 return out
