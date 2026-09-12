@@ -768,23 +768,49 @@
     // 海报文案
     ctx.fillStyle = INK;
     ctx.font = "400 29px 'Songti SC',serif";
-    const tagLines = wrapText(ctx, data.tagline || "", W - 210).slice(0, 2);
+    const tagLines = wrapText(ctx, data.tagline || "", W - 400).slice(0, 2);   // 右侧留给二维码
     for (const ln of tagLines) { ctx.fillText(ln, W / 2, ty + 26); ty += 42; }
 
-    // —— 底部：主演 / 金句 / 齿孔 + 品牌 ——
+    // —— 底部：主演 / 金句（居中，上移一点，给右下角二维码腾位置）——
     ctx.fillStyle = GREY;
     ctx.font = "400 22px 'Songti SC',serif";
-    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 128);
+    ctx.fillText(`主演 · ${name || "你"}`, W / 2, H - 136);
     ctx.strokeStyle = GOLD_SOFT;
     ctx.lineWidth = 1.4;
     ctx.beginPath();
-    ctx.moveTo(W / 2 - 60, H - 104);
-    ctx.lineTo(W / 2 + 60, H - 104);
+    ctx.moveTo(W / 2 - 58, H - 114);
+    ctx.lineTo(W / 2 + 58, H - 114);
     ctx.stroke();
     ctx.fillStyle = GOLD;
     ctx.font = "400 20px 'Songti SC',serif";
-    ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, H - 74);
-    sprocketRow(ctx, W / 2, H - 48, 300, "rgba(176,140,72,0.30)");
+    ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, H - 86);
+
+    // —— 右下角二维码：扫码进入「寻影者」，方便转发 ——
+    if (typeof qrcode === "function") {
+      try {
+        const qr = qrcode(0, "M");
+        qr.addData(location.origin + "/");
+        qr.make();
+        const n = qr.getModuleCount();
+        const size = 120, pad = 8;
+        const qx = W - 46 - 14 - size;
+        const qy = H - 46 - 30 - size;
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.fillRect(qx - pad, qy - pad, size + pad * 2, size + pad * 2);
+        const cell = size / n;
+        ctx.fillStyle = "rgba(46,42,36,0.95)";
+        for (let r = 0; r < n; r++) {
+          for (let c = 0; c < n; c++) {
+            if (qr.isDark(r, c)) {
+              ctx.fillRect(qx + c * cell, qy + r * cell, Math.ceil(cell), Math.ceil(cell));
+            }
+          }
+        }
+        ctx.fillStyle = GREY;
+        ctx.font = "400 15px 'Songti SC',serif";
+        ctx.fillText("扫码 · 开始寻找", qx + size / 2, qy - pad - 9);
+      } catch (e) {}
+    }
 
     return canvas.toDataURL("image/png");
   }
