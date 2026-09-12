@@ -436,7 +436,7 @@ def life_chat(profile: dict, history: list[dict], message: str, context: dict | 
 
 
 def life_daily(story: str, name: str = "") -> dict | None:
-    """针对用户当天经历的一段「剧情」，用电影视角复盘回应。
+    """针对用户当天经历的一段「剧情」，用电影视角回看回应。
     返回 {"title": 今日片名, "review": 影评式回应}；失败返回 None。
     """
     name_block = f"他叫{name}。" if name else ""

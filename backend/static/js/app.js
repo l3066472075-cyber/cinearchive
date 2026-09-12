@@ -365,9 +365,10 @@
             $("#my-life-logs").innerHTML = '<p style="font-size:13px;color:var(--ink-3)">还没有放映过自己的人生电影——去首页「看自己的人生电影」试试。</p>';
             return;
           }
+          lifeLogsCache = logs;
           $("#my-life-logs").innerHTML = logs
             .map(
-              (lg) => `
+              (lg, idx) => `
             <div class="life-log">
               <div class="life-log__head">
                 <span class="life-log__title">《${esc(lg.title || "未命名")}》</span>
@@ -375,11 +376,20 @@
               </div>
               ${lg.tagline ? `<p class="life-log__tagline">「${esc(lg.tagline)}」</p>` : ""}
               ${lg.pattern ? `<p class="life-log__pattern">那条线：${esc(lg.pattern)}</p>` : ""}
-              <button class="mini-btn life-log__toggle" type="button">展开看这一次的回应</button>
+              <div class="life-log__btns">
+                <button class="mini-btn life-log__toggle" type="button">展开看这一次的回应</button>
+                <button class="mini-btn life-log__report" type="button" data-idx="${idx}">📄 观影报告</button>
+              </div>
               <div class="life-log__review" hidden>${esc(lg.review || "")}</div>
             </div>`
             )
             .join("");
+          $$(".life-log__report").forEach((b) =>
+            b.addEventListener("click", () => {
+              const lg = lifeLogsCache[Number(b.dataset.idx)];
+              if (lg) openLifeReport(lg, lg.profile || {});
+            })
+          );
           $$(".life-log__toggle").forEach((b) =>
             b.addEventListener("click", () => {
               const box = b.parentElement.querySelector(".life-log__review");
@@ -403,7 +413,7 @@
           }
           $("#my-notes").innerHTML = notes.map((n) => `
             <div class="note-item">
-              <p class="note-item__meta">${n.role === "facilitator" ? "复盘笔记 · 历史" : "寻影者 · 观影"} · ${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
+              <p class="note-item__meta">寻影者 · 观影 · ${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
               <p class="note-item__resp">${esc(n.llm_response || "")}</p>
             </div>`).join("");
         } catch (e) {
@@ -678,6 +688,7 @@
 
   // ============ 你的人生电影 · 观己观心 ============
   let lifeProfile = {}; // 当前角色档案（供对话使用）
+  let lifeLogsCache = []; // 「我的观心」里的历史档案缓存（供导出报告）
   let lifeChatHistory = []; // 人生电影对话历史 [{role, content}]
 
   function lifePosterColors(title) {
@@ -856,6 +867,193 @@
     return canvas.toDataURL("image/png");
   }
 
+  // ============ 观影报告（长图）：把第一轮的完整回应做成可保存的报告 ============
+  function drawLifeReport(data, profile) {
+    const W = 750, PAD = 68, LINE_H = 46;
+    const INK = "rgba(46,42,36,0.94)";
+    const GOLD = "rgba(176,140,72,0.92)";
+    const GOLD_SOFT = "rgba(176,140,72,0.42)";
+    const GREY = "rgba(96,88,76,0.75)";
+    const BODY_FONT = "400 27px 'Songti SC','Noto Serif SC',serif";
+
+    // —— 预测量：正文行数 + 档案行数 ——
+    const m = document.createElement("canvas").getContext("2d");
+    m.font = BODY_FONT;
+    const paras = String(data.review || "").split("\n").map((s) => s.trim()).filter(Boolean);
+    const wrapped = paras.map((x) => wrapText(m, x, W - PAD * 2));
+    const bodyLines = wrapped.reduce((n, ls) => n + ls.length, 0);
+
+    m.font = "400 24px 'Songti SC',serif";
+    const rows = [
+      ["🎭", "角色名", profile.role_name],
+      ["🎬", "人生电影名", profile.movie_name],
+      ["🌱", "出生故事（0-6 岁）", profile.born_story],
+      ["🌊", "转折（重要）故事", profile.turning_story],
+      ["🎥", "正在经历的故事（2026）", profile.story_2026],
+    ].filter(([, , v]) => v && String(v).trim());
+    const rowWrapped = rows.map(([icon, label, val]) => [icon, label, wrapText(m, String(val), W - PAD * 2 - 34)]);
+    const profH = rowWrapped.reduce((n, [, , ls]) => n + Math.max(1, ls.length) * 34 + 16, 0);
+
+    const headH = 168, titleH = 306, patH = data.pattern ? 176 : 0;
+    const bodyH = bodyLines * LINE_H + Math.max(0, paras.length - 1) * 30;
+    const footH = 330;
+    const H = headH + titleH + profH + patH + 118 + bodyH + footH;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#F7F2E8";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(120,105,85,0.045)";
+    for (let i = 0; i < Math.round(H * 1.4); i++) {
+      ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+    }
+    ctx.textAlign = "left";
+
+    // 取景框四角
+    frameCorners(ctx, W, H, 44, 42, GOLD_SOFT);
+
+    // 顶部品牌 + 日期 + 齿孔
+    ctx.textAlign = "center";
+    ctx.fillStyle = GREY;
+    ctx.font = "500 21px 'Songti SC',serif";
+    ctx.fillText("禅 说 电 影 · 寻 影 者", W / 2, 100);
+    ctx.fillStyle = "rgba(96,88,76,0.55)";
+    ctx.font = "400 18px 'Songti SC',serif";
+    ctx.fillText("我 的 人 生 电 影 · 观 影 报 告", W / 2, 132);
+    sprocketRow(ctx, W / 2, 152, 300, "rgba(176,140,72,0.28)");
+
+    let y = headH + 78;
+    // 片名 / 类型 / 文案
+    const rawTitle = `《${data.title || "未命名"}》`;
+    const fs = rawTitle.length <= 9 ? 58 : rawTitle.length <= 13 ? 48 : 40;
+    ctx.fillStyle = INK;
+    ctx.font = `700 ${fs}px 'Songti SC','Noto Serif SC',serif`;
+    const tLines = wrapText(ctx, rawTitle, W - PAD * 2).slice(0, 2);
+    for (const ln of tLines) { ctx.fillText(ln, W / 2, y); y += fs + 12; }
+    ctx.fillStyle = GOLD;
+    ctx.font = "500 23px 'Songti SC',serif";
+    ctx.fillText((data.genre || "人生电影").replace(/\s*\/\s*/g, " · "), W / 2, y + 6);
+    y += 48;
+    ctx.fillStyle = INK;
+    ctx.font = "400 27px 'Songti SC',serif";
+    const gLines = wrapText(ctx, data.tagline || "", W - PAD * 2).slice(0, 2);
+    for (const ln of gLines) { ctx.fillText(ln, W / 2, y + 22); y += 40; }
+    y += 34;
+
+    // —— 角色档案 ——
+    ctx.textAlign = "left";
+    ctx.fillStyle = GOLD;
+    ctx.font = "600 22px 'Songti SC',serif";
+    ctx.fillText("角 色 档 案", PAD, y);
+    y += 30;
+    ctx.strokeStyle = GOLD_SOFT;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+    y += 26;
+    ctx.font = "400 24px 'Songti SC',serif";
+    for (const [icon, label, ls] of rowWrapped) {
+      ctx.fillStyle = GREY;
+      ctx.font = "400 22px 'Songti SC',serif";
+      ctx.fillText(`${icon} ${label}`, PAD, y + 4);
+      y += 30;
+      ctx.fillStyle = INK;
+      ctx.font = "400 24px 'Songti SC',serif";
+      for (const ln of ls) { ctx.fillText(ln, PAD + 6, y); y += 34; }
+      y += 16;
+    }
+
+    // —— 这一次看见的那条线 ——
+    if (data.pattern) {
+      y += 10;
+      ctx.fillStyle = "rgba(176,140,72,0.10)";
+      const boxH = 84;
+      ctx.fillRect(PAD - 14, y - 26, W - (PAD - 14) * 2, boxH);
+      ctx.fillStyle = GOLD;
+      ctx.font = "600 21px 'Songti SC',serif";
+      ctx.fillText("🔍  这一次看见的那条线", PAD, y);
+      y += 34;
+      ctx.fillStyle = INK;
+      ctx.font = "400 25px 'Songti SC',serif";
+      for (const ln of wrapText(ctx, data.pattern, W - PAD * 2).slice(0, 2)) {
+        ctx.fillText(ln, PAD, y); y += 34;
+      }
+      y += 26;
+    }
+
+    // —— 完整回应 ——
+    y += 26;
+    ctx.fillStyle = GOLD;
+    ctx.font = "600 22px 'Songti SC',serif";
+    ctx.fillText("整 体 回 应", PAD, y);
+    y += 30;
+    ctx.strokeStyle = GOLD_SOFT;
+    ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+    y += 42;
+    ctx.fillStyle = INK;
+    ctx.font = BODY_FONT;
+    for (let i = 0; i < wrapped.length; i++) {
+      for (const ln of wrapped[i]) { ctx.fillText(ln, PAD, y); y += LINE_H; }
+      if (i < wrapped.length - 1) y += 30;
+    }
+
+    // —— 底部：二维码 + 金句 + 品牌 ——
+    const footY = H - footH + 60;
+    ctx.textAlign = "center";
+    if (typeof qrcode === "function") {
+      try {
+        const qr = qrcode(0, "M");
+        qr.addData(location.origin + "/");
+        qr.make();
+        const n = qr.getModuleCount();
+        const size = 118, padq = 8;
+        const qx = W / 2 - size / 2, qy = footY;
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.fillRect(qx - padq, qy - padq, size + padq * 2, size + padq * 2);
+        const cell = size / n;
+        ctx.fillStyle = "rgba(46,42,36,0.95)";
+        for (let r = 0; r < n; r++) {
+          for (let c = 0; c < n; c++) {
+            if (qr.isDark(r, c)) {
+              ctx.fillRect(qx + c * cell, qy + r * cell, Math.ceil(cell), Math.ceil(cell));
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    ctx.fillStyle = GREY;
+    ctx.font = "400 17px 'Songti SC',serif";
+    ctx.fillText("扫码 · 开始寻找属于你的电影", W / 2, footY + 158);
+    ctx.fillStyle = GOLD;
+    ctx.font = "400 20px 'Songti SC',serif";
+    ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, footY + 200);
+    ctx.fillStyle = "rgba(96,88,76,0.5)";
+    ctx.font = "400 18px 'Songti SC',serif";
+    ctx.fillText("禅说电影 · 寻影者", W / 2, footY + 234);
+
+    return canvas.toDataURL("image/png");
+  }
+
+  function openLifeReport(data, profile) {
+    const url = drawLifeReport(data, profile || {});
+    const modal = $("#report-modal");
+    $("#report-body").innerHTML = `
+      <h3 class="report-head">我的人生电影 · 观影报告</h3>
+      <img class="report-img" src="${url}" alt="观影报告" />
+      <p class="report-tip">👆 长按上方报告图，可保存或转发</p>
+      <a class="board-enter" id="report-save" download="我的人生电影-观影报告.png"><span>⬇ 保存报告长图</span></a>`;
+    const save = $("#report-save");
+    if (save) save.href = url;
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  $("#report-modal").addEventListener("click", (e) => {
+    if (e.target.closest("[data-close]")) {
+      $("#report-modal").hidden = true;
+      document.body.style.overflow = "";
+    }
+  });
+
   // —— 角色档案草稿：未填完退出后，5 分钟内回来可继续 ——
   const LIFE_DRAFT_KEY = "life_draft";
   const LIFE_DRAFT_TTL = 5 * 60 * 1000;
@@ -976,7 +1174,8 @@
         </div>
 
         <div class="life-actions">
-          <button class="board-enter" id="life-again"><span>↻ 重新建立角色档案</span></button>
+          <button class="board-enter" id="life-report-btn"><span>📄 生成观影报告（长图）</span></button>
+          <button class="board-enter board-enter--ghost" id="life-again"><span>↻ 重新建立角色档案</span></button>
           <button class="board-enter board-enter--ghost" id="life-home-btn"><span>回到首页</span></button>
         </div>
 
@@ -984,6 +1183,7 @@
       </div>`;
     $("#life-again").addEventListener("click", resetLifeForm);
     $("#life-home-btn").addEventListener("click", backHome);
+    $("#life-report-btn").addEventListener("click", () => openLifeReport(data, lifeProfile));
     $("#life-chat-send").addEventListener("click", sendLifeChat);
     $("#life-chat-input").addEventListener("keydown", (e) => {
       if (e.key === "Enter") sendLifeChat();

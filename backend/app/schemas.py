@@ -76,7 +76,7 @@ class RecommendResponse(BaseModel):
 
 # ---------- 双角色 · 5 问引导推荐 ----------
 class GuidedRequest(BaseModel):
-    role: str = Field(..., description="viewer（寻影者）| facilitator（影领家）")
+    role: str = Field(..., description="viewer（寻影者）")
     answers: dict[str, str] = Field(
         ..., description="5 个维度的答案：emotion/situation/value/audience/theme → 标签名"
     )
@@ -171,7 +171,7 @@ class MeResponse(BaseModel):
 
 # ---------- 「观电影法」笔记 ----------
 class NoteCreate(BaseModel):
-    role: str = Field(..., description="viewer（观影笔记）| facilitator（复盘笔记）")
+    role: str = Field(..., description="viewer（观影笔记）")
     movie_id: Optional[int] = None
     content: dict[str, Any] = Field(..., description="笔记各字段（结构化 JSON）")
 
@@ -218,7 +218,7 @@ class ProgressResponse(BaseModel):
     city: str = ""
 
 
-# ---------- 共修观影 / 影领家带领（场次） ----------
+# ---------- 共修观影（场次） ----------
 class SessionCreate(BaseModel):
     movie_id: int
     theme: str = ""

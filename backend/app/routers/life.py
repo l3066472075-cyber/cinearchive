@@ -125,7 +125,7 @@ def life_chat(
 
 @router.post("/daily", response_model=LifeDailyResponse)
 def life_daily(req: LifeDailyRequest):
-    """针对当天的一段「剧情」复盘回应（电影视角）。"""
+    """针对当天的一段「剧情」回看回应（电影视角）。"""
     result = llm.life_daily(req.story, req.name)
     if result is None:
         return LifeDailyResponse(

@@ -145,7 +145,7 @@ class CheckIn(Base):
 
 
 class Session(Base):
-    """共修观影场次：影领家开场，寻影者报名入座。"""
+    """共修观影场次：发起人开场，其他用户报名入座。"""
 
     __tablename__ = "sessions"
 
@@ -208,7 +208,7 @@ class Feedback(Base):
 
 
 class Note(Base):
-    """「观电影法」笔记：观影笔记(viewer) / 复盘笔记(facilitator)。
+    """「观电影法」笔记：观影笔记。
 
     笔记既是用户的个人记录，也是「自循环」的原料——沉淀后可反哺
     大模型的观影引导与带领建议，服务更多相似人群。
@@ -219,7 +219,7 @@ class Note(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     movie_id: Mapped[int | None] = mapped_column(ForeignKey("movies.id"), nullable=True, index=True)
-    role: Mapped[str] = mapped_column(String(20), default="viewer")  # viewer / facilitator
+    role: Mapped[str] = mapped_column(String(20), default="viewer")  # viewer
     content: Mapped[dict] = mapped_column(JSON, default=dict)  # 笔记各字段（结构化）
     llm_response: Mapped[str] = mapped_column(Text, default="")  # 大模型的深度专属回应
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)

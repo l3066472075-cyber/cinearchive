@@ -1,4 +1,4 @@
-"""共修观影 / 影领家带领：场次（开场、报名、列表）。"""
+"""共修观影：场次（开场、报名、列表）。"""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/v1/sessions", tags=["sessions"])
 
 def _to_response(db: Session, s: models.Session, user_id: int | None) -> SessionResponse:
     movie = db.get(models.Movie, s.movie_id)
-    facilitator = db.get(models.User, s.facilitator_id)
+    host = db.get(models.User, s.facilitator_id)
     signup_count = (
         db.query(models.SessionSignup)
         .filter(models.SessionSignup.session_id == s.id)
@@ -34,7 +34,7 @@ def _to_response(db: Session, s: models.Session, user_id: int | None) -> Session
         id=s.id,
         movie_id=s.movie_id,
         movie_title=movie.title if movie else "",
-        facilitator_city=facilitator.city if facilitator else "",
+        facilitator_city=host.city if host else "",
         theme=s.theme,
         description=s.description,
         mode=s.mode,
@@ -52,7 +52,7 @@ def create_session(
     db: Session = Depends(get_db),
     user: models.User = Depends(auth.get_current_user),
 ):
-    """影领家开场次。"""
+    """发起一场共修观影。"""
     if db.get(models.Movie, req.movie_id) is None:
         raise HTTPException(status_code=404, detail="影片不存在")
     s = models.Session(
