@@ -360,7 +360,9 @@
       // 我的人生电影（观己档案）
       async function loadMyLifeLogs() {
         try {
-          const logs = await api("/life/logs");
+          const raw = await api("/life/logs") || [];
+          const seen = new Set();
+          const logs = raw.filter((lg) => (seen.has(lg.id) ? false : (seen.add(lg.id), true)));
           if (!logs.length) {
             $("#my-life-logs").innerHTML = '<p style="font-size:13px;color:var(--ink-3)">还没有放映过自己的人生电影——去首页「看自己的人生电影」试试。</p>';
             return;

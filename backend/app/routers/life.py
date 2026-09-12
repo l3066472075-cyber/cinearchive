@@ -1,6 +1,8 @@
 """「你的人生电影」接口：把人生档案 / 当天剧情，用电影视角生成回应，并留下个人档案。"""
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -41,6 +43,16 @@ def _life_memory(db: Session, user: models.User | None) -> str:
     return "；".join(items)
 
 
+def _profile_key(profile: dict | None) -> str:
+    """角色档案的规范化标识（用于幂等去重）。"""
+    import json
+
+    try:
+        return json.dumps(profile or {}, sort_keys=True, ensure_ascii=False)
+    except Exception:  # noqa: BLE001
+        return str(profile or {})
+
+
 @router.post("/movie", response_model=LifeMovieResponse)
 def life_movie(
     req: LifeMovieRequest,
@@ -62,6 +74,21 @@ def life_movie(
 
     log_id = None
     if user is not None:
+        # 幂等去重：1 小时内同一份角色档案视为同一次提交，复用已有记录，避免重复
+        key = _profile_key(req.profile)
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        recent = (
+            db.query(models.LifeLog)
+            .filter(models.LifeLog.user_id == user.id)
+            .order_by(models.LifeLog.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        for lg in recent:
+            if lg.created_at and (now - lg.created_at) < timedelta(hours=1):
+                if _profile_key(lg.profile) == key:
+                    return LifeMovieResponse(id=lg.id, **result)
+
         log = models.LifeLog(
             user_id=user.id,
             profile=req.profile or {},
