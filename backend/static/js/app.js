@@ -867,7 +867,7 @@
     return canvas.toDataURL("image/png");
   }
 
-  // ============ 观影报告（长图）：把第一轮的完整回应做成可保存的报告 ============
+  // ============ 人生电影报告（长图）：把第一轮的完整回应做成可保存的报告 ============
   function drawLifeReport(data, profile) {
     const W = 750, PAD = 68, LINE_H = 46;
     const INK = "rgba(46,42,36,0.94)";
@@ -1039,7 +1039,7 @@
     const modal = $("#report-modal");
     $("#report-body").innerHTML = `
       <h3 class="report-head">我的人生电影报告</h3>
-      <img class="report-img" src="${url}" alt="观影报告" />
+      <img class="report-img" src="${url}" alt="我的人生电影报告" />
       <p class="report-tip">👆 长按上方报告图，可保存或转发</p>
       <a class="board-enter" id="report-save" download="我的人生电影报告.png"><span>⬇ 保存报告长图</span></a>`;
     const save = $("#report-save");
