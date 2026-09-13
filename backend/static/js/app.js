@@ -837,7 +837,7 @@
     ctx.stroke();
     ctx.fillStyle = GOLD;
     ctx.font = "400 20px 'Songti SC',serif";
-    ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, H - 74);
+    ctx.fillText("跳出人生这场戏，带着觉知勇敢入戏", W / 2, H - 74);
 
     return canvas.toDataURL("image/png");
   }
@@ -1001,7 +1001,7 @@
     ctx.fillText("扫码 · 开始寻找属于你的电影", W / 2, footY + 158);
     ctx.fillStyle = GOLD;
     ctx.font = "400 20px 'Songti SC',serif";
-    ctx.fillText("跳出人生这场戏，带着觉知勇敢如戏", W / 2, footY + 200);
+    ctx.fillText("跳出人生这场戏，带着觉知勇敢入戏", W / 2, footY + 200);
     ctx.fillStyle = "rgba(96,88,76,0.5)";
     ctx.font = "400 18px 'Songti SC',serif";
     ctx.fillText("禅说电影 · 寻影者", W / 2, footY + 234);
