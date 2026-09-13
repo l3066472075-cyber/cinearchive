@@ -1495,7 +1495,7 @@ body[data-brand="yingling"] {
   margin-bottom: 10px;
 }
 .note-item__meta { margin: 0 0 8px; font-size: 12px; color: var(--ink-3); }
-.note-item__resp { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.85; }
+.note-item__resp { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.85; white-space: pre-wrap; }
 
 /* ============ 登录弹层 ============ */
 .modal__dialog--sm { width: min(420px, 100%); }
