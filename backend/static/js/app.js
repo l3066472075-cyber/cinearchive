@@ -246,13 +246,36 @@
           </div>`
         )
         .join("");
+
+      // 段位差距换算：成长分 = 打卡天数 + 笔记数×2 + 寻影次数
+      const LEVELS = [
+        { name: "初见灯火", min: 0 },
+        { name: "心有微光", min: 3 },
+        { name: "心灯渐明", min: 7 },
+        { name: "照见自己", min: 14 },
+        { name: "照亮他人", min: 21 },
+        { name: "影领者", min: 30 },
+      ];
+      function growthGapText(p) {
+        const score = (p.checkin_days || 0) + (p.note_count || 0) * 2 + (p.search_count || 0);
+        const next = LEVELS[(p.level != null ? p.level : 0) + 1];
+        if (!next) return "已达最高段位 · 以影为舟，照亮更多人";
+        const gap = Math.max(1, next.min - score);
+        const ways = [
+          `再写 ${Math.max(1, Math.ceil(gap / 2))} 篇笔记`,
+          `打卡 ${gap} 天`,
+          `寻影 ${gap} 次`,
+        ].join("，或 ");
+        return `下一段位「${next.name}」还差 ${gap} 分 · ${ways}`;
+      }
+
       $("#growth-body").innerHTML = `
         <div class="growth-hero">
           <p class="section-kicker">我的观心</p>
           <h3 class="growth-level">${esc(p.level_name)}</h3>
           <p class="growth-level-desc">${esc(p.level_desc)}</p>
           <div class="growth-bar"><span style="width:${p.progress_pct}%"></span></div>
-          <p class="growth-next">下一段位：${esc(p.next_level_name)}</p>
+          <p class="growth-next">${growthGapText(p)}</p>
         </div>
         <div class="growth-stats">
           <div><strong>${p.checkin_days}</strong><span>点亮心灯</span></div>
@@ -337,6 +360,7 @@
         btn.classList.add("is-loading", "is-waiting");
         btn.querySelector("span").textContent = "专属回应正在为你而来……";
         try {
+          await ensureGuestLogin(); // 确保已登录，笔记才能归属到当前身份、下次可见
           const movieName = $("#note-movie").value.trim();
           let movieId = null;
           if (movieName) {
@@ -415,7 +439,11 @@
           }
           $("#my-notes").innerHTML = notes.map((n) => `
             <div class="note-item">
-              <p class="note-item__meta">寻影者 · 观影 · ${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
+              <div class="note-item__head">
+                <span class="note-item__meta">寻影者 · 观影 · ${esc(String(n.created_at || "").slice(0, 10))}</span>
+                <span class="note-item__score">成长 +2</span>
+              </div>
+              <p class="note-item__meta">${esc((n.content && Object.values(n.content).filter(Boolean).join(" / ")) || "")}</p>
               <p class="note-item__resp">${esc(n.llm_response || "")}</p>
             </div>`).join("");
         } catch (e) {
