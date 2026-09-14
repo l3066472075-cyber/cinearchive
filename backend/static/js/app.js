@@ -1038,7 +1038,14 @@
   }
 
   function openLifeReport(data, profile) {
-    const url = drawLifeReport(data, profile || {});
+    let url = "";
+    try {
+      url = drawLifeReport(data, profile || {});
+    } catch (e) {
+      console.warn("报告生成失败", e);
+      alert("报告生成失败，请稍后重试");
+      return;
+    }
     const modal = $("#report-modal");
     $("#report-body").innerHTML = `
       <h3 class="report-head">我的人生电影报告</h3>
@@ -1152,13 +1159,20 @@
 
   function renderLifeResult(data) {
     const roleName = $("#life-role-name").value.trim() || "你";
-    const poster = drawLifePoster(data, roleName);
+    // 海报生成隔离：即便某些设备/数据下海报失败，也绝不拖垮回应与对话区
+    let poster = "";
+    try {
+      poster = drawLifePoster(data, roleName);
+    } catch (e) {
+      console.warn("海报生成失败，已跳过（不影响其余内容）", e);
+      poster = "";
+    }
     lifeChatHistory = [];
     $("#life-result").hidden = false;
     $("#life-result").innerHTML = `
       <div class="life-film">
-        <img class="life-poster" src="${poster}" alt="${esc(data.title)} 海报" />
-        <p class="life-poster-tip">👆 长按上方海报，可保存分享</p>
+        ${poster ? `<img class="life-poster" src="${poster}" alt="${esc(data.title || "")} 海报" />` : `<div class="life-poster life-poster--empty">海报加载失败，不影响查看下方内容</div>`}
+        ${poster ? '<p class="life-poster-tip">👆 长按上方海报，可保存分享</p>' : ""}
         <div class="life-film__meta">
           <span class="life-film__genre">${esc(data.genre || "人生电影")}</span>
           <span class="life-film__tagline">「${esc(data.tagline || "")}」</span>
