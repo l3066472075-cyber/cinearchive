@@ -70,7 +70,14 @@ def index() -> HTMLResponse:
 
 @app.on_event("startup")
 def _startup() -> None:
-    init_db()
+    import traceback
+
+    try:
+        init_db()
+    except Exception as e:  # noqa: BLE001
+        # 数据库初始化失败也不崩溃，避免 Render 反复重启；把详细错误打到日志便于定位
+        print("[startup] 数据库初始化失败（服务已启动，但数据相关功能受限）：", repr(e))
+        traceback.print_exc()
 
 
 @app.get("/api/v1", include_in_schema=False)

@@ -39,6 +39,23 @@ def insights(db: Session = Depends(get_db)):
 
 @router.get("/health", response_model=HealthResponse)
 def health(db: Session = Depends(get_db)):
+    # 数据库异常时也不崩溃，便于定位问题（status 标记为 degraded）
+    try:
+        movies = db.query(models.Movie).count()
+        tags = db.query(models.Tag).count()
+        searches = db.query(models.SearchLog).count()
+    except Exception as e:  # noqa: BLE001
+        return HealthResponse(
+            status=f"degraded: {type(e).__name__}",
+            app=settings.app_name,
+            version=settings.version,
+            llm_enabled=settings.llm_enabled,
+            embedding_enabled=settings.embedding_enabled,
+            wx_enabled=settings.wx_enabled,
+            movies=0,
+            tags=0,
+            searches=0,
+        )
     return HealthResponse(
         status="ok",
         app=settings.app_name,
@@ -46,7 +63,7 @@ def health(db: Session = Depends(get_db)):
         llm_enabled=settings.llm_enabled,
         embedding_enabled=settings.embedding_enabled,
         wx_enabled=settings.wx_enabled,
-        movies=db.query(models.Movie).count(),
-        tags=db.query(models.Tag).count(),
-        searches=db.query(models.SearchLog).count(),
+        movies=movies,
+        tags=tags,
+        searches=searches,
     )
