@@ -19,14 +19,11 @@ services:
         value: https://open.bigmodel.cn/api/paas/v4
       - key: EMBEDDING_MODEL
         value: embedding-3
-      # 下面几个 key 需要在 Render 界面里手动填（或用 .env），不进 git：
-      # LLM_API_KEY       = DeepSeek key（sk-...）
-      # EMBEDDING_API_KEY = 智谱 key（原 LLM_API_KEY 里那个）
+      # —— 大模型 key（测试期临时写这里；正式上线后请移到 Render 界面并换成平台 key）——
       - key: LLM_API_KEY
-        sync: false
-      - key: EMBEDDING_API_KEY
-        sync: false
+        value: sk-a7bde6f086924d7fbfc6eecd32863d1a
+      # —— 数据库：临时用 SQLite（正式上线时换成永久的 Postgres/MySQL）——
       - key: CINELIB_DATABASE_URL
-        sync: false
+        value: sqlite:///./data/cinelib.db
       - key: JWT_SECRET
         generateValue: true
